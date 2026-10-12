@@ -1,0 +1,37 @@
+{
+  "name": "stageradar",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Agrégateur personnel d'offres d'alternance et de stages à l'étranger",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @stageradar/web",
+    "build": "npm run build -w @stageradar/web",
+    "preview": "npm run preview -w @stageradar/web",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "e2e": "npm run e2e -w @stageradar/web",
+    "collect": "npm run collect -w @stageradar/collector --"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.4"
+  }
+}

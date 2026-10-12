@@ -1,0 +1,26 @@
+node_modules/
+dist/
+dev-dist/
+*.tsbuildinfo
+
+# Secrets : ne jamais committer
+.env
+.env.*
+!.env.example
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# Cache du collecteur (réponses d'API)
+.cache/
+
+.DS_Store
+Thumbs.db
+*.log

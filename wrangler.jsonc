@@ -1,0 +1,11 @@
+// Hébergement du front sur Cloudflare Workers (fichiers statiques uniquement, pas de script).
+// Doc : https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/
+{
+  "name": "stageradar",
+  "compatibility_date": "2026-10-12",
+  "assets": {
+    "directory": "./apps/web/dist/",
+    // Toute adresse inconnue renvoie index.html : le routage est fait par l'application.
+    "not_found_handling": "single-page-application",
+  },
+}
