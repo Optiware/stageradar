@@ -52,9 +52,12 @@ const STAGE_EN = 'software engineer intern';
 export const RECHERCHES_STAGE: Record<string, LienRecherche[]> = {
   JP: [
     { libelle: 'LinkedIn : stages au Japon', url: linkedIn(STAGE_EN, 'Japan') },
-    // Sites d'offres pour développeurs anglophones au Japon (pages publiques, réponse 200).
-    { libelle: 'TokyoDev', url: 'https://www.tokyodev.com/jobs' },
-    { libelle: 'Japan Dev', url: 'https://japan-dev.com/jobs' },
+    // Les stages de TokyoDev et de Japan Dev sont collectés (packages/collector, sites-annonces.ts).
+    {
+      libelle: 'GaijinPot Jobs',
+      url: 'https://jobs.gaijinpot.com/en/job?keywords=&function%5B%5D=7000',
+    },
+    { libelle: 'Wantedly', url: 'https://www.wantedly.com/projects' },
   ],
   KR: [{ libelle: 'LinkedIn : stages en Corée du Sud', url: linkedIn(STAGE_EN, 'South Korea') }],
   CO: [

@@ -63,7 +63,7 @@ test.describe('Fiches pays', () => {
       'href',
       'https://www.eu-japan.eu/events/vulcanus-japan',
     );
-    await expect(pistes.getByRole('link', { name: 'TokyoDev' })).toHaveAttribute(
+    await expect(pistes.getByRole('link', { name: 'TokyoDev : stages' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',
     );
@@ -274,7 +274,7 @@ test.describe('Réglages et sources', () => {
     await expect(collecte).not.toContainText('ancienne erreur');
 
     const manuel = page.getByRole('region', { name: 'Sites à consulter à la main' });
-    await expect(manuel.getByRole('link', { name: 'Japan Dev' })).toBeVisible();
+    await expect(manuel.getByRole('link', { name: 'Wantedly' })).toBeVisible();
     await expect(manuel.getByRole('link', { name: 'LinkedIn : stages à Londres' })).toBeVisible();
   });
 });

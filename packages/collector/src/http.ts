@@ -35,11 +35,25 @@ export interface FetchJsonOptions {
   headers?: Record<string, string>;
 }
 
+/** GET d'un document JSON, avec les mêmes garanties que `fetchText`. */
+export async function fetchJson<T>(url: string, options: FetchJsonOptions = {}): Promise<T> {
+  return JSON.parse(await telecharger(url, 'application/json', options)) as T;
+}
+
+/** GET d'une page ou d'un plan de site (HTML, XML). */
+export function fetchText(url: string, options: FetchJsonOptions = {}): Promise<string> {
+  return telecharger(url, 'text/html,application/xhtml+xml,application/xml', options);
+}
+
 /**
- * GET d'un document JSON. Réessaie sur une erreur réseau, un 429 ou un 5xx (1 s, puis 3 s) ;
+ * GET d'un document texte. Réessaie sur une erreur réseau, un 429 ou un 5xx (1 s, puis 3 s) ;
  * un 404 ou un autre 4xx échoue tout de suite : réessayer n'y changerait rien.
  */
-export async function fetchJson<T>(url: string, options: FetchJsonOptions = {}): Promise<T> {
+async function telecharger(
+  url: string,
+  accepte: string,
+  options: FetchJsonOptions,
+): Promise<string> {
   const fetchImpl = options.fetchImpl ?? fetch;
   let derniere: unknown;
   for (let tentative = 0; tentative < TENTATIVES; tentative++) {
@@ -49,10 +63,10 @@ export async function fetchJson<T>(url: string, options: FetchJsonOptions = {}):
       const signaux = [AbortSignal.timeout(DELAI_MS)];
       if (options.signal) signaux.push(options.signal);
       const reponse = await fetchImpl(url, {
-        headers: { 'User-Agent': USER_AGENT, Accept: 'application/json', ...options.headers },
+        headers: { 'User-Agent': USER_AGENT, Accept: accepte, ...options.headers },
         signal: AbortSignal.any(signaux),
       });
-      if (reponse.ok) return (await reponse.json()) as T;
+      if (reponse.ok) return await reponse.text();
       const erreur = new HttpError(reponse.status, url);
       if (reponse.status !== 429 && reponse.status < 500) throw erreur;
       derniere = erreur;

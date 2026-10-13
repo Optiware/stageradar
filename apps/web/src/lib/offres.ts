@@ -99,8 +99,14 @@ export function couleurScore(score: number): string {
   return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
 }
 
+const NOMS_SOURCE: Record<string, string> = {
+  tokyodev: 'TokyoDev',
+  'japan-dev': 'Japan Dev',
+  manuel: 'Ajoutée à la main',
+};
+
 /** Nom lisible de la source : « greenhouse:moloco » → « Greenhouse ». */
 export function nomSource(source: string): string {
   const nom = source.split(':')[0] ?? source;
-  return nom.charAt(0).toUpperCase() + nom.slice(1);
+  return NOMS_SOURCE[nom] ?? nom.charAt(0).toUpperCase() + nom.slice(1);
 }

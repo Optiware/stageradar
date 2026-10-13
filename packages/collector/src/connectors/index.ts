@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Connector } from '@stageradar/shared';
 import { parse } from 'yaml';
 import { ATS_IDS, atsConnector, type AtsId, type WatchlistEntry } from './ats';
+import { siteAnnoncesConnector, SITES_ANNONCES } from './sites-annonces';
 
 // Sur le serveur, le collecteur est un fichier unique : le chemin de la liste lui est donné.
 const WATCHLIST =
@@ -37,9 +38,13 @@ export function loadWatchlist(chemin: string = WATCHLIST): WatchlistEntry[] {
 }
 
 /**
- * Connecteurs exécutés à chaque collecte : un par entreprise de la watchlist.
- * La bonne alternance (Lot 1) et les agrégateurs retenus au Lot 3 s'ajouteront ici.
+ * Connecteurs exécutés à chaque collecte : un par entreprise de la watchlist, puis les sites
+ * d'annonces lus par leur plan de site. La bonne alternance (Lot 1) et les agrégateurs à clé
+ * s'ajouteront ici.
  */
 export function buildConnectors(): Connector[] {
-  return loadWatchlist().map((entree) => atsConnector(entree));
+  return [
+    ...loadWatchlist().map((entree) => atsConnector(entree)),
+    ...SITES_ANNONCES.map((site) => siteAnnoncesConnector(site) as unknown as Connector),
+  ];
 }

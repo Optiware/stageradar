@@ -54,12 +54,20 @@ export const PISTES: Record<string, Piste[]> = {
     },
     SITES_CARRIERES,
     {
-      titre: "Sites d'offres pour profils internationaux",
+      titre: 'TokyoDev et Japan Dev',
+      texte:
+        "Deux sites d'annonces pour développeurs anglophones au Japon. Leurs stages sont relevés automatiquement avec le reste de la collecte et arrivent dans le fil. Leurs autres postes se consultent chez eux.",
+      liens: [
+        { libelle: 'TokyoDev : stages', url: 'https://www.tokyodev.com/jobs/intern' },
+        { libelle: 'Japan Dev', url: 'https://japan-dev.com/jobs' },
+      ],
+      ecran: { libelle: 'Voir le fil', vers: '/' },
+    },
+    {
+      titre: "Autres sites d'offres pour profils internationaux",
       texte:
         "Sites d'annonces tournés vers les étrangers au Japon. Ils publient surtout des postes, peu de stages : cherche « intern » ou « internship ». Leurs offres se consultent chez eux.",
       liens: [
-        { libelle: 'TokyoDev', url: 'https://www.tokyodev.com/jobs' },
-        { libelle: 'Japan Dev', url: 'https://japan-dev.com/jobs' },
         {
           libelle: 'GaijinPot Jobs (informatique)',
           url: 'https://jobs.gaijinpot.com/en/job?keywords=&function%5B%5D=7000',
