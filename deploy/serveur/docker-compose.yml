@@ -147,7 +147,7 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       STAGERADAR_WATCHLIST: /app/watchlist.yaml
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/sante']
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/sante']
       interval: 5s
       timeout: 5s
       retries: 6
