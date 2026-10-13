@@ -1,10 +1,12 @@
-// Empaquette le collecteur en un seul fichier, dist/collect.mjs, pour le serveur :
-// il s'y exécute avec `node collect.mjs`, sans sources ni `npm install`.
+// Empaquette pour le serveur, chacun en un seul fichier exécutable sans sources ni `npm install` :
+// - dist/collect.mjs : la collecte, lancée par cron (`node collect.mjs`) ;
+// - dist/api.mjs : le service appelé par l'application (`node api.mjs`).
 import { build } from 'esbuild';
 
 await build({
-  entryPoints: ['src/cli/run.ts'],
-  outfile: 'dist/collect.mjs',
+  entryPoints: { collect: 'src/cli/run.ts', api: 'src/cli/api.ts' },
+  outdir: 'dist',
+  outExtension: { '.js': '.mjs' },
   bundle: true,
   platform: 'node',
   target: 'node22',

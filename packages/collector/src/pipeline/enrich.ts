@@ -34,16 +34,29 @@ const DESCRIPTION_MAX = 20_000;
  * en France. Les sites carrières publient surtout des postes classiques, qu'il est inutile de garder.
  */
 export function enrich(offre: Offer, reglages: Reglages, maintenant: Date): OffreEnrichie | null {
+  const enrichie = enrichirSansPerimetre(offre, reglages, maintenant);
+  const stageVise =
+    enrichie.type === 'stage' &&
+    !!enrichie.pays &&
+    reglages.profil.stage.pays.includes(enrichie.pays);
+  const alternanceVisee = enrichie.type === 'alternance' && enrichie.pays === 'FR';
+  return stageVise || alternanceVisee ? enrichie : null;
+}
+
+/**
+ * Classe et note une offre sans l'écarter : pour une offre que l'utilisateur ajoute lui-même,
+ * gardée même hors des pays visés.
+ */
+export function enrichirSansPerimetre(
+  offre: Offer,
+  reglages: Reglages,
+  maintenant: Date,
+): OffreEnrichie {
   const classe = classify(
     { titre: offre.titre, description: offre.description, type_source: offre.type },
     reglages.motsCles,
     reglages.profil,
   );
-
-  const stageVise =
-    classe.type === 'stage' && !!offre.pays && reglages.profil.stage.pays.includes(offre.pays);
-  const alternanceVisee = classe.type === 'alternance' && offre.pays === 'FR';
-  if (!stageVise && !alternanceVisee) return null;
 
   const { score, details } = scoreOffer(
     { type: classe.type, pays: offre.pays, date_publication: offre.date_publication },

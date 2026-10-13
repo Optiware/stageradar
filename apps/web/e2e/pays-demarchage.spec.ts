@@ -269,7 +269,7 @@ test.describe('Réglages et sources', () => {
 
     const collecte = page.getByRole('region', { name: 'Collecte automatique' });
     await expect(collecte).toContainText('2 sources, dont 1 à regarder');
-    await expect(collecte).toContainText('4 offres retenues, dont 1 nouvelles');
+    await expect(collecte).toContainText('4 annonces lues, 1 nouvelles offres gardées');
     await expect(collecte).toContainText('HTTP 503');
     await expect(collecte).not.toContainText('ancienne erreur');
 

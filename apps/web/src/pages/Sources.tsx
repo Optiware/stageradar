@@ -1,11 +1,13 @@
 import { PAYS_STAGE } from '@stageradar/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router';
 import { Flag } from '../components/Flag';
+import { appelerApi, type BilanCollecte } from '../lib/api';
 import { RECHERCHES_STAGE, SITES_ALTERNANCE } from '../lib/liens-recherche';
 import { nomPays, nomSource } from '../lib/offres';
 import { supabase } from '../lib/supabase';
-import { BADGE, CARTE, SECONDAIRE } from '../lib/ui';
+import { BADGE, BOUTON_SECONDAIRE, CARTE, SECONDAIRE } from '../lib/ui';
 
 interface Passage {
   source: string;
@@ -46,6 +48,16 @@ export function Sources() {
     },
   });
 
+  const client = useQueryClient();
+  const collecter = useMutation({
+    mutationFn: () => appelerApi<BilanCollecte>('/collecter'),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ['sources_status'] }),
+        client.invalidateQueries({ queryKey: ['offers'] }),
+      ]),
+  });
+
   const derniers = new Map<string, Passage>();
   for (const passage of passages.data ?? []) {
     if (!derniers.has(passage.source)) derniers.set(passage.source, passage);
@@ -63,6 +75,39 @@ export function Sources() {
           Sites carrières lus toutes les six heures. Seuls les stages dans tes pays et les
           alternances en France sont gardés.
         </p>
+        <button
+          type="button"
+          disabled={collecter.isPending}
+          onClick={() => collecter.mutate()}
+          className={`mt-3 flex items-center gap-2 ${BOUTON_SECONDAIRE}`}
+        >
+          <RefreshCw
+            aria-hidden="true"
+            className={`size-4 ${collecter.isPending ? 'animate-spin' : ''}`}
+          />
+          {collecter.isPending ? 'Collecte en cours…' : 'Lancer une collecte maintenant'}
+        </button>
+        {collecter.isPending && (
+          <p role="status" className={`mt-2 text-sm ${SECONDAIRE}`}>
+            Lecture de tous les sites : compte une à deux minutes. Tu peux quitter cet écran.
+          </p>
+        )}
+        {collecter.isSuccess && (
+          <p
+            role="status"
+            className="mt-2 text-sm font-bold text-primary-700 dark:text-primary-400"
+          >
+            Collecte terminée : {collecter.data.lues} annonces lues, {collecter.data.retenues}{' '}
+            offres dans ta cible, dont {collecter.data.nouvelles} nouvelles
+            {collecter.data.en_erreur > 0 ? ` ; ${collecter.data.en_erreur} sources en erreur` : ''}
+            .
+          </p>
+        )}
+        {collecter.isError && (
+          <p role="alert" className="mt-2 text-sm font-bold text-red-700 dark:text-red-400">
+            La collecte n'a pas pu être lancée. Réessaie dans un instant.
+          </p>
+        )}
         {passages.isPending && <p className={`mt-4 text-sm ${SECONDAIRE}`}>Chargement…</p>}
         {passages.isError && (
           <p role="alert" className="mt-4 text-sm font-bold text-red-700 dark:text-red-400">
@@ -93,8 +138,8 @@ export function Sources() {
                     </span>
                   </div>
                   <p className={`mt-0.5 ${SECONDAIRE}`}>
-                    {quand(source.debut)} · {source.nb_offres} offres retenues, dont{' '}
-                    {source.nb_nouvelles} nouvelles
+                    {quand(source.debut)} · {source.nb_offres} annonces lues, {source.nb_nouvelles}{' '}
+                    nouvelles offres gardées
                   </p>
                   {source.erreurs.length > 0 && (
                     <p className="mt-0.5 break-words text-red-700 dark:text-red-400">

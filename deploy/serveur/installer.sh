@@ -68,6 +68,9 @@ EOF
 demarrer() {
   compose pull --quiet
   compose up -d --wait --remove-orphans
+  # Le service de l'application garde son code en mémoire : il est relancé pour charger la
+  # version qui vient d'être copiée.
+  if [ -f collecteur/api.mjs ]; then compose up -d --wait --force-recreate api; fi
   attendre "http://127.0.0.1:$PORT_AUTH/health"
   # GoTrue crée le schéma `auth` (dont auth.jwt(), utilisé par nos règles) à son démarrage.
   local essai
@@ -159,7 +162,8 @@ configurer_nginx() {
 
   installer_site "$(sed -e "s|__DOMAINE__|$DOMAINE|g" \
     -e "s|__PORT_AUTH__|$PORT_AUTH|g" \
-    -e "s|__PORT_REST__|$PORT_REST|g" nginx.conf.modele)"
+    -e "s|__PORT_REST__|$PORT_REST|g" \
+    -e "s|__PORT_API__|${PORT_API:-54333}|g" nginx.conf.modele)"
 }
 
 planifier() {
@@ -190,7 +194,7 @@ EOF
 chmod 700 "$RACINE"
 chmod +x ./*.sh
 chmod 644 db/roles.sql
-# Le collecteur tourne sans privilèges dans son conteneur : ses fichiers doivent lui être lisibles.
+# Le collecteur et le service tournent sans privilèges dans leur conteneur : ses fichiers doivent lui être lisibles.
 if [ -d collecteur ]; then chmod -R u=rwX,go=rX collecteur; fi
 creer_env
 charger_env

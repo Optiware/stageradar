@@ -67,6 +67,17 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # Service de l'application : import d'une offre, collecte à la demande (peut durer plusieurs
+    # minutes). Il vérifie lui-même que l'appelant est le propriétaire.
+    location /api/ {
+        client_max_body_size 64k;
+        proxy_read_timeout 600s;
+        proxy_pass http://127.0.0.1:__PORT_API__/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Fichiers au nom unique (empreinte dans le nom) : cache long.
     location /assets/ {
         expires 1y;

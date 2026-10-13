@@ -15,6 +15,8 @@ export interface Store {
   lireReglages(): Promise<Reglages>;
   /** Enregistre une offre ; `true` si elle n'était pas encore connue. */
   enregistrer(offre: OffreEnrichie, runId: string): Promise<boolean>;
+  /** Enregistre une offre ajoutée à la main et renvoie son identifiant. */
+  importer(offre: OffreEnrichie): Promise<{ id: string; nouvelle: boolean }>;
   /** Clôt la collecte d'une source lue en entier ; renvoie le nombre d'offres désactivées. */
   cloreSource(source: string, runId: string): Promise<number>;
   journaliser(runId: string, resultat: ConnectorResult, nbNouvelles: number): Promise<void>;
@@ -30,6 +32,7 @@ export function createDryStore(): Store {
         motsCles: mergeKeywords(null),
       }),
     enregistrer: () => Promise.resolve(false),
+    importer: () => Promise.resolve({ id: '', nouvelle: false }),
     cloreSource: () => Promise.resolve(0),
     journaliser: () => Promise.resolve(),
   };
@@ -69,6 +72,14 @@ export function createStore(url: string, cleSecrete: string): Store {
         .single<{ offer_id: string; nouvelle: boolean }>();
       if (error) throw new Error(`Enregistrement de « ${offre.titre} » : ${error.message}`);
       return data.nouvelle;
+    },
+
+    async importer(offre) {
+      const { data, error } = await db
+        .rpc('ingest_offer', { o: offre, p_run_id: 'manuel' })
+        .single<{ offer_id: string; nouvelle: boolean }>();
+      if (error) throw new Error(`Import de « ${offre.titre} » : ${error.message}`);
+      return { id: data.offer_id, nouvelle: data.nouvelle };
     },
 
     async cloreSource(source, runId) {

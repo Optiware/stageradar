@@ -11,3 +11,4 @@ export * from './traduction';
 export * from './messages';
 export * from './agenda';
 export * from './stats';
+export * from './jobposting';

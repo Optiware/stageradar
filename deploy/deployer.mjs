@@ -137,6 +137,9 @@ const resultats = [
   await verifier('/manifest.webmanifest', 200),
   await verifier('/robots.txt', 200),
   await verifier('/auth/v1/health', 200),
+  await verifier('/api/sante', 200),
+  // Le service de l'application ne répond qu'au propriétaire.
+  await verifier('/api/importer', 401, { method: 'POST' }),
   // Sans compte : aucun accès aux données, et l'administration des comptes est invisible.
   await verifier('/rest/v1/rpc/is_owner', 401, { method: 'POST' }),
   await verifier('/rest/v1/offers', 401),

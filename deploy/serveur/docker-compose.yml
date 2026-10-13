@@ -1,5 +1,5 @@
 # StageRadar sur un VPS : le strict nécessaire de Supabase auto-hébergé
-# (Postgres, authentification, API REST). Le front et le HTTPS sont servis par le nginx de l'hôte.
+# (Postgres, authentification, API REST), plus un petit service propre à l'application. Le front et le HTTPS sont servis par le nginx de l'hôte.
 #
 # Versions et variables reprises de la composition officielle :
 # https://github.com/supabase/supabase/blob/master/docker/docker-compose.yml
@@ -124,6 +124,34 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       STAGERADAR_WATCHLIST: /app/watchlist.yaml
     command: ['node', 'collect.mjs']
+
+  # Service appelé par l'application : import d'une offre par son adresse, collecte à la demande.
+  # Il n'écoute que sur le serveur (nginx lui transmet /api/) et ne répond qu'au propriétaire.
+  api:
+    image: node:22-alpine
+    restart: unless-stopped
+    mem_limit: 384m
+    user: node
+    depends_on:
+      rest:
+        condition: service_started
+    ports:
+      - '127.0.0.1:${PORT_API:-54333}:3000'
+    volumes:
+      # api.mjs (service empaqueté en un fichier) et watchlist.yaml, copiés par deployer.mjs.
+      - ./collecteur:/app:ro
+    working_dir: /app
+    environment:
+      PORT: 3000
+      SUPABASE_URL: http://rest:3000
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      STAGERADAR_WATCHLIST: /app/watchlist.yaml
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/sante']
+      interval: 5s
+      timeout: 5s
+      retries: 6
+    command: ['node', 'api.mjs']
 
 volumes:
   db-data:

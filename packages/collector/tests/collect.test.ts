@@ -64,6 +64,7 @@ function fauxStore() {
       enregistrees.push(o);
       return Promise.resolve(true);
     },
+    importer: () => Promise.resolve({ id: 'manuel', nouvelle: true }),
     cloreSource(source) {
       closes.push(source);
       return Promise.resolve(0);

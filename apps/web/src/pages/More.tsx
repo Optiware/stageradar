@@ -13,6 +13,11 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
     text: 'Startups à contacter, personnes à joindre, messages prêts à envoyer.',
   },
   {
+    title: 'Importer une offre',
+    vers: '/importer',
+    text: 'Ajouter une annonce trouvée ailleurs, par son adresse ou par « Partager ».',
+  },
+  {
     title: 'Sources',
     vers: '/sources',
     text: 'État de la collecte et sites à consulter à la main.',

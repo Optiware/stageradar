@@ -74,6 +74,10 @@ export interface Backend {
   documents: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
+  /** Demandes reçues par le service de l'application (/api/…), avec leur corps. */
+  api: { chemin: string; corps: unknown }[];
+  /** Réponses du service de l'application, par chemin (« /importer »). */
+  apiReponses: Record<string, { statut?: number; corps: unknown }>;
   /** Ouvre l'application avec une session déjà enregistrée. */
   signInAs(email: string, options?: { isOwner?: boolean }): Promise<void>;
 }
@@ -97,6 +101,8 @@ export const test = base.extend<{ backend: Backend }>({
         country_sheets: [],
         sources_status: [],
         documents: [],
+        api: [],
+        apiReponses: {},
         settings: { objectif_hebdo: 5, presentation: '' },
         async signInAs(email, options = {}) {
           isOwner = options.isOwner ?? true;
@@ -232,6 +238,15 @@ export const test = base.extend<{ backend: Backend }>({
             }
             return route.fulfill({ status: 204, body: '' });
           }
+        }
+        if (path.startsWith('/api/')) {
+          const chemin = path.slice('/api'.length);
+          backend.api.push({ chemin, corps: request.postDataJSON() });
+          const prevue = backend.apiReponses[chemin];
+          if (!request.headers().authorization?.startsWith('Bearer ')) {
+            return route.fulfill({ status: 401, json: { message: 'Réservé au propriétaire.' } });
+          }
+          if (prevue) return route.fulfill({ status: prevue.statut ?? 200, json: prevue.corps });
         }
         if (path === '/rest/v1/rpc/is_owner') {
           return route.fulfill({ json: isOwner });

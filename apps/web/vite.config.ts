@@ -34,6 +34,13 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
+        // Android : l'application installée apparaît dans le menu « Partager » ; l'annonce
+        // partagée ouvre l'écran d'import déjà rempli (Web Share Target, méthode GET).
+        share_target: {
+          action: '/importer',
+          method: 'GET',
+          params: { title: 'titre', text: 'texte', url: 'url' },
+        },
         background_color: '#f3f4f6',
         theme_color: '#f3f4f6',
         icons: [
@@ -51,6 +58,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: '/index.html',
+        // Ces adresses appartiennent au serveur : elles ne doivent jamais recevoir l'application.
+        navigateFallbackDenylist: [/^\/api\//, /^\/rest\//, /^\/auth\//],
       },
     }),
   ],
