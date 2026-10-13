@@ -60,7 +60,7 @@ export function Flag({ code, className = '' }: { code: string | null; className?
     return (
       <span
         aria-hidden="true"
-        className={`inline-flex h-3.5 items-center rounded-sm bg-slate-200 px-1 text-[0.625rem] leading-none font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200 ${className}`}
+        className={`inline-flex h-3.5 items-center rounded-sm bg-gray-200 px-1 text-[0.625rem] leading-none font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200 ${className}`}
       >
         {code}
       </span>
@@ -70,7 +70,7 @@ export function Flag({ code, className = '' }: { code: string | null; className?
     <svg
       aria-hidden="true"
       viewBox="0 0 30 20"
-      className={`inline-block h-3.5 w-[1.3125rem] shrink-0 rounded-[3px] ring-1 ring-slate-900/10 dark:ring-white/20 ${className}`}
+      className={`inline-block h-3.5 w-[1.3125rem] shrink-0 rounded-[3px] ring-1 ring-gray-900/10 dark:ring-white/20 ${className}`}
     >
       {dessin}
     </svg>

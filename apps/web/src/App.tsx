@@ -57,7 +57,7 @@ function OwnerGate({ session }: { session: Session }) {
         <button
           type="button"
           onClick={() => void signOut()}
-          className="mt-4 rounded-lg bg-accent-700 px-4 py-2.5 font-medium text-white hover:bg-accent-600"
+          className="mt-4 rounded-full bg-primary-500 px-5 py-2.5 font-semibold text-gray-950 hover:bg-primary-400"
         >
           Se déconnecter
         </button>

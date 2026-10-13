@@ -1,18 +1,29 @@
 @import 'tailwindcss';
 
-/* Thème clair par défaut ; le thème sombre s'active dans « Plus » (classe posée par lib/theme.ts). */
+/*
+ * Style « Pulse » : très arrondi, vert vif, police Plus Jakarta Sans.
+ * Tailwind 4 se configure ici (plus de tailwind.config.ts) : ces lignes en sont l'équivalent.
+ */
+
+/* Équivalent de `darkMode: 'class'` : la classe est posée par lib/theme.ts. Clair par défaut. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-accent-50: #f0fdfa;
-  --color-accent-100: #ccfbf1;
-  --color-accent-200: #99f6e4;
-  --color-accent-300: #5eead4;
-  --color-accent-400: #2dd4bf;
-  --color-accent-600: #0d9488;
-  --color-accent-700: #0f766e;
-  --color-accent-800: #115e59;
-  --color-accent-900: #134e4a;
+  /* Police servie par l'application elle-même (@fontsource-variable/plus-jakarta-sans). */
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-400: #34d399;
+  --color-primary-500: #10b981;
+  --color-primary-600: #059669;
+  /* Hors design system, même famille : texte vert lisible sur fond clair (contraste AA). */
+  --color-primary-700: #047857;
+  --color-primary-900: #064e3b;
+
+  --color-gray-850: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
 }
 
 @layer base {
@@ -25,10 +36,10 @@
   }
 
   body {
-    @apply bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
   }
 
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent-600 dark:outline-accent-300;
+    @apply outline-2 outline-offset-2 outline-primary-600 dark:outline-primary-400;
   }
 }

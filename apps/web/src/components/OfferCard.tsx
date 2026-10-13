@@ -29,7 +29,7 @@ export function CompanyAvatar({ nom, className = '' }: { nom: string | null; cla
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-lg font-semibold ${TEINTES[somme % TEINTES.length]} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-2xl font-bold ${TEINTES[somme % TEINTES.length]} ${className}`}
     >
       {[...texte][0]!.toUpperCase()}
     </span>
@@ -57,10 +57,10 @@ export function OfferCard({
         to={{ search: `?offre=${offre.id}` }}
         onClick={onOuvrir}
         aria-current={selectionnee ? 'true' : undefined}
-        className={`block rounded-xl border p-4 transition-shadow hover:shadow-md ${
+        className={`block rounded-3xl border p-4 transition-shadow hover:shadow-md ${
           selectionnee
-            ? 'border-accent-600 bg-accent-50/60 ring-1 ring-accent-600 dark:bg-accent-900/20'
-            : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+            ? 'border-primary-500 bg-primary-50/70 ring-1 ring-primary-500 dark:bg-primary-500/10'
+            : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
         } ${offre.exclue_raison ? 'opacity-75' : ''}`}
       >
         <div className="flex items-start gap-3">
@@ -68,12 +68,10 @@ export function OfferCard({
           <div className="min-w-0 flex-1">
             <h2 className="leading-snug font-semibold break-words">{offre.titre}</h2>
             {offre.entreprise && (
-              <p className="mt-0.5 text-sm text-slate-700 dark:text-slate-200">
-                {offre.entreprise}
-              </p>
+              <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-200">{offre.entreprise}</p>
             )}
             {lieu(offre) && (
-              <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
                 <Flag code={offre.pays} />
                 <span className="min-w-0 break-words">{lieu(offre)}</span>
               </p>
@@ -89,11 +87,9 @@ export function OfferCard({
 
         <ul className="mt-3 flex flex-wrap gap-1.5 text-xs">
           {estNouvelle(offre, maintenant) && (
-            <li className={`${PUCE} bg-accent-700 font-medium text-white dark:bg-accent-600`}>
-              Nouveau
-            </li>
+            <li className={`${PUCE} bg-primary-500 font-medium text-gray-950`}>Nouveau</li>
           )}
-          <li className={`${PUCE} border border-slate-300 font-medium dark:border-slate-600`}>
+          <li className={`${PUCE} border border-gray-300 font-medium dark:border-gray-600`}>
             {LIBELLES_TYPE[offre.type]}
           </li>
           {offre.teletravail && offre.teletravail !== 'sur_site' && (
@@ -102,7 +98,7 @@ export function OfferCard({
             </li>
           )}
           {offre.domaines.map((domaine) => (
-            <li key={domaine} className={`${PUCE} bg-slate-100 dark:bg-slate-800`}>
+            <li key={domaine} className={`${PUCE} bg-gray-100 dark:bg-gray-800`}>
               {LIBELLES_DOMAINE[domaine]}
             </li>
           ))}
@@ -124,7 +120,7 @@ export function OfferCard({
         </ul>
 
         {(publiee || offre.remuneration_texte) && (
-          <p className="mt-3 flex justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-3 flex justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
             <span className="min-w-0 truncate">{offre.remuneration_texte}</span>
             {publiee && <span className="shrink-0">Publiée {publiee}</span>}
           </p>

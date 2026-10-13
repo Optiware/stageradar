@@ -277,6 +277,7 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 
 ### C3. Design → fait pour le fil et le détail, à étendre aux écrans suivants
 - Thème clair par défaut, beaucoup de blanc, une seule couleur d'accent ; thème sombre au choix.
+- **Style « Pulse »** pour toute l'application (décision du 13 octobre 2026) : énergique, très arrondi (« bubbly »), police Plus Jakarta Sans, vert `primary` (50 `#ecfdf5`, 100 `#d1fae5`, 400 `#34d399`, 500 `#10b981`, 600 `#059669`), gris sombres (850 `#1f2937`, 900 `#111827`, 950 `#030712`), thème sombre par classe. Ces valeurs sont définies dans `apps/web/src/index.css` (Tailwind 4 n'a plus de `tailwind.config.ts`). La structure de la page Fil est conservée.
 - Mise en page des job boards : liste de cartes à gauche et détail à droite sur PC ; liste puis page de détail sur mobile. Aucun logo, couleur de marque ou texte repris d'un site existant.
 - Carte d'offre : intitulé, entreprise, ville + pays (drapeau), type, rémunération si connue, badges, score, ancienneté de la publication.
 - Page de détail : résumé en tête, bouton « Postuler » bien visible, description, sections « Entreprise » et « Visa et pays ».

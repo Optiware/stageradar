@@ -5,7 +5,7 @@ import { authErrorMessage } from '../lib/auth-errors';
 type Status = { step: 'idle' } | { step: 'sending' } | { step: 'error'; message: string };
 
 const FIELD_CLASS =
-  'mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900';
+  'mt-1.5 block w-full rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-base dark:border-gray-700 dark:bg-gray-900';
 
 export function Login() {
   const { signIn } = useAuth();
@@ -27,8 +27,8 @@ export function Login() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
       <img src="/logo.svg" alt="" width={64} height={64} className="rounded-2xl" />
-      <h1 className="mt-6 text-2xl font-semibold">StageRadar</h1>
-      <p className="mt-1 text-slate-600 dark:text-slate-300">
+      <h1 className="mt-6 text-2xl font-extrabold tracking-tight">StageRadar</h1>
+      <p className="mt-1 text-gray-600 dark:text-gray-300">
         Alternance et stages à l'étranger, au même endroit.
       </p>
 
@@ -61,7 +61,7 @@ export function Login() {
         <button
           type="submit"
           disabled={status.step === 'sending'}
-          className="mt-4 w-full rounded-lg bg-accent-700 px-4 py-2.5 font-medium text-white hover:bg-accent-600 disabled:opacity-60"
+          className="mt-6 w-full rounded-full bg-primary-500 px-5 py-3 font-semibold text-gray-950 hover:bg-primary-400 disabled:opacity-60"
         >
           {status.step === 'sending' ? 'Connexion…' : 'Se connecter'}
         </button>

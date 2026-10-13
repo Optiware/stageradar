@@ -33,10 +33,10 @@ const NAV = [
 
 function linkClass({ isActive }: { isActive: boolean }): string {
   const base =
-    'flex flex-1 flex-col items-center gap-1 px-2 py-2 text-xs font-medium md:flex-none md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2.5 md:text-sm';
+    'flex flex-1 flex-col items-center gap-1 px-2 py-2 text-xs font-medium md:flex-none md:flex-row md:gap-3 md:rounded-full md:px-4 md:py-2.5 md:text-sm';
   return isActive
-    ? `${base} text-accent-700 md:bg-accent-50 dark:text-accent-300 md:dark:bg-accent-900/40`
-    : `${base} text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100`;
+    ? `${base} text-primary-700 md:bg-primary-50 dark:text-primary-400 md:dark:bg-primary-500/15`
+    : `${base} text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100`;
 }
 
 /** Cadre de l'application : barre d'onglets en bas sur mobile, barre latérale sur grand écran. */
@@ -45,10 +45,10 @@ export function Shell() {
     <div className="min-h-dvh md:flex md:items-start">
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:sticky md:top-0 md:h-dvh md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 dark:border-slate-800 dark:bg-slate-900"
+        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:sticky md:top-0 md:h-dvh md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 dark:border-gray-800 dark:bg-gray-900"
       >
         <div className="hidden items-center gap-2 px-3 pt-2 pb-4 md:flex">
-          <img src="/logo.svg" alt="" width={28} height={28} className="rounded-lg" />
+          <img src="/logo.svg" alt="" width={28} height={28} className="rounded-xl" />
           <span className="font-semibold">StageRadar</span>
         </div>
         {NAV.map((item) => (

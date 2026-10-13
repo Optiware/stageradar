@@ -116,14 +116,14 @@ export function Feed() {
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
       <div className={idOuvert ? 'hidden lg:block' : ''}>
-        <h1 className="text-2xl font-semibold">Fil</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">Fil</h1>
 
         <label className="relative mt-4 block">
           <span className="sr-only">Rechercher une offre</span>
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
-            className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-gray-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -137,14 +137,14 @@ export function Feed() {
             value={recherche}
             onChange={(event) => setRecherche(event.target.value)}
             placeholder="Intitulé, entreprise, ville"
-            className="block w-full rounded-full border border-slate-300 bg-white py-2.5 pr-4 pl-10 text-base placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900"
+            className="block w-full rounded-full border border-gray-300 bg-white py-2.5 pr-4 pl-10 text-base placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900"
           />
         </label>
 
         <div
           role="tablist"
           aria-label="Type d'offre"
-          className="mt-3 flex rounded-full bg-slate-100 p-1 text-sm font-medium dark:bg-slate-800"
+          className="mt-3 flex rounded-full bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800"
         >
           {ONGLETS.map(({ id, libelle }) => {
             const actif = id === onglet;
@@ -157,12 +157,12 @@ export function Feed() {
                 onClick={() => setOnglet(id)}
                 className={`flex-1 rounded-full px-3 py-1.5 ${
                   actif
-                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-white'
+                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
                 }`}
               >
                 {libelle}{' '}
-                <span className="text-slate-500 dark:text-slate-400">
+                <span className="text-gray-500 dark:text-gray-400">
                   {visibles.filter((offre) => dansOnglet(offre, id)).length}
                 </span>
               </button>
@@ -185,25 +185,25 @@ export function Feed() {
                 onClick={() => basculerPays(code)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 ${
                   choisi
-                    ? 'border-accent-700 bg-accent-50 font-medium text-accent-900 dark:bg-accent-900/40 dark:text-accent-100'
-                    : 'border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800'
+                    ? 'border-primary-600 bg-primary-50 font-medium text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
+                    : 'border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                 }`}
               >
                 <Flag code={code} />
                 {nomPays(code)}
-                <span className="text-slate-500 dark:text-slate-400">{parPays.get(code) ?? 0}</span>
+                <span className="text-gray-500 dark:text-gray-400">{parPays.get(code) ?? 0}</span>
               </button>
             );
           })}
         </div>
 
         {nbMasquees > 0 && (
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+          <label className="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <input
               type="checkbox"
               checked={avecMasquees}
               onChange={(event) => setAvecMasquees(event.target.checked)}
-              className="size-4 accent-accent-700"
+              className="size-4 accent-primary-600"
             />
             Afficher aussi les {nbMasquees} offres hors cible
           </label>
@@ -214,10 +214,10 @@ export function Feed() {
             <section
               key={site}
               aria-label={`Recherches sur ${site}`}
-              className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-800"
+              className="mt-4 rounded-3xl border border-gray-200 p-4 dark:border-gray-800"
             >
               <h2 className="font-semibold">Chercher aussi sur {site}</h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{raison}</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{raison}</p>
               <ul className="mt-3 flex flex-wrap gap-2 text-sm">
                 {recherches.map(({ libelle, url }) => (
                   <li key={libelle}>
@@ -225,7 +225,7 @@ export function Feed() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block rounded-full border border-accent-700 px-3 py-1.5 font-medium text-accent-800 hover:bg-accent-50 dark:border-accent-400 dark:text-accent-200 dark:hover:bg-accent-900/40"
+                      className="inline-block rounded-full border border-primary-600 px-3 py-1.5 font-medium text-primary-700 hover:bg-primary-50 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-500/15"
                     >
                       {libelle}
                     </a>
@@ -236,7 +236,7 @@ export function Feed() {
           ))}
 
         {offres.isPending && (
-          <p className="mt-8 text-slate-600 dark:text-slate-300">Chargement des offres…</p>
+          <p className="mt-8 text-gray-600 dark:text-gray-300">Chargement des offres…</p>
         )}
         {offres.isError && (
           <p role="alert" className="mt-8 text-red-700 dark:text-red-400">
@@ -244,7 +244,7 @@ export function Feed() {
           </p>
         )}
         {offres.isSuccess && affichees.length === 0 && (
-          <p className="mt-8 text-slate-600 dark:text-slate-300">
+          <p className="mt-8 text-gray-600 dark:text-gray-300">
             {toutes.length === 0
               ? 'Aucune offre pour le moment. La collecte tourne toutes les 6 heures.'
               : onglet === 'alternance' && dansLOnglet.length === 0 && mots.length === 0
@@ -270,14 +270,14 @@ export function Feed() {
       </div>
 
       <div
-        className={`lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-slate-200 lg:p-6 lg:dark:border-slate-800 ${
+        className={`lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:rounded-3xl lg:border lg:border-gray-200 lg:p-6 lg:dark:border-gray-800 ${
           idOuvert ? '' : 'hidden lg:block'
         }`}
       >
         {idOuvert && (
           <Link
             to="/"
-            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-accent-700 lg:hidden dark:text-accent-300"
+            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-primary-700 lg:hidden dark:text-primary-400"
           >
             <svg
               aria-hidden="true"
@@ -308,7 +308,7 @@ export function Feed() {
           />
         ) : (
           offres.isSuccess && (
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-gray-600 dark:text-gray-300">
               {idOuvert
                 ? "Cette offre n'est plus disponible."
                 : 'Sélectionne une offre pour afficher son détail.'}

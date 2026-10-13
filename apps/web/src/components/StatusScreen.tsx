@@ -7,7 +7,7 @@ export function StatusScreen({ title, children }: { title: string; children?: Re
       <img src="/logo.svg" alt="" width={64} height={64} className="mb-6 rounded-2xl" />
       <h1 className="text-xl font-semibold">{title}</h1>
       {children && (
-        <div className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&_code]:rounded [&_code]:bg-slate-200 [&_code]:px-1 [&_code]:py-0.5 dark:[&_code]:bg-slate-800">
+        <div className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300 [&_code]:rounded [&_code]:bg-gray-200 [&_code]:px-1 [&_code]:py-0.5 dark:[&_code]:bg-gray-800">
           {children}
         </div>
       )}

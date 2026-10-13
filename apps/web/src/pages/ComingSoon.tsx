@@ -12,12 +12,12 @@ export function ComingSoon({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      <div className="mt-6 rounded-xl border border-dashed border-slate-300 p-6 dark:border-slate-700">
-        <p className="text-sm font-medium text-accent-700 dark:text-accent-300">
+      <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
+      <div className="mt-6 rounded-3xl border border-dashed border-gray-300 p-6 dark:border-gray-700">
+        <p className="text-sm font-medium text-primary-700 dark:text-primary-400">
           Prévu au lot {lot}
         </p>
-        <p className="mt-2 text-slate-600 dark:text-slate-300">{children}</p>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">{children}</p>
       </div>
     </>
   );

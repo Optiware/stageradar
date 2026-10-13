@@ -93,9 +93,9 @@ export function lienSur(url: string): string | null {
 }
 
 export function couleurScore(score: number): string {
-  if (score >= 75) return 'bg-accent-700 text-white';
-  if (score >= 50) return 'bg-amber-400 text-slate-950';
-  return 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100';
+  if (score >= 75) return 'bg-primary-500 text-gray-950';
+  if (score >= 50) return 'bg-amber-400 text-gray-950';
+  return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
 }
 
 /** Nom lisible de la source : « greenhouse:moloco » → « Greenhouse ». */
