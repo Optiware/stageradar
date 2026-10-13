@@ -54,9 +54,9 @@ export const PISTES: Record<string, Piste[]> = {
     },
     SITES_CARRIERES,
     {
-      titre: 'TokyoDev et Japan Dev',
+      titre: 'Japan Dev et TokyoDev',
       texte:
-        "Deux sites d'annonces pour développeurs anglophones au Japon. Leurs stages sont relevés automatiquement avec le reste de la collecte et arrivent dans le fil. Leurs autres postes se consultent chez eux.",
+        "Deux sites d'annonces pour développeurs anglophones au Japon. Les stages de Japan Dev sont relevés automatiquement avec le reste de la collecte et arrivent dans le fil. TokyoDev protège ses pages contre la lecture automatique : sa liste de stages se consulte chez lui, et une offre qui t'intéresse s'ajoute par « Importer une offre ».",
       liens: [
         { libelle: 'TokyoDev : stages', url: 'https://www.tokyodev.com/jobs/intern' },
         { libelle: 'Japan Dev', url: 'https://japan-dev.com/jobs' },

@@ -5,11 +5,20 @@ import {
   adressesDuPlan,
   siteAnnoncesConnector,
   SITES_ANNONCES,
+  type SiteAnnonces,
 } from '../src/connectors/sites-annonces';
 
 // Fixtures : le bloc JobPosting de deux pages réelles, relevées le 14 octobre 2026.
 const fixture = (nom: string) => readFileSync(join(import.meta.dirname, 'fixtures', nom), 'utf8');
-const TOKYODEV = SITES_ANNONCES.find((site) => site.id === 'tokyodev')!;
+// TokyoDev n'est pas collecté (ses pages refusent le serveur), mais sa page, relevée depuis un
+// poste de travail, reste un bon second exemple de JobPosting pour le connecteur générique.
+const TOKYODEV: SiteAnnonces = {
+  id: 'tokyodev',
+  nom: 'TokyoDev',
+  sitemap: 'https://www.tokyodev.com/sitemap.xml',
+  motif: /^https:\/\/www\.tokyodev\.com\/companies\/[^/]+\/jobs\/[^/]*intern[^/]*$/i,
+  pays_defaut: 'JP',
+};
 const JAPAN_DEV = SITES_ANNONCES.find((site) => site.id === 'japan-dev')!;
 
 const PLAN = `<?xml version="1.0" encoding="UTF-8"?>
@@ -22,6 +31,10 @@ const PLAN = `<?xml version="1.0" encoding="UTF-8"?>
 </urlset>`;
 
 describe('sites d’annonces lus par leur plan', () => {
+  it('ne collecte que les sites qui acceptent le serveur', () => {
+    expect(SITES_ANNONCES.map((site) => site.id)).toEqual(['japan-dev']);
+  });
+
   it('ne retient du plan que les pages de stage, sans doublon', () => {
     expect(adressesDuPlan(PLAN, TOKYODEV.motif)).toEqual([
       'https://www.tokyodev.com/companies/hennge/jobs/global-intern',

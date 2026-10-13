@@ -72,8 +72,8 @@ export function Sources() {
       <section aria-label="Collecte automatique" className={`mt-6 ${CARTE}`}>
         <h2 className="font-bold">Collecte automatique</h2>
         <p className={`mt-1 text-sm ${SECONDAIRE}`}>
-          Sites carrières des entreprises, TokyoDev et Japan Dev, lus toutes les six heures. Seuls
-          les stages dans tes pays et les alternances en France sont gardés.
+          Sites carrières des entreprises et Japan Dev, lus toutes les six heures. Seuls les stages
+          dans tes pays et les alternances en France sont gardés.
         </p>
         <button
           type="button"

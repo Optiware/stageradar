@@ -100,7 +100,6 @@ export function couleurScore(score: number): string {
 }
 
 const NOMS_SOURCE: Record<string, string> = {
-  tokyodev: 'TokyoDev',
   'japan-dev': 'Japan Dev',
   manuel: 'Ajoutée à la main',
 };

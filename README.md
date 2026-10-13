@@ -6,15 +6,18 @@ Le besoin complet est décrit dans [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md
 
 ## État d'avancement
 
-| Lot | Contenu                                                                   | État                                                                                                                                                  |
-| --- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne         | En ligne                                                                                                                                              |
-| 3   | Stages à l'étranger : pipeline de collecte, ATS, agrégateurs, fiches pays | En cours : collecte des sites carrières en ligne ; restent les agrégateurs, les zones, les sources et les fiches pays                                 |
-| 2   | Fil, détail, suivi Kanban, hors-ligne                                     | Fil, détail, suivi Kanban, onglet « Important » et traduction des annonces en ligne ; restent les autres filtres, « Mes candidatures », le hors-ligne |
-| 1   | Alternance France : La bonne alternance, France Travail (si accès)        | À faire                                                                                                                                               |
-| 4   | Import manuel : partage Android, URL, bookmarklet                         | À faire                                                                                                                                               |
-| 5   | Notifications, calendrier, relances                                       | À faire                                                                                                                                               |
-| 6   | Statistiques, documents, export                                           | À faire                                                                                                                                               |
+| Lot | Contenu                                                           | État                                                                                                                                                                                                |
+| --- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne | En ligne                                                                                                                                                                                            |
+| 3   | Stages à l'étranger : collecte, fiches pays, sources              | En ligne : sites carrières et Japan Dev collectés, fiches pays (à vérifier), pistes par pays, Londres, écran des sources. Restent : agrégateurs à clé, zones, ajout de sources depuis l'application |
+| 2   | Fil, détail, suivi, hors-ligne                                    | En ligne : filtres, notes, traduction, suivi en tableau et en liste, onglet « Important », réglages, consultation hors ligne. Reste : modifier hors ligne après un rechargement                     |
+| 1   | Alternance France : La bonne alternance, France Travail           | En attente des clés (voir [docs/CLES_API.md](docs/CLES_API.md))                                                                                                                                     |
+| 4   | Import manuel : adresse, partage Android, favori                  | En ligne                                                                                                                                                                                            |
+| 5   | Notifications, calendrier, relances                               | En ligne : alertes et résumé du soir (à essayer sur un vrai appareil), calendrier avec export `.ics`, relances                                                                                      |
+| 6   | Statistiques, documents, export                                   | En ligne. Reste : sauvegarde chiffrée automatique                                                                                                                                                   |
+| 8   | Logement et budget                                                | En ligne                                                                                                                                                                                            |
+| 9   | Entreprises, contacts, entretiens                                 | En ligne : démarchage, contact et notes d'entretien. Reste : plusieurs contacts par entreprise, lecture de Gmail (option)                                                                           |
+| 7   | Assistance par IA (facultatif)                                    | Non fait : demande une clé                                                                                                                                                                          |
 
 L'ordre est volontaire : les stages d'été 2027 se recrutent dès l'automne 2026, l'alternance surtout à partir de janvier.
 
@@ -77,13 +80,16 @@ Les tests de la base tournent sur un Postgres en mémoire (PGlite) : ils appliqu
 Internet ──HTTPS──> nginx (déjà présent sur le VPS)
                       ├── /            fichiers du front   /var/www/stageradar
                       ├── /auth/v1/    GoTrue              127.0.0.1:54331  ┐
-                      └── /rest/v1/    PostgREST           127.0.0.1:54332  ├ Docker, /opt/stageradar
-                                       Postgres            (aucun port)     ┘
+                      ├── /rest/v1/    PostgREST           127.0.0.1:54332  │
+                      ├── /api/        service StageRadar  127.0.0.1:54333  ├ Docker, /opt/stageradar
+                      │                Postgres            (aucun port)     ┘
+                      └── cron : collecte (6 h), notifications (1 h), sauvegarde (nuit)
 ```
 
 - Tout est **ajouté à côté** des autres sites du serveur : un fichier `/etc/nginx/sites-available/stageradar` qui ne déclare que son propre nom de domaine, un projet Docker Compose `stageradar`, un fichier `/etc/cron.d/stageradar`.
 - Postgres n'écoute sur aucun port de la machine ; l'API n'écoute que sur `127.0.0.1`.
-- Les secrets (mot de passe Postgres, secret des jetons, clé secrète) sont générés **sur le serveur**, dans `/opt/stageradar/.env`, et n'en sortent pas.
+- Les secrets (mot de passe Postgres, secret des jetons, clé secrète, clés des notifications) sont générés **sur le serveur**, dans `/opt/stageradar/.env`, et n'en sortent pas.
+- Le service `/api/` (import d'une offre par son adresse, collecte à la demande, notification d'essai) ne répond qu'au propriétaire, et refuse de lire toute adresse locale ou privée.
 
 ### Déployer
 

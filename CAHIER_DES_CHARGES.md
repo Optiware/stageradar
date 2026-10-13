@@ -256,7 +256,8 @@ Candidature automatique sur les sites, scraping de sites l'interdisant, multi-ut
 Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autorisées uniquement) et du §7 s'appliquent à tous.
 
 ### A. Sources
-- Adzuna retiré. Careerjet et Jooble à confirmer (§3.1). JSearch en option avec compteur de quota. → Lot 3
+- Adzuna retiré. Careerjet et Jooble à confirmer (§3.1). JSearch en option avec compteur de quota. → Lot 3, en attente des clés (`docs/CLES_API.md`)
+- **Japan Dev** collecté depuis le 14 octobre 2026 (plan de site + données JobPosting, pages de stage seulement). **TokyoDev** reste en lien : ses pages d'offres opposent un contrôle anti-robot au serveur, qui n'est pas contourné. Les autres sites proposés (Wantedly, GaijinPot, Daijob, Jobs in Japan, JobTeaser, iAgora, Indeed) sont en liens dans les fiches pays ; Google Scholar et jsip.asia ne sont pas des sources d'offres.
 - Welcome to the Jungle en recherche pré-remplie pour l'alternance (§3.3). → fait
 
 ### B. Organisation du dépôt → Lot 0
@@ -268,9 +269,10 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 - Filtre par pays, à choix multiple, avec drapeaux et nombre d'offres. → fait
 - Filtre Stage / Alternance, sous-filtre « France uniquement » pour l'alternance. → Lot 2
 - Offres rédigées uniquement en anglais incluses à l'étranger ; détection de la langue de l'annonce ; filtres « Langue de l'annonce » et « Langue exigée ». → Lots 3 (détection) et 2 (filtres)
-- Écran « Zones » : zones de recherche (ville + rayon, type, mots-clés), actives ou en pause ; les connecteurs ne collectent que pour les zones actives. → Lots 3 et 1
+- Écran « Zones » : zones de recherche (ville + rayon, type, mots-clés), actives ou en pause ; les connecteurs ne collectent que pour les zones actives. → Lots 3 et 1 (non fait : n'a de sens qu'avec les sources d'alternance)
+- **Londres** ajoutée aux destinations de stage le 13 octobre 2026 (seule la ville est reconnue). Filtres du fil par domaine, organisation, score, langue exigée et nouveauté. → fait
 
-### C2. Gestion des sources depuis l'application → Lot 3
+### C2. Gestion des sources depuis l'application → Lot 3 (écran d'état et collecte à la demande faits ; ajout d'une source depuis l'application non fait)
 - Écran « Sources » : ajouter une page carrière (détection de l'ATS), un flux RSS / JSON, ou un lien de recherche manuel.
 - Test immédiat de la source ajoutée, activation / pause, état de santé.
 - Liste noire `config/blocked_domains.yaml` (linkedin.com, indeed.*, glassdoor.*, welcometothejungle.com…) : ces domaines ne sont proposés qu'en lien manuel.
@@ -300,18 +302,18 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 4. Candidature spontanée : ouverture du client de messagerie (`mailto:`) pré-rempli.
 
 ### C6. Tableau de bord des retours
-- Vue « Mes candidatures », filtrable par statut, avec les retours reçus et les prochaines actions ; saisie rapide d'un retour. → Lot 2
-- Agenda des entretiens (date, heure, fuseau du pays, lien visio, notes), export `.ics`, rappels la veille et 1 h avant ; zone « Important » sur l'accueil. → Lot 5
+- Vue « Mes candidatures », filtrable par statut, avec les retours reçus et les prochaines actions ; saisie rapide d'un retour. → fait (vue « Liste » du suivi)
+- Agenda des entretiens (date, heure, lien visio, notes), export `.ics` avec rappels la veille et 1 h avant ; zone « Important ». → fait (le fuseau du pays n'est pas géré : les heures sont celles de l'appareil)
 - **Fait le 13 octobre 2026**, d'après la maquette « Pulse multipage » : boutons « Masquer » et « Sauver » sur chaque offre (une offre masquée se retrouve par une case du fil) ; tableau « Suivi » à sept colonnes (glisser-déposer à la souris, liste déroulante sur téléphone), fenêtre d'une candidature (colonne, date d'envoi, prochaine relance, entretien avec lien de visio, notes) ; relance proposée à J+7 dès le passage en « Postulé » ; onglet « Important » (objectif hebdomadaire réglable, entretiens à venir, relances dues, offres à postuler, nouvelles offres notées 75 ou plus). L'onglet « Important » remplace « Calendrier » dans la navigation en attendant le lot 5.
-- Statistiques : taux de réponse par pays, source et type ; ce qui a fonctionné. → Lot 6
+- Statistiques : taux de réponse par pays et par type de candidature ; ce qui a fonctionné. → fait (pas de ventilation par source)
 - Option : lecture seule de Gmail pour proposer les réponses de recruteurs, validation manuelle obligatoire. → Lot 9
 
-### C7. Logement → Lot 8
+### C7. Logement → fait (14 octobre 2026)
 - Par zone : liens de recherche pré-remplis vers les sites adaptés au pays et à la durée (2–3 mois l'été, à l'année pour l'alternance), sans collecte automatique si les conditions du site l'interdisent.
 - Suivi manuel des logements repérés (lien, prix, quartier, distance, statut) et budget mensuel estimé.
 - Quand une offre passe en « Entretien » ou « Offre », proposer l'onglet Logement de la ville.
 
-### C8. Clés API → Lot 0
+### C8. Clés API → `docs/CLES_API.md` écrit ; `npm run check-keys` non fait (aucune clé n'existe encore)
 - Claude Code ne crée ni compte ni clé. `docs/CLES_API.md` : pour chaque service, lien d'inscription, champs à remplir, emplacement de la clé, nom de la variable.
 - `.env.example` complet ; `npm run check-keys` teste chaque clé présente.
 - Les clés sont copiées du `.env` local vers le serveur par `npm run deploy` (la collecte tourne sur le VPS, pas dans GitHub Actions).
@@ -323,11 +325,19 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 - Toute traduction est signalée comme automatique, et l'original reste affichable.
 - Piste non retenue pour l'instant : traduire dès la collecte, sur le serveur, ce qui demanderait une clé (DeepL, offre gratuite) ou un service de traduction à héberger sur le VPS partagé.
 
+### C10. Ajouts du 13 et du 14 octobre 2026 → faits
+- **Démarchage** : entreprises cibles avec leur contact, annuaires de startups par pays, message de candidature spontanée en anglais ou en français (à compléter et à envoyer soi-même), envoi noté dans le suivi.
+- **Pistes par pays** dans les fiches pays (programmes, sites d'offres, laboratoires, démarchage), chaque fait avec sa source et sa date de lecture.
+- **Import manuel** (lot 4) : par l'adresse de l'annonce, par « Partager » sur Android, par un favori sur PC. Un site qui interdit la lecture automatique n'est jamais lu : l'offre est créée avec ce qui est partagé.
+- **Notifications** (lot 5) : alerte pour une nouvelle offre au score suffisant, résumé du soir, heures calmes. Non vérifié sur un vrai appareil.
+- **Service du serveur** (`/api/`) réservé au propriétaire : import, collecte à la demande, notification d'essai.
+- **Hors-ligne** : dernières données gardées une semaine sur l'appareil, effacées à la déconnexion.
+
 ### D. Autres améliorations
 - Alertes (nouvelle offre d'une entreprise suivie, offre suivie disparue), fuseaux horaires, checklist pays avec échéances, revue du dimanche. → Lot 5
-- Objectifs hebdomadaires, sauvegarde hebdomadaire chiffrée en JSON. → Lot 6
-- Coût de la vie et budget par ville. → Lot 8
-- Fiches entreprise, carnet de contacts, préparation d'entretien. → Lot 9
+- Objectifs hebdomadaires → fait. Sauvegarde hebdomadaire chiffrée en JSON → non fait (la sauvegarde se télécharge à la main, en clair ; la base est sauvegardée chaque nuit sur le serveur).
+- Budget par pays, rempli par l'utilisateur (l'application ne fournit aucun prix). → fait
+- Fiches entreprise avec un contact, préparation et compte rendu d'entretien. → fait. Plusieurs contacts par entreprise → non fait.
 
 ### E. Application Android → non retenue
 - Décision du 13 octobre 2026 : pas d'APK ni de publication sur le Play Store. L'application s'installe depuis Chrome (« Ajouter à l'écran d'accueil » sur Android, icône d'installation sur PC), ce qui donne une icône et une fenêtre propres, comme une application.

@@ -7,11 +7,12 @@ import { fetchText, type FetchJsonOptions } from '../http';
 // (adresse contenant « intern »), puis lit ces quelques pages, une à la fois.
 //
 // Conditions vérifiées le 14 octobre 2026 :
-// - https://www.tokyodev.com/robots.txt : « Allow: / » pour tous, sauf /c/ et /frames/ ;
-//   aucune page de conditions d'utilisation n'interdit la lecture automatique.
-// - https://japan-dev.com/robots.txt : aucun chemin d'offre interdit.
-// Si l'un de ces sites change ses règles, retirer son entrée : il reste proposé en lien
-// (apps/web/src/lib/methodes.ts).
+// - https://japan-dev.com/robots.txt : aucun chemin d'offre interdit, et ses pages répondent au
+//   serveur de collecte.
+// - TokyoDev n'est PAS dans la liste : son robots.txt autorise la lecture, mais ses pages d'offres
+//   répondent au serveur par un contrôle anti-robot (403, « Just a moment… »). Cette protection
+//   n'est pas contournée : le site reste proposé en lien (apps/web/src/lib/methodes.ts).
+// Si un site change ses règles ou se met à refuser la lecture, retirer son entrée.
 
 export interface SiteAnnonces {
   /** Identifiant du connecteur, et source des offres. */
@@ -25,13 +26,6 @@ export interface SiteAnnonces {
 }
 
 export const SITES_ANNONCES: SiteAnnonces[] = [
-  {
-    id: 'tokyodev',
-    nom: 'TokyoDev',
-    sitemap: 'https://www.tokyodev.com/sitemap.xml',
-    motif: /^https:\/\/www\.tokyodev\.com\/companies\/[^/]+\/jobs\/[^/]*intern[^/]*$/i,
-    pays_defaut: 'JP',
-  },
   {
     id: 'japan-dev',
     nom: 'Japan Dev',
