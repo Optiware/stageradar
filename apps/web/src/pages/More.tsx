@@ -1,3 +1,4 @@
+import { ChangePassword } from '../components/ChangePassword';
 import { useAuth } from '../lib/auth-context';
 
 const SECTIONS = [
@@ -43,6 +44,7 @@ export function More() {
         >
           Se déconnecter
         </button>
+        <ChangePassword />
       </section>
     </>
   );

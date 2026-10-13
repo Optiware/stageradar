@@ -1,16 +1,43 @@
-import { expect, OWNER_EMAIL, test } from './fixtures';
+import { expect, OWNER_EMAIL, OWNER_PASSWORD, test } from './fixtures';
 
 test.describe('Lot 0 — socle', () => {
-  test('demande un lien magique depuis la page de connexion', async ({ page, backend }) => {
+  test('se connecte avec son adresse et son mot de passe', async ({ page, backend }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'StageRadar' })).toBeVisible();
 
     await page.getByLabel('Adresse e-mail').fill(`  ${OWNER_EMAIL} `);
-    await page.getByRole('button', { name: 'Recevoir un lien de connexion' }).click();
+    await page.getByLabel('Mot de passe').fill(OWNER_PASSWORD);
+    await page.getByRole('button', { name: 'Se connecter' }).click();
 
-    await expect(page.getByRole('status')).toContainText('Lien envoyé');
-    await expect(page.getByRole('status')).toContainText(OWNER_EMAIL);
-    expect(backend.lastOtpBody).toMatchObject({ email: OWNER_EMAIL });
+    await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
+    expect(backend.lastTokenBody).toMatchObject({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
+  });
+
+  test('refuse un mauvais mot de passe', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByLabel('Adresse e-mail').fill(OWNER_EMAIL);
+    await page.getByLabel('Mot de passe').fill('pas-le-bon-mot-de-passe');
+    await page.getByRole('button', { name: 'Se connecter' }).click();
+
+    await expect(page.getByRole('alert')).toHaveText('Adresse ou mot de passe incorrect.');
+    await expect(page.getByRole('navigation')).toHaveCount(0);
+  });
+
+  test('change le mot de passe depuis « Plus »', async ({ page, backend }) => {
+    await backend.signInAs(OWNER_EMAIL);
+    await page.goto('/plus');
+
+    await page.getByLabel('Nouveau mot de passe').fill('un-nouveau-mot-de-passe');
+    await page.getByLabel('Confirmation').fill('un-autre-mot-de-passe');
+    await page.getByRole('button', { name: 'Changer le mot de passe' }).click();
+    await expect(page.getByRole('alert')).toHaveText('Les deux mots de passe sont différents.');
+    expect(backend.lastUserBody).toBeNull();
+
+    await page.getByLabel('Confirmation').fill('un-nouveau-mot-de-passe');
+    await page.getByRole('button', { name: 'Changer le mot de passe' }).click();
+    await expect(page.getByRole('status')).toHaveText('Mot de passe changé.');
+    expect(backend.lastUserBody).toMatchObject({ password: 'un-nouveau-mot-de-passe' });
   });
 
   test('affiche le cadre de l’application au propriétaire et permet de naviguer', async ({

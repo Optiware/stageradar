@@ -8,8 +8,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase) return;
-    // Émet INITIAL_SESSION dès l'abonnement, puis chaque connexion / déconnexion,
-    // y compris le retour depuis le lien magique.
+    // Émet INITIAL_SESSION dès l'abonnement, puis chaque connexion / déconnexion.
     const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
     return () => data.subscription.unsubscribe();
   }, []);
@@ -17,12 +16,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthState>(
     () => ({
       session,
-      async signIn(email) {
+      async signIn(email, password) {
         if (!supabase) throw new Error('Supabase non configuré');
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: window.location.origin },
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      },
+      async changePassword(password) {
+        if (!supabase) throw new Error('Supabase non configuré');
+        const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
       },
       async signOut() {

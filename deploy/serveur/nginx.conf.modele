@@ -1,0 +1,86 @@
+# StageRadar — généré par installer.sh à partir de nginx.conf.modele. Ne pas modifier à la main.
+# Ce fichier ne déclare que son propre nom de domaine : les autres sites du serveur ne sont pas touchés.
+
+# Frein aux essais de mot de passe : 20 requêtes par minute et par adresse sur /auth/v1.
+limit_req_zone $binary_remote_addr zone=stageradar_auth:1m rate=20r/m;
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DOMAINE__;
+
+    # Renouvellement du certificat (certbot, méthode webroot).
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    # Ni `http2` ni réglage TLS ici : sur un port partagé, ils s'appliqueraient aussi aux autres sites.
+    listen 443 ssl;
+    server_name __DOMAINE__;
+
+    ssl_certificate /etc/letsencrypt/live/__DOMAINE__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__DOMAINE__/privkey.pem;
+
+    root /var/www/stageradar;
+    index index.html;
+    server_tokens off;
+    client_max_body_size 2m;
+
+    gzip on;
+    gzip_min_length 1024;
+    gzip_types text/css application/javascript application/json application/manifest+json image/svg+xml;
+
+    # Valables pour toutes les réponses : aucun `add_header` dans les `location` ci-dessous,
+    # sinon nginx cesserait d'hériter de ceux-ci.
+    add_header Strict-Transport-Security "max-age=15552000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+
+    # Authentification (GoTrue).
+    location /auth/v1/ {
+        limit_req zone=stageradar_auth burst=20 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:__PORT_AUTH__/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    # L'administration des comptes ne passe jamais par Internet : installer.sh l'appelle en local.
+    location /auth/v1/admin {
+        return 404;
+    }
+
+    # Données (PostgREST). L'accès est décidé par le jeton et par la RLS.
+    location /rest/v1/ {
+        proxy_pass http://127.0.0.1:__PORT_REST__/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Fichiers au nom unique (empreinte dans le nom) : cache long.
+    location /assets/ {
+        expires 1y;
+        try_files $uri =404;
+    }
+    # nginx 1.24 ne connaît pas l'extension .webmanifest.
+    location = /manifest.webmanifest {
+        types { }
+        default_type application/manifest+json;
+        expires -1;
+    }
+    # Le reste (index.html, sw.js) est revalidé à chaque fois, sinon les mises à jour
+    # de l'application n'arriveraient pas. Toute adresse inconnue renvoie index.html : le routage
+    # est fait par l'application.
+    location / {
+        expires -1;
+        try_files $uri /index.html;
+    }
+}

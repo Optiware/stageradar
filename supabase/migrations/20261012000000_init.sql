@@ -12,7 +12,7 @@ create extension if not exists pg_trgm with schema extensions;
 -- ---------------------------------------------------------------------------
 
 -- Une seule ligne : l'adresse e-mail autorisée à utiliser l'application.
--- À renseigner une fois dans l'éditeur SQL de Supabase (voir README).
+-- Renseignée par deploy/serveur/installer.sh (voir README).
 create table public.app_owner (
   id boolean primary key default true check (id),
   email text not null
@@ -23,7 +23,7 @@ alter table public.app_owner enable row level security;
 revoke all on public.app_owner from anon, authenticated;
 
 -- Vrai si l'utilisateur connecté est le propriétaire. L'e-mail du jeton est fiable :
--- il a été prouvé par le lien magique.
+-- les inscriptions sont fermées, seul installer.sh crée un compte.
 create function public.is_owner()
 returns boolean
 language sql

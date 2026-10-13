@@ -20,7 +20,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "e2e": "npm run e2e -w @stageradar/web",
-    "collect": "npm run collect -w @stageradar/collector --"
+    "collect": "npm run collect -w @stageradar/collector --",
+    "deploy": "node deploy/deployer.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -6,6 +6,20 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   // Un seul fichier `.env` à la racine du dépôt. Seules les variables VITE_* atteignent le front.
   envDir: '../..',
+  server: {
+    // Même routage que nginx en production (deploy/serveur/nginx.conf.modele), pour développer
+    // contre la pile locale : VITE_SUPABASE_URL=http://localhost:5173 dans `.env`.
+    proxy: {
+      '/auth/v1': {
+        target: 'http://127.0.0.1:54331',
+        rewrite: (path) => path.replace(/^\/auth\/v1/, ''),
+      },
+      '/rest/v1': {
+        target: 'http://127.0.0.1:54332',
+        rewrite: (path) => path.replace(/^\/rest\/v1/, ''),
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

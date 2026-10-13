@@ -5,6 +5,7 @@ const SUPABASE = 'https://stageradar-e2e.supabase.co';
 const AUTH_STORAGE_KEY = 'stageradar-auth';
 
 export const OWNER_EMAIL = 'proprietaire@example.test';
+export const OWNER_PASSWORD = 'mot-de-passe-de-test';
 
 function base64url(value: object): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -40,8 +41,10 @@ function fakeSession(email: string) {
 export interface Backend {
   /** Requêtes reçues par le faux Supabase : « MÉTHODE chemin ». */
   calls: string[];
-  /** Corps JSON de la dernière demande de lien magique. */
-  lastOtpBody: unknown;
+  /** Corps JSON de la dernière demande de connexion par mot de passe. */
+  lastTokenBody: unknown;
+  /** Corps JSON de la dernière modification du compte (changement de mot de passe). */
+  lastUserBody: unknown;
   /** Ouvre l'application avec une session déjà enregistrée. */
   signInAs(email: string, options?: { isOwner?: boolean }): Promise<void>;
 }
@@ -51,37 +54,58 @@ export interface Backend {
  * et toute requête non prévue échoue bruyamment.
  */
 export const test = base.extend<{ backend: Backend }>({
-  backend: async ({ page }, use) => {
-    let isOwner = true;
-    const backend: Backend = {
-      calls: [],
-      lastOtpBody: null,
-      async signInAs(email, options = {}) {
-        isOwner = options.isOwner ?? true;
-        await seedSession(page, email);
-      },
-    };
+  backend: [
+    async ({ page }, use) => {
+      let isOwner = true;
+      const backend: Backend = {
+        calls: [],
+        lastTokenBody: null,
+        lastUserBody: null,
+        async signInAs(email, options = {}) {
+          isOwner = options.isOwner ?? true;
+          await seedSession(page, email);
+        },
+      };
 
-    await page.route(`${SUPABASE}/**`, async (route) => {
-      const request = route.request();
-      const path = new URL(request.url()).pathname;
-      backend.calls.push(`${request.method()} ${path}`);
+      await page.route(`${SUPABASE}/**`, async (route) => {
+        const request = route.request();
+        const path = new URL(request.url()).pathname;
+        backend.calls.push(`${request.method()} ${path}`);
 
-      if (path === '/auth/v1/otp') {
-        backend.lastOtpBody = request.postDataJSON();
-        return route.fulfill({ json: {} });
-      }
-      if (path === '/rest/v1/rpc/is_owner') {
-        return route.fulfill({ json: isOwner });
-      }
-      if (path === '/auth/v1/logout') {
-        return route.fulfill({ status: 204, body: '' });
-      }
-      return route.fulfill({ status: 500, json: { message: `Route non simulée : ${path}` } });
-    });
+        if (path === '/auth/v1/token') {
+          const body = request.postDataJSON() as { email: string; password: string };
+          backend.lastTokenBody = body;
+          if (body.email !== OWNER_EMAIL || body.password !== OWNER_PASSWORD) {
+            // Réponse de GoTrue pour un mauvais couple adresse / mot de passe.
+            return route.fulfill({
+              status: 400,
+              json: {
+                code: 400,
+                error_code: 'invalid_credentials',
+                msg: 'Invalid login credentials',
+              },
+            });
+          }
+          return route.fulfill({ json: fakeSession(body.email) });
+        }
+        if (path === '/auth/v1/user' && request.method() === 'PUT') {
+          backend.lastUserBody = request.postDataJSON();
+          return route.fulfill({ json: fakeSession(OWNER_EMAIL).user });
+        }
+        if (path === '/rest/v1/rpc/is_owner') {
+          return route.fulfill({ json: isOwner });
+        }
+        if (path === '/auth/v1/logout') {
+          return route.fulfill({ status: 204, body: '' });
+        }
+        return route.fulfill({ status: 500, json: { message: `Route non simulée : ${path}` } });
+      });
 
-    await use(backend);
-  },
+      await use(backend);
+    },
+    // Actif même pour un test qui ne le demande pas : sinon ses requêtes partiraient sur Internet.
+    { auto: true },
+  ],
 });
 
 async function seedSession(page: Page, email: string): Promise<void> {

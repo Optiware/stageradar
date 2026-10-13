@@ -4,8 +4,10 @@ import { createContext, useContext } from 'react';
 export interface AuthState {
   /** `undefined` pendant la lecture de la session stockée, `null` si déconnecté. */
   session: Session | null | undefined;
-  /** Envoie un lien magique à cette adresse. */
-  signIn(email: string): Promise<void>;
+  /** Connexion par adresse e-mail et mot de passe. */
+  signIn(email: string, password: string): Promise<void>;
+  /** Change le mot de passe du compte connecté. */
+  changePassword(password: string): Promise<void>;
   signOut(): Promise<void>;
 }
 
