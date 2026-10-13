@@ -1,10 +1,14 @@
-import { useState } from 'react';
 import { ChangePassword } from '../components/ChangePassword';
 import { useAuth } from '../lib/auth-context';
-import { choisirTheme, themeEnregistre, type Theme } from '../lib/theme';
+import { choisirTheme, useTheme, type Theme } from '../lib/theme';
 import { BADGE, BOUTON_SECONDAIRE, CARTE, pilule, SECONDAIRE } from '../lib/ui';
 
 const SECTIONS = [
+  {
+    title: 'Calendrier',
+    lot: 5,
+    text: 'Dates limites, entretiens, relances et échéances par pays.',
+  },
   { title: 'Sources', lot: 3, text: 'État des connecteurs et liens de recherche pré-remplis.' },
   { title: 'Entreprises cibles', lot: 1, text: 'Candidatures spontanées et watchlist.' },
   { title: 'Documents', lot: 6, text: 'CV et lettres, avec leurs versions.' },
@@ -19,7 +23,7 @@ const THEMES: { id: Theme; libelle: string }[] = [
 
 export function More() {
   const { session, signOut } = useAuth();
-  const [theme, setTheme] = useState<Theme>(themeEnregistre);
+  const theme = useTheme();
 
   return (
     <div className="max-w-3xl">
@@ -45,10 +49,7 @@ export function More() {
               key={id}
               type="button"
               aria-pressed={theme === id}
-              onClick={() => {
-                choisirTheme(id);
-                setTheme(id);
-              }}
+              onClick={() => choisirTheme(id)}
               className={pilule(theme === id)}
             >
               {libelle}

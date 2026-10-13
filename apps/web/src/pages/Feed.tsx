@@ -1,14 +1,14 @@
 import { normalizeText, PAYS_STAGE } from '@stageradar/shared';
-import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Search } from 'lucide-react';
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Flag } from '../components/Flag';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetail } from '../components/OfferDetail';
 import { SITES_ALTERNANCE } from '../lib/liens-recherche';
-import { COLONNES_FIL, nomPays, type FeedOffer } from '../lib/offres';
-import { supabase } from '../lib/supabase';
+import { useMasquerOffre, useOffresDuFil } from '../lib/fil';
+import { nomPays, type FeedOffer } from '../lib/offres';
+import { useCandidatures } from '../lib/suivi';
 import { CARTE, pilule, SECONDAIRE } from '../lib/ui';
 
 const ONGLETS = [
@@ -51,31 +51,22 @@ export function Feed() {
   const [onglet, setOnglet] = useState<Onglet>('tout');
   const [paysChoisis, setPaysChoisis] = useState<string[]>([]);
   const [recherche, setRecherche] = useState('');
+  const [avecHorsCible, setAvecHorsCible] = useState(false);
   const [avecMasquees, setAvecMasquees] = useState(false);
+  const [derniereMasquee, setDerniereMasquee] = useState<FeedOffer | null>(null);
+  const naviguer = useNavigate();
+  const masquer = useMasquerOffre();
   const positionListe = useRef(0);
   const deuxColonnes = useSyncExternalStore(
     ecouterLargeur,
     () => window.matchMedia(DEUX_COLONNES).matches,
   );
 
-  // Mono-utilisateur, quelques centaines d'offres au plus : tout est chargé d'un coup,
-  // et les filtres s'appliquent sur place, sans nouvel appel.
-  const offres = useQuery({
-    queryKey: ['offers', 'feed'],
-    queryFn: async () => {
-      const { data, error } = await supabase!
-        .from('offers')
-        .select(COLONNES_FIL)
-        .eq('actif', true)
-        .eq('masquee', false)
-        .order('score', { ascending: false })
-        .order('date_publication', { ascending: false, nullsFirst: false })
-        .limit(500)
-        .overrideTypes<FeedOffer[], { merge: false }>();
-      if (error) throw error;
-      return data;
-    },
-  });
+  const offres = useOffresDuFil();
+  const candidatures = useCandidatures();
+  const suivies = new Map(
+    (candidatures.data ?? []).map((candidature) => [candidature.offer_id, candidature]),
+  );
 
   // Sur téléphone, la liste et le détail occupent l'écran à tour de rôle : le détail s'ouvre
   // en haut de page, et le retour retrouve la liste là où elle avait été laissée.
@@ -86,10 +77,14 @@ export function Feed() {
 
   const maintenant = offres.dataUpdatedAt;
   const toutes = offres.data ?? [];
-  const nbMasquees = toutes.filter((offre) => offre.exclue_raison !== null).length;
+  const nbHorsCible = toutes.filter((offre) => offre.exclue_raison !== null).length;
+  const nbMasquees = toutes.filter((offre) => offre.masquee).length;
   const mots = normalizeText(recherche).split(' ').filter(Boolean);
   const visibles = toutes.filter(
-    (offre) => (avecMasquees || offre.exclue_raison === null) && correspond(offre, mots),
+    (offre) =>
+      (avecHorsCible || offre.exclue_raison === null) &&
+      (avecMasquees || !offre.masquee) &&
+      correspond(offre, mots),
   );
   const dansLOnglet = visibles.filter((offre) => dansOnglet(offre, onglet));
   const affichees = dansLOnglet.filter(
@@ -111,6 +106,12 @@ export function Feed() {
     : deuxColonnes
       ? affichees[0]
       : undefined;
+
+  // Une offre masquée quitte l'écran : le détail se referme et un message permet d'annuler.
+  function apresMasquage(offre: FeedOffer) {
+    setDerniereMasquee(offre);
+    if (idOuvert === offre.id) void naviguer('/', { replace: true });
+  }
 
   function basculerPays(code: string) {
     setPaysChoisis((choisis) =>
@@ -190,17 +191,44 @@ export function Feed() {
           ))}
         </div>
 
-        {nbMasquees > 0 && (
+        {nbHorsCible > 0 && (
           <label className={`mt-3 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
+            <input
+              type="checkbox"
+              checked={avecHorsCible}
+              onChange={(event) => setAvecHorsCible(event.target.checked)}
+              className="size-4 accent-primary-600"
+            />
+            Afficher aussi les {nbHorsCible} offres hors cible
+          </label>
+        )}
+        {nbMasquees > 0 && (
+          <label className={`mt-2 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
             <input
               type="checkbox"
               checked={avecMasquees}
               onChange={(event) => setAvecMasquees(event.target.checked)}
               className="size-4 accent-primary-600"
             />
-            Afficher aussi les {nbMasquees} offres hors cible
+            Afficher aussi les {nbMasquees} offres que j'ai masquées
           </label>
         )}
+        {derniereMasquee &&
+          toutes.some((offre) => offre.id === derniereMasquee.id && offre.masquee) && (
+            <p
+              role="status"
+              className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900"
+            >
+              <span className="min-w-0 truncate">« {derniereMasquee.titre} » est masquée.</span>
+              <button
+                type="button"
+                onClick={() => masquer.mutate({ id: derniereMasquee.id, masquee: false })}
+                className="shrink-0 font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
+              >
+                Annuler
+              </button>
+            </p>
+          )}
 
         {onglet === 'alternance' &&
           SITES_ALTERNANCE.map(({ site, raison, recherches }) => (
@@ -245,11 +273,13 @@ export function Feed() {
             <li key={offre.id}>
               <OfferCard
                 offre={offre}
+                candidature={suivies.get(offre.id)}
                 selectionnee={offre.id === ouverte?.id}
                 maintenant={maintenant}
                 onOuvrir={() => {
                   positionListe.current = window.scrollY;
                 }}
+                onMasquee={apresMasquage}
               />
             </li>
           ))}
@@ -271,7 +301,9 @@ export function Feed() {
             <OfferDetail
               key={ouverte.id}
               offre={ouverte}
+              candidature={suivies.get(ouverte.id)}
               maintenant={maintenant}
+              onMasquee={apresMasquage}
               memeEntreprise={toutes.filter(
                 (autre) =>
                   autre.id !== ouverte.id &&

@@ -54,7 +54,7 @@ test.describe('Lot 0 — socle', () => {
 
     for (const [lien, titre] of [
       ['Suivi', 'Suivi'],
-      ['Calendrier', 'Calendrier'],
+      ['Important', 'Important'],
       ['Pays', 'Fiches pays'],
       ['Plus', 'Plus'],
     ] as const) {

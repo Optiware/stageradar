@@ -10,6 +10,8 @@ import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { ComingSoon } from './pages/ComingSoon';
 import { Feed } from './pages/Feed';
+import { Important } from './pages/Important';
+import { Suivi } from './pages/Suivi';
 
 export function App() {
   const { session } = useAuth();
@@ -66,14 +68,8 @@ function OwnerGate({ session }: { session: Session }) {
     <Routes>
       <Route element={<Shell />}>
         <Route index element={<Feed />} />
-        <Route
-          path="suivi"
-          element={
-            <ComingSoon title="Suivi" lot={2}>
-              Le tableau Kanban de tes candidatures, de « À étudier » à « Offre ».
-            </ComingSoon>
-          }
-        />
+        <Route path="suivi" element={<Suivi />} />
+        <Route path="important" element={<Important />} />
         <Route
           path="calendrier"
           element={

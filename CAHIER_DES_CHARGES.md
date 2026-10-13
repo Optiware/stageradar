@@ -302,6 +302,7 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 ### C6. Tableau de bord des retours
 - Vue « Mes candidatures », filtrable par statut, avec les retours reçus et les prochaines actions ; saisie rapide d'un retour. → Lot 2
 - Agenda des entretiens (date, heure, fuseau du pays, lien visio, notes), export `.ics`, rappels la veille et 1 h avant ; zone « Important » sur l'accueil. → Lot 5
+- **Fait le 13 octobre 2026**, d'après la maquette « Pulse multipage » : boutons « Masquer » et « Sauver » sur chaque offre (une offre masquée se retrouve par une case du fil) ; tableau « Suivi » à sept colonnes (glisser-déposer à la souris, liste déroulante sur téléphone), fenêtre d'une candidature (colonne, date d'envoi, prochaine relance, entretien avec lien de visio, notes) ; relance proposée à J+7 dès le passage en « Postulé » ; onglet « Important » (objectif hebdomadaire réglable, entretiens à venir, relances dues, offres à postuler, nouvelles offres notées 75 ou plus). L'onglet « Important » remplace « Calendrier » dans la navigation en attendant le lot 5.
 - Statistiques : taux de réponse par pays, source et type ; ce qui a fonctionné. → Lot 6
 - Option : lecture seule de Gmail pour proposer les réponses de recruteurs, validation manuelle obligatoire. → Lot 9
 
@@ -314,6 +315,13 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 - Claude Code ne crée ni compte ni clé. `docs/CLES_API.md` : pour chaque service, lien d'inscription, champs à remplir, emplacement de la clé, nom de la variable.
 - `.env.example` complet ; `npm run check-keys` teste chaque clé présente.
 - Les clés sont copiées du `.env` local vers le serveur par `npm run deploy` (la collecte tourne sur le VPS, pas dans GitHub Actions).
+
+### C9. Traduction des annonces → fait (13 octobre 2026)
+- Concerne les annonces rédigées dans une autre langue que le français ou l'anglais (japonais, coréen, espagnol), d'après la détection de langue du §4.2.
+- Sur ordinateur, bouton « Traduire en français » : traducteur intégré à Chrome (à partir de la version 138, doc : <https://developer.chrome.com/docs/ai/translator-api>). La traduction se fait sur l'appareil, sans clé, sans compte et sans envoi du texte à un service. Elle est enregistrée dans `offers.traduction`, donc relue telle quelle sur le téléphone. Les lignes déjà en anglais d'une annonce japonaise ou coréenne ne sont pas retraduites.
+- Sur téléphone (le traducteur intégré n'y existe pas) et sur les autres navigateurs : deux liens vers Google Traduction, l'un pour la page d'origine, l'autre pour le texte.
+- Toute traduction est signalée comme automatique, et l'original reste affichable.
+- Piste non retenue pour l'instant : traduire dès la collecte, sur le serveur, ce qui demanderait une clé (DeepL, offre gratuite) ou un service de traduction à héberger sur le VPS partagé.
 
 ### D. Autres améliorations
 - Alertes (nouvelle offre d'une entreprise suivie, offre suivie disparue), fuseaux horaires, checklist pays avec échéances, revue du dimanche. → Lot 5

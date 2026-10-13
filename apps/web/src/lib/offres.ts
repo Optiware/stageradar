@@ -23,12 +23,13 @@ export type FeedOffer = Pick<
   | 'langues_requises'
   | 'url'
   | 'date_publication'
+  | 'masquee'
 > & { created_at: string };
 
 export const COLONNES_FIL =
   'id,source,titre,entreprise,pays,ville,teletravail,type,contrat,domaines,date_debut,' +
   'duree_semaines,remuneration_texte,score,score_details,exclue_raison,periode_compatible,' +
-  'langues_requises,url,date_publication,created_at';
+  'langues_requises,url,date_publication,masquee,created_at';
 
 export const LIBELLES_DOMAINE: Record<Domaine, string> = {
   dev: 'Dev',

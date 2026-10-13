@@ -38,6 +38,8 @@ function fakeSession(email: string) {
   };
 }
 
+type Ligne = Record<string, unknown>;
+
 export interface Backend {
   /** Requêtes reçues par le faux Supabase : « MÉTHODE chemin ». */
   calls: string[];
@@ -46,7 +48,13 @@ export interface Backend {
   /** Corps JSON de la dernière modification du compte (changement de mot de passe). */
   lastUserBody: unknown;
   /** Offres renvoyées par le faux serveur (vide par défaut). */
-  offers: Record<string, unknown>[];
+  offers: Ligne[];
+  /** Candidatures du suivi (table `applications`). */
+  applications: Ligne[];
+  /** Événements du suivi (table `events`) : entretiens, changements de colonne. */
+  events: Ligne[];
+  /** Ligne unique des réglages. */
+  settings: Ligne;
   /** Ouvre l'application avec une session déjà enregistrée. */
   signInAs(email: string, options?: { isOwner?: boolean }): Promise<void>;
 }
@@ -64,6 +72,9 @@ export const test = base.extend<{ backend: Backend }>({
         lastTokenBody: null,
         lastUserBody: null,
         offers: [],
+        applications: [],
+        events: [],
+        settings: { objectif_hebdo: 5 },
         async signInAs(email, options = {}) {
           isOwner = options.isOwner ?? true;
           await seedSession(page, email);
@@ -102,10 +113,68 @@ export const test = base.extend<{ backend: Backend }>({
             return route.fulfill({
               json: backend.offers
                 .filter((offre) => offre.id === id)
-                .map((offre) => ({ description: offre.description ?? null })),
+                .map((offre) => ({
+                  description: offre.description ?? null,
+                  traduction: offre.traduction ?? null,
+                })),
             });
           }
           return route.fulfill({ json: backend.offers });
+        }
+        if (path === '/rest/v1/applications' && request.method() === 'GET') {
+          // Chaque candidature est renvoyée avec son offre et ses événements, comme le fait
+          // PostgREST pour `select=…,offre:offers(…),evenements:events(…)`.
+          return route.fulfill({
+            json: [...backend.applications]
+              .sort((a, b) => Number(a.position) - Number(b.position))
+              .map((candidature) => ({
+                ...candidature,
+                offre: backend.offers.find((offre) => offre.id === candidature.offer_id) ?? null,
+                evenements: backend.events.filter(
+                  (evenement) => evenement.application_id === candidature.id,
+                ),
+              })),
+          });
+        }
+        if (path === '/rest/v1/settings' && request.method() === 'GET') {
+          return route.fulfill({ json: [backend.settings] });
+        }
+        if (path === '/rest/v1/settings' && request.method() === 'PATCH') {
+          Object.assign(backend.settings, request.postDataJSON());
+          return route.fulfill({ status: 204, body: '' });
+        }
+        const table = {
+          '/rest/v1/offers': backend.offers,
+          '/rest/v1/applications': backend.applications,
+          '/rest/v1/events': backend.events,
+        }[path];
+        if (table && request.method() !== 'GET') {
+          const id = new URL(request.url()).searchParams.get('id')?.replace(/^eq\./, '');
+          if (request.method() === 'POST') {
+            table.push({
+              id: crypto.randomUUID(),
+              // Valeurs par défaut des colonnes, comme en base.
+              ...(path === '/rest/v1/applications'
+                ? { date_candidature: null, prochaine_relance: null, notes: null }
+                : { details: {}, fait: false, date: new Date().toISOString() }),
+              created_at: new Date().toISOString(),
+              ...(request.postDataJSON() as Ligne),
+            });
+            return route.fulfill({ status: 201, body: '' });
+          }
+          const index = table.findIndex((ligne) => ligne.id === id);
+          if (index >= 0 && request.method() === 'PATCH') {
+            table[index] = { ...table[index], ...(request.postDataJSON() as Ligne) };
+            return route.fulfill({ status: 204, body: '' });
+          }
+          if (index >= 0 && request.method() === 'DELETE') {
+            table.splice(index, 1);
+            // Les événements d'une candidature partent avec elle (`on delete cascade`).
+            if (path === '/rest/v1/applications') {
+              backend.events = backend.events.filter((ligne) => ligne.application_id !== id);
+            }
+            return route.fulfill({ status: 204, body: '' });
+          }
         }
         if (path === '/rest/v1/rpc/is_owner') {
           return route.fulfill({ json: isOwner });

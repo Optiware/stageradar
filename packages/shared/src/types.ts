@@ -1,6 +1,8 @@
 // Modèle normalisé partagé entre le collecteur et le front.
 // Les noms de champs suivent le cahier des charges (§4.1) et les colonnes Postgres.
 
+import type { TraductionOffre } from './traduction';
+
 export const DOMAINES = ['dev', 'cyber', 'devops'] as const;
 export type Domaine = (typeof DOMAINES)[number];
 
@@ -101,6 +103,7 @@ export interface StoredOffer extends Omit<Offer, 'attribution'> {
   actif: boolean;
   masquee: boolean;
   notes: string | null;
+  traduction: TraductionOffre | null;
 }
 
 /** Réponse brute d'une source, telle que renvoyée par son API. */

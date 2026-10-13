@@ -1,4 +1,4 @@
-import { PAYS_STAGE } from '@stageradar/shared';
+import { LIBELLES_STATUT, PAYS_STAGE } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -17,10 +17,13 @@ import {
   nomSource,
   type FeedOffer,
 } from '../lib/offres';
+import type { Candidature } from '../lib/suivi';
 import { supabase } from '../lib/supabase';
-import { BOUTON_PRINCIPAL } from '../lib/ui';
+import { BADGE, BOUTON_PRINCIPAL } from '../lib/ui';
 import { Flag } from './Flag';
+import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
+import { cleTexteOffre, OfferDescription, type TexteOffre } from './OfferDescription';
 
 function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
@@ -42,26 +45,31 @@ function periode(offre: FeedOffer): string | null {
 /** Fiche d'une offre : l'essentiel en haut, le bouton pour postuler, puis le détail. */
 export function OfferDetail({
   offre,
+  candidature,
   maintenant,
   memeEntreprise,
+  onMasquee,
 }: {
   offre: FeedOffer;
+  /** Renseignée si l'offre est déjà dans le suivi. */
+  candidature: Candidature | undefined;
   maintenant: number;
   /** Autres offres de la même entreprise présentes dans le fil. */
   memeEntreprise: FeedOffer[];
+  onMasquee: (offre: FeedOffer) => void;
 }) {
-  // La description est longue : elle n'est lue qu'à l'ouverture de l'offre.
+  // La description est longue : elle n'est lue, avec sa traduction, qu'à l'ouverture de l'offre.
   const description = useQuery({
-    queryKey: ['offers', 'description', offre.id],
-    queryFn: async () => {
+    queryKey: cleTexteOffre(offre.id),
+    queryFn: async (): Promise<TexteOffre> => {
       const { data, error } = await supabase!
         .from('offers')
-        .select('description')
+        .select('description,traduction')
         .eq('id', offre.id)
         .maybeSingle()
-        .overrideTypes<{ description: string | null }, { merge: false }>();
+        .overrideTypes<TexteOffre, { merge: false }>();
       if (error) throw error;
-      return data?.description ?? null;
+      return { description: data?.description ?? null, traduction: data?.traduction ?? null };
     },
     staleTime: 5 * 60_000,
   });
@@ -128,6 +136,19 @@ export function OfferDetail({
         </p>
       )}
 
+      <OfferActions
+        offre={offre}
+        candidature={candidature}
+        onMasquee={onMasquee}
+        className="mt-4 sm:max-w-md"
+      />
+      {candidature && (
+        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+          Statut dans ton suivi :{' '}
+          <span className={BADGE.vert}>{LIBELLES_STATUT[candidature.statut]}</span>
+        </p>
+      )}
+
       <Section titre="En bref">
         <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
           {enBref
@@ -174,16 +195,7 @@ export function OfferDetail({
             La description n'a pas pu être chargée.
           </p>
         )}
-        {description.isSuccess &&
-          (description.data ? (
-            <p className="mt-3 text-sm leading-relaxed break-words whitespace-pre-line">
-              {description.data}
-            </p>
-          ) : (
-            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-              La source ne fournit pas de description : voir l'annonce d'origine.
-            </p>
-          ))}
+        {description.isSuccess && <OfferDescription offre={offre} texte={description.data} />}
       </Section>
 
       {offre.entreprise && (

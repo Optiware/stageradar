@@ -120,6 +120,52 @@ describe('row level security', () => {
   });
 });
 
+describe('suivi et traduction', () => {
+  it('garde les noms de clés étrangères dont le front se sert pour lire le suivi', async () => {
+    // apps/web/src/lib/suivi.ts nomme ces deux liens dans sa requête PostgREST.
+    const { rows } = await db.query<{ conname: string }>(`
+      select conname from pg_constraint
+      where conname in ('applications_offer_id_fkey', 'events_application_id_fkey')
+      order by conname
+    `);
+    expect(rows.map((row) => row.conname)).toEqual([
+      'applications_offer_id_fkey',
+      'events_application_id_fkey',
+    ]);
+  });
+
+  it('fixe un objectif hebdomadaire par défaut et refuse une valeur absurde', async () => {
+    const { rows } = await db.query<{ objectif_hebdo: number }>(
+      'select objectif_hebdo from public.settings',
+    );
+    expect(rows).toEqual([{ objectif_hebdo: 5 }]);
+    await asRole(db, 'authenticated', OWNER, async (query) => {
+      await expect(query('update public.settings set objectif_hebdo = 0')).rejects.toThrow(
+        /check constraint/,
+      );
+    });
+  });
+
+  it('laisse le propriétaire suivre une offre, la masquer et enregistrer sa traduction', async () => {
+    await asRole(db, 'authenticated', OWNER, async (query) => {
+      const offre = await query<{ id: string }>(INSERT_OFFER);
+      const id = offre.rows[0]?.id;
+      await query('update public.offers set masquee = true, traduction = $1 where id = $2', [
+        JSON.stringify({ langue: 'ja', titre: 'Stage', description: null, date: '2026-10-13' }),
+        id,
+      ]);
+      await query("insert into public.applications (offer_id, statut) values ($1, 'a_etudier')", [
+        id,
+      ]);
+      const { rows } = await query<{ langue: string; statut: string }>(`
+        select o.traduction ->> 'langue' as langue, a.statut
+        from public.applications a join public.offers o on o.id = a.offer_id
+      `);
+      expect(rows).toEqual([{ langue: 'ja', statut: 'a_etudier' }]);
+    });
+  });
+});
+
 describe('contraintes', () => {
   it("met à jour updated_at lors d'une modification", async () => {
     await asRole(db, 'service_role', null, async (query) => {

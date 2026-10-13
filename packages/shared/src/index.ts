@@ -6,3 +6,5 @@ export * from './geo';
 export * from './keywords';
 export * from './classify';
 export * from './score';
+export * from './suivi';
+export * from './traduction';
