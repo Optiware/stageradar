@@ -272,7 +272,7 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 - Écran « Zones » : zones de recherche (ville + rayon, type, mots-clés), actives ou en pause ; les connecteurs ne collectent que pour les zones actives. → Lots 3 et 1 (non fait : n'a de sens qu'avec les sources d'alternance)
 - **Londres** ajoutée aux destinations de stage le 13 octobre 2026 (seule la ville est reconnue). Filtres du fil par domaine, organisation, score, langue exigée et nouveauté. → fait
 
-### C2. Gestion des sources depuis l'application → Lot 3 (écran d'état et collecte à la demande faits ; ajout d'une source depuis l'application non fait)
+### C2. Gestion des sources depuis l'application → Lot 3 (faits : écran d'état, collecte à la demande, ajout du site carrière d'une entreprise depuis sa fiche du démarchage, avec vérification immédiate ; non faits : flux RSS / JSON, pause d'une source, liste noire en fichier)
 - Écran « Sources » : ajouter une page carrière (détection de l'ATS), un flux RSS / JSON, ou un lien de recherche manuel.
 - Test immédiat de la source ajoutée, activation / pause, état de santé.
 - Liste noire `config/blocked_domains.yaml` (linkedin.com, indeed.*, glassdoor.*, welcometothejungle.com…) : ces domaines ne sont proposés qu'en lien manuel.
