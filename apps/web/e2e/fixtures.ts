@@ -45,6 +45,8 @@ export interface Backend {
   lastTokenBody: unknown;
   /** Corps JSON de la dernière modification du compte (changement de mot de passe). */
   lastUserBody: unknown;
+  /** Offres renvoyées par le faux serveur (vide par défaut). */
+  offers: Record<string, unknown>[];
   /** Ouvre l'application avec une session déjà enregistrée. */
   signInAs(email: string, options?: { isOwner?: boolean }): Promise<void>;
 }
@@ -61,6 +63,7 @@ export const test = base.extend<{ backend: Backend }>({
         calls: [],
         lastTokenBody: null,
         lastUserBody: null,
+        offers: [],
         async signInAs(email, options = {}) {
           isOwner = options.isOwner ?? true;
           await seedSession(page, email);
@@ -91,6 +94,9 @@ export const test = base.extend<{ backend: Backend }>({
         if (path === '/auth/v1/user' && request.method() === 'PUT') {
           backend.lastUserBody = request.postDataJSON();
           return route.fulfill({ json: fakeSession(OWNER_EMAIL).user });
+        }
+        if (path === '/rest/v1/offers' && request.method() === 'GET') {
+          return route.fulfill({ json: backend.offers });
         }
         if (path === '/rest/v1/rpc/is_owner') {
           return route.fulfill({ json: isOwner });

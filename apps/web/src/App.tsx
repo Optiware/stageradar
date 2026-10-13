@@ -8,6 +8,7 @@ import { supabase } from './lib/supabase';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { ComingSoon } from './pages/ComingSoon';
+import { Feed } from './pages/Feed';
 
 export function App() {
   const { session } = useAuth();
@@ -67,15 +68,7 @@ function OwnerGate({ session }: { session: Session }) {
   return (
     <Routes>
       <Route element={<Shell />}>
-        <Route
-          index
-          element={
-            <ComingSoon title="Fil" lot={2}>
-              Les offres collectées, triées par score, avec les onglets Alternance, Stage été et
-              Tout.
-            </ComingSoon>
-          }
-        />
+        <Route index element={<Feed />} />
         <Route
           path="suivi"
           element={

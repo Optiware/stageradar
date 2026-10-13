@@ -103,6 +103,21 @@ export interface GreenhouseJob {
   first_published?: string | null;
 }
 
+const RECYCLEE_APRES_MS = 180 * 86_400_000;
+
+/**
+ * Certaines entreprises réutilisent la même annonce d'une année sur l'autre (« Intern (2027) »
+ * publiée pour la première fois en 2023). Quand la dernière modification est postérieure de plus
+ * de six mois à la première publication, c'est elle qui date l'offre.
+ */
+function datePublicationGreenhouse(job: GreenhouseJob): string | null {
+  const premiere = iso(job.first_published);
+  const modification = iso(job.updated_at);
+  if (!premiere || !modification) return premiere ?? modification;
+  const ecart = new Date(modification).getTime() - new Date(premiere).getTime();
+  return ecart > RECYCLEE_APRES_MS ? modification : premiere;
+}
+
 function greenhouse(entree: WatchlistEntry, options: FetchJsonOptions): Connector<GreenhouseJob> {
   let pays: string[] = [];
   return {
@@ -129,7 +144,7 @@ function greenhouse(entree: WatchlistEntry, options: FetchJsonOptions): Connecto
         description: htmlToText(htmlToText(job.content)),
         teletravail: /\bremote\b/i.test(job.location?.name ?? '') ? 'remote' : null,
         stage: false,
-        date_publication: iso(job.first_published ?? job.updated_at),
+        date_publication: datePublicationGreenhouse(job),
       });
     },
   };

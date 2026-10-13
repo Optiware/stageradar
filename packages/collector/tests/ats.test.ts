@@ -67,6 +67,18 @@ describe('Greenhouse', () => {
     expect(description).not.toMatch(/<[a-z/]|&lt;|&amp;|&quot;/);
   });
 
+  it('date une annonce réutilisée d’une année sur l’autre par sa dernière modification', async () => {
+    const corps = JSON.parse(fixture('greenhouse-moloco')) as {
+      jobs: { first_published: string; updated_at: string }[];
+    };
+    corps.jobs[0]!.first_published = '2023-08-05T10:00:00-04:00';
+    corps.jobs[0]!.updated_at = '2026-10-01T10:00:00-04:00';
+    const { fetchImpl } = serveur(JSON.stringify(corps));
+    const connecteur = atsConnector(entree('greenhouse', 'moloco', 'Moloco'), { fetchImpl });
+    const [brute] = await connecteur.fetch({ pays: PAYS });
+    expect(connecteur.normalize(brute!).date_publication).toBe('2026-10-01T14:00:00.000Z');
+  });
+
   it('laisse sans pays une annonce située ailleurs', async () => {
     const { offres } = await lire('greenhouse', 'moloco', 'Moloco');
     expect(offres[2]).toMatchObject({ pays: null, ville: null });
