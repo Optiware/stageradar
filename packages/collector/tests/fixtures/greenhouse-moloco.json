@@ -1,0 +1,112 @@
+{
+  "jobs": [
+    {
+      "id": 8007407003,
+      "internal_job_id": 5891133003,
+      "title": "Software Engineer Intern (3 months)",
+      "absolute_url": "https://job-boards.greenhouse.io/moloco/jobs/8007407003",
+      "location": {
+        "name": "Seoul, Korea"
+      },
+      "offices": [
+        {
+          "id": 4008010003,
+          "name": "Seoul - Office",
+          "location": "Seoul, Korea",
+          "child_ids": [],
+          "parent_id": 4039057003
+        }
+      ],
+      "departments": [
+        {
+          "id": 4091932003,
+          "name": "Moloco Next",
+          "child_ids": [],
+          "parent_id": 4045799003
+        }
+      ],
+      "updated_at": "2026-10-08T19:10:08-04:00",
+      "first_published": "2026-09-28T20:56:51-04:00",
+      "requisition_id": "I35005",
+      "company_name": "Moloco",
+      "language": "en",
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Moloco:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Moloco is an AI-native performance advertising company, bringing the power of AI advertising to the open internet. Founded in 2013 by machine learning engineers who had built AI advertising systems inside the world&#39;s largest technology companies, Moloco began from a shared mission: to build that same engine for the open internet.&lt;/p&gt;\n&lt;p&gt;Today, Moloco is one company with two businesses, built on the same compound AI system. &lt;a href=&quot;https://www.moloco.com/moloco-ads&quot;&gt;&lt;strong&gt;Moloco Ads&lt;/strong&gt;&lt;/a&gt; is our AI-native performance advertising platform, helping mobile app marketers acquire, retain, and re-engage high-value users across the open internet. &lt;a href=&quot;https://www.moloco.com/moloco-commerce-media&quot;&gt;&lt;strong&gt;Moloco Commerce Media&lt;/strong&gt;&lt;/a&gt; is our AI-native retail media platform, enabling retailers and marketplaces to turn their platforms into thriving ad businesses. Both are powered by&lt;strong&gt; CARA (Compound Ad Recommendation Architecture)&lt;/strong&gt;, the AI system behind every Moloco product.&lt;/p&gt;\n&lt;p&gt;At Moloco, we bring together those who&#39;ve already solved hard problems and those with the drive to. Here, we work on some of the complex problems in AI advertising, at a scale and level of sophistication very few companies can offer. &lt;strong&gt;Come build what&#39;s next.&lt;/strong&gt;&lt;/p&gt;&lt;/div&gt;&lt;h4&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/h4&gt;\n&lt;h3&gt;&lt;strong&gt;We are currently hiring interns for our Winter Internship Program, with positions targeted for the upcoming winter break.&lt;/strong&gt;&lt;/h3&gt;\n&lt;h4&gt;&lt;strong&gt;The Impact You’ll Be Contributing to Moloco:&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Moloco seeks exceptional Software Engineers to join us in building a state-of-the-art mobile advertising platform. You will be building world-class infrastructure which combines machine learning and big data to help companies supercharge their growth. Many leading service owners and marketers worldwide already benefit from Moloco’s innovative technology to scale performance quickly and efficiently through battle tested prediction models.&lt;br&gt;As a company founded by Software Engineers, we understand the value of a strong engineering team and strive to hire only the best talent. You will be challenged to solve real-world problems with top-notch colleagues. Check out our case study published by Google https://cloud.google.com/customers/moloco/.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h4&gt;&lt;strong&gt;The Opportunity:&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Write server-side code that handles millions of requests per second.&lt;/li&gt;\n&lt;li&gt;Implement advertising functionality and customer-facing features.&lt;/li&gt;\n&lt;li&gt;Learn and explore technologies to improve the services.&lt;/li&gt;\n&lt;li&gt;Collaborate with internal/external cross-functional teams to make the best advertising products.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h4&gt;&lt;strong&gt;How Do I Know if the Role is Right For Me?&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Pursuing BS/MS/PhD degree in computer science or related majors.&lt;/li&gt;\n&lt;li&gt;Outstanding problem solving skills with proper data structures and algorithms.&lt;/li&gt;\n&lt;li&gt;Excellent software development skills at least in one programming language&lt;/li&gt;\n&lt;li&gt;Major/minor in Mathematics or relevant coursework/experience is a plus&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h4&gt;&lt;strong&gt;Preferred Skills&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Expected to graduate within a year, OR already graduated within a year&lt;/li&gt;\n&lt;li&gt;Fluent in English and Korean (both verbal and written)&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;** Work-from-home is not available for this role&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong id=&quot;docs-internal-guid-10b2a5c2-7fff-9123-b3ca-404b4268f3fb&quot;&gt;&lt;/strong&gt;&lt;/p&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;strong&gt;Supporting Your Best Work and Your Best Life:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Our benefits are designed to support our people in doing their best work and living well, at work and beyond. Benefits vary by country, employment type, and eligibility. Connect with a recruiter to learn more about benefits in your region.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Moloco Values:&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;strong&gt;Lead with Humility:&lt;/strong&gt; Everyone’s voice is respected, valued, and heard. We win, lose, and learn together. Accountability and feedback are essential to our success.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Uncapped Growth Mindset:&lt;/strong&gt; We see all situations as opportunities to learn, grow, and improve as individuals and as an organization. We seek diverse perspectives, encourage curiosity, and promote experimentation to push the boundaries of what’s possible.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Create Real Value: &lt;/strong&gt;We pursue the most impactful opportunities with intensity and rigor. We take intelligent risks and make disciplined trade-offs to maintain deep focus. We help our customers win by delivering durable value.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Go Further Together: &lt;/strong&gt;We’re one team working towards one vision. We collaborate proactively and inclusively, involving the right people at the right time and in the right way. We strive to create a more equitable workplace. We won’t let each other fail.&amp;nbsp;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Additional Resources:&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;a href=&quot;https://www.moloco.com/blogs&quot;&gt;Moloco Company Blog&lt;/a&gt;&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;a href=&quot;https://www.moloco.com/company/lea"
+    },
+    {
+      "id": 7711666003,
+      "internal_job_id": 5754930003,
+      "title": "Expression of Interest(채용관심등록): Software Engineer - Korea",
+      "absolute_url": "https://job-boards.greenhouse.io/moloco/jobs/7711666003",
+      "location": {
+        "name": "Seoul, Korea"
+      },
+      "offices": [
+        {
+          "id": 4008010003,
+          "name": "Seoul - Office",
+          "location": "Seoul, Korea",
+          "child_ids": [],
+          "parent_id": 4039057003
+        }
+      ],
+      "departments": [
+        {
+          "id": 4045799003,
+          "name": "Engineering",
+          "child_ids": [
+            4053863003,
+            4031383003,
+            4099553003,
+            4099552003,
+            4053868003,
+            4058531003,
+            4091932003,
+            4014131003
+          ],
+          "parent_id": 4058520003
+        }
+      ],
+      "updated_at": "2026-10-08T19:10:08-04:00",
+      "first_published": "2026-04-23T00:41:21-04:00",
+      "requisition_id": "TBD",
+      "company_name": "Moloco",
+      "language": "en",
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Moloco:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Moloco is an AI-native performance advertising company, bringing the power of AI advertising to the open internet. Founded in 2013 by machine learning engineers who had built AI advertising systems inside the world&#39;s largest technology companies, Moloco began from a shared mission: to build that same engine for the open internet.&lt;/p&gt;\n&lt;p&gt;Today, Moloco is one company with two businesses, built on the same compound AI system. &lt;a href=&quot;https://www.moloco.com/moloco-ads&quot;&gt;&lt;strong&gt;Moloco Ads&lt;/strong&gt;&lt;/a&gt; is our AI-native performance advertising platform, helping mobile app marketers acquire, retain, and re-engage high-value users across the open internet. &lt;a href=&quot;https://www.moloco.com/moloco-commerce-media&quot;&gt;&lt;strong&gt;Moloco Commerce Media&lt;/strong&gt;&lt;/a&gt; is our AI-native retail media platform, enabling retailers and marketplaces to turn their platforms into thriving ad businesses. Both are powered by&lt;strong&gt; CARA (Compound Ad Recommendation Architecture)&lt;/strong&gt;, the AI system behind every Moloco product.&lt;/p&gt;\n&lt;p&gt;At Moloco, we bring together those who&#39;ve already solved hard problems and those with the drive to. Here, we work on some of the complex problems in AI advertising, at a scale and level of sophistication very few companies can offer. &lt;strong&gt;Come build what&#39;s next.&lt;/strong&gt;&lt;/p&gt;&lt;/div&gt;&lt;h4&gt;&lt;strong&gt;채용 관심 등록 / Expression of Interest:&lt;/strong&gt;&lt;/h4&gt;\n&lt;p&gt;We&#39;re always looking to connect with exceptional Software Engineers interested in joining Moloco&#39;s R&amp;amp;D team in Seoul. This posting allows you to share your profile for future opportunities, even if there isn&#39;t a currently open role aligned with your experience. Whether you specialize in backend systems, frontend development, or full-stack engineering, we encourage you to submit your resume — we&#39;d love to stay in touch.&lt;/p&gt;\n&lt;p&gt;Moloco 서울 R&amp;amp;D 팀에 합류하고 싶은 뛰어난 소프트웨어 엔지니어를 항상 찾고 있습니다. 현재 공개된 포지션이 없더라도, 이 등록 페이지를 통해 먼저 이력서를 제출해 주시면 향후 적합한 기회가 생겼을 때 연락드리겠습니다. 백엔드 시스템, 프론트엔드 개발, 혹은 풀스택 엔지니어링 등 전문 분야와 무관하게 지원을 환영합니다.&lt;/p&gt;\n&lt;h4&gt;&lt;strong&gt;Experience:&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;4–15 years of software development experience across backend, frontend, or full-stack systems, with a track record of leading complex, large-scale projects as seniority grows&lt;/li&gt;\n&lt;li&gt;Bachelor&#39;s degree or above in Computer Science or equivalent&lt;/li&gt;\n&lt;li&gt;Strong problem-solving skills with solid fundamentals in data structures and algorithms&lt;/li&gt;\n&lt;li&gt;Experience designing and implementing scalable systems — whether server-side APIs and infrastructure, or user-facing web and mobile interfaces&lt;/li&gt;\n&lt;li&gt;Experience with large-scale distributed systems, high-throughput data pipelines, or performance-critical frontend applications&lt;/li&gt;\n&lt;li&gt;Hands-on experience with public cloud platforms such as GCP, AWS, or Azure&lt;/li&gt;\n&lt;li&gt;Proficiency working with AI coding tools as a force multiplier — you plan before prompting, provide architectural context, review generated code critically, and know when to write code yourself versus when AI adds genuine value&lt;/li&gt;\n&lt;li&gt;Fluency in both Korean and English (spoken and written)&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h4&gt;&lt;strong&gt;Our Tech Stack:&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Backend: Go, Java, Python · GCP / AWS · Kubernetes · BigQuery · Dataflow / Apache Beam · Kafka · gRPC / REST APIs&lt;/li&gt;\n&lt;li&gt;Frontend: TypeScript / JavaScript · React · Web performance optimization · Mobile web&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h4&gt;&lt;strong&gt;How You Work:&amp;nbsp;&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Your ethos is ownership&lt;/li&gt;\n&lt;ul&gt;\n&lt;li&gt;You thrive in ambiguity and enjoy partnering with others to shape vague requirements into clear roadmaps with pragmatic tradeoffs.&lt;/li&gt;\n&lt;li&gt;You take shared accountability for the end-to-end journey; communicating progress, surfacing risks early, and following through to ensure your work creates measurable value.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;li&gt;You demonstrate strong judgment under uncertainty.&amp;nbsp;&lt;/li&gt;\n&lt;ul&gt;\n&lt;li&gt;You prioritize based on long-term impact, over short-term noise, making deliberate decisions when information is incomplete.&lt;/li&gt;\n&lt;li&gt;You explicitly weigh tradeoffs like speed vs. quality and remain agile enough to adjust your approach thoughtfully as new information/data emerges.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;li&gt;You lead through clarity and active listening.&amp;nbsp;&lt;/li&gt;\n&lt;ul&gt;\n&lt;li&gt;You reduce ambiguity for the team by asking the right questions upfront, tailor your communication to your audience, document your decisions, and bring helpful structure to complex discussions.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;You provide thoughtful, evidence-based feedback when needed and align behind decisions once they are made.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;li&gt;You collaborate early, instead of solving in isolation.&lt;/li&gt;\n&lt;ul&gt;\n&lt;li&gt;You build trust across the organization by listening first and navigate conflicting needs with empathy, creating buy-in around priorities and scope.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;You navigate technical tensions productively, disagreeing thoughtfully while maintaining momentum and strengthening professional relationships.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;li&gt;You fall in love with the problem, not the solution&lt;/li&gt;\n&lt;ul&gt;\n&lt;li&gt;You build for the long run, looking beyond immediate tasks to understand root causes, second-order effects, and the long-term health of our ML ecosystem.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;When something breaks, you don’t just patc"
+    },
+    {
+      "id": 7985823003,
+      "internal_job_id": 5882034003,
+      "title": "Data Scientist II, Product - Moloco Commerce Media",
+      "absolute_url": "https://job-boards.greenhouse.io/moloco/jobs/7985823003",
+      "location": {
+        "name": "Menlo Park, California, United States"
+      },
+      "offices": [
+        {
+          "id": 4008006003,
+          "name": "Menlo Park - Office",
+          "location": "Menlo Park, California, United States",
+          "child_ids": [],
+          "parent_id": 4039019003
+        }
+      ],
+      "departments": [
+        {
+          "id": 4058524003,
+          "name": "MCM DSA",
+          "child_ids": [],
+          "parent_id": 4013594003
+        }
+      ],
+      "updated_at": "2026-10-08T19:10:08-04:00",
+      "first_published": "2026-09-03T15:26:16-04:00",
+      "requisition_id": "313",
+      "company_name": "Moloco",
+      "language": "en",
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Moloco:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Moloco is an AI-native performance advertising company, bringing the power of AI advertising to the open internet. Founded in 2013 by machine learning engineers who had built AI advertising systems inside the world&#39;s largest technology companies, Moloco began from a shared mission: to build that same engine for the open internet.&lt;/p&gt;\n&lt;p&gt;Today, Moloco is one company with two businesses, built on the same compound AI system. &lt;a href=&quot;https://www.moloco.com/moloco-ads&quot;&gt;&lt;strong&gt;Moloco Ads&lt;/strong&gt;&lt;/a&gt; is our AI-native performance advertising platform, helping mobile app marketers acquire, retain, and re-engage high-value users across the open internet. &lt;a href=&quot;https://www.moloco.com/moloco-commerce-media&quot;&gt;&lt;strong&gt;Moloco Commerce Media&lt;/strong&gt;&lt;/a&gt; is our AI-native retail media platform, enabling retailers and marketplaces to turn their platforms into thriving ad businesses. Both are powered by&lt;strong&gt; CARA (Compound Ad Recommendation Architecture)&lt;/strong&gt;, the AI system behind every Moloco product.&lt;/p&gt;\n&lt;p&gt;At Moloco, we bring together those who&#39;ve already solved hard problems and those with the drive to. Here, we work on some of the complex problems in AI advertising, at a scale and level of sophistication very few companies can offer. &lt;strong&gt;Come build what&#39;s next.&lt;/strong&gt;&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;The Impact You&#39;ll Be Contributing to Moloco:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;a href=&quot;https://www.moloco.com/solutions/moloco-commerce-media&quot;&gt;Moloco Commerce Media (MCM)&lt;/a&gt; enables marketplaces to leverage recent advances in AI to deliver highly relevant ads powered by first-party data. MCM has established strong product-market fit and is a key growth engine for Moloco as we expand our footprint with leading global and regional commerce platforms.&lt;/p&gt;\n&lt;p&gt;As a &lt;strong&gt;Data Scientist&lt;/strong&gt; on the MCM Data Science team, you will partner closely with Product, Engineering, and Go-To-Market teams to shape how MCM defines success, evaluates what it ships, and decides where to invest next. You will work alongside product managers from the earliest stages of a new capability through experimentation, readout, and the decisions that follow. Your work will directly inform which features MCM builds, how we know they work, and how we communicate their value to leadership and marketplace partners.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;The Opportunity:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;In this role, you will:&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;strong&gt;Partner with Product on strategy:&lt;/strong&gt; Act as an independent thought partner to product managers, proactively surfacing opportunities, sizing them with data, and informing roadmap prioritization. You will bring your own point of view on what to build and why.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Define success metrics for new product initiatives:&lt;/strong&gt; Establish how MCM measures new capabilities, including north star and guardrail metrics, the trade-offs they encode, and the thresholds that guide ramp decisions. Align Product and Engineering on these frameworks before launch.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Drive evaluation and experimentation:&lt;/strong&gt; Design experiments and evaluation methodologies for product launches, including cases where standard A/B testing is insufficient. Analyze results rigorously and translate them into clear ship, iterate, or stop recommendations.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Conduct deep-dive analyses:&lt;/strong&gt; Use large-scale data across our ad-tech stack (ranking, retrieval, bidding, pacing) to understand how product changes affect advertiser outcomes and marketplace dynamics, and turn findings into actionable recommendations.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Communicate insights clearly:&lt;/strong&gt; Distill complex analyses into narratives that product, engineering, and non-technical stakeholders can act on. Deliver launch readouts and contribute the data narrative to product reviews.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Uphold data science excellence:&lt;/strong&gt; Apply best practices in analysis, modeling, and experimentation, and contribute to a strong data culture within the MCM team.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;How Do I Know if the Role is Right For Me?&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;You want to &lt;strong&gt;shape products, not just measure them&lt;/strong&gt;, and are comfortable speaking up when the data disagrees with the plan.&lt;/li&gt;\n&lt;li&gt;You &lt;strong&gt;operate independently in ambiguity&lt;/strong&gt;, turning an open-ended product question into a structured analytical plan without waiting for a spec.&lt;/li&gt;\n&lt;li&gt;You are energized by &lt;strong&gt;fast-moving, early-stage product work&lt;/strong&gt;, where metrics do not yet exist and evaluation methods have to be invented.&lt;/li&gt;\n&lt;li&gt;You are a &lt;strong&gt;strong collaborator&lt;/strong&gt; who builds trust with product, engineering, and commercial stakeholders.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Minimum Qualifications:&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;3+ years of industry experience in data science, analytics, or a related field (or an advanced degree with equivalent applied experience).&lt;/li&gt;\n&lt;li&gt;Bachelor&#39;s, Master&#39;s and/or PhD in a quantitative discipline (e.g. Statistics, Operations Research, Economics, Mathematics, etc.).&lt;/li&gt;\n&lt;li&gt;Experience partnering with product or business stakeholders: a track record of defining success metrics, running experiments, and influencing decisions with data.&lt;/li&gt;\n&lt;li&gt;Strong proficiency in Python and SQL, with experience analyzing large-scale datasets.&"
+    }
+  ],
+  "meta": {
+    "total": 3
+  }
+}

@@ -21,6 +21,7 @@
     "test": "npm run test --workspaces --if-present",
     "e2e": "npm run e2e -w @stageradar/web",
     "collect": "npm run collect -w @stageradar/collector --",
+    "detect-ats": "npm run detect-ats -w @stageradar/collector --",
     "deploy": "node deploy/deployer.mjs"
   },
   "devDependencies": {

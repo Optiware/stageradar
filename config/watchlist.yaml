@@ -1,0 +1,241 @@
+# Entreprises cibles dont le site carrière expose une API publique (§3.2).
+#
+# Chaque entrée a été testée : l'API répond et liste des postes techniques dans les pays indiqués
+# à la date `verifie_le`. Aucune entrée n'est ajoutée « de mémoire » : passer par
+#   npm run detect-ats -- <url-carrière>
+# qui interroge l'API et propose l'entrée à coller ici.
+#
+# `pays` : pays visés où l'entreprise recrute (information ; le collecteur lit toutes les annonces
+# et ne garde que les stages situés dans les pays du profil).
+# `pays_defaut` : pays retenu quand le lieu d'une annonce ne nomme ni pays ni ville connue.
+
+# --- Japon -------------------------------------------------------------------
+- nom: Woven by Toyota
+  pays: [JP]
+  ats: lever
+  slug: woven-by-toyota
+  url_carriere: https://jobs.lever.co/woven-by-toyota
+  verifie_le: 2026-10-13
+- nom: PayPay
+  pays: [JP]
+  ats: greenhouse
+  slug: paypay
+  url_carriere: https://job-boards.greenhouse.io/paypay
+  pays_defaut: JP
+  verifie_le: 2026-10-13
+- nom: Datadog
+  pays: [JP, KR]
+  ats: greenhouse
+  slug: datadog
+  url_carriere: https://job-boards.greenhouse.io/datadog
+  verifie_le: 2026-10-13
+- nom: Databricks
+  pays: [JP, KR, CA]
+  ats: greenhouse
+  slug: databricks
+  url_carriere: https://job-boards.greenhouse.io/databricks
+  verifie_le: 2026-10-13
+- nom: OpenAI
+  pays: [JP, KR, CA]
+  ats: ashby
+  slug: openai
+  url_carriere: https://jobs.ashbyhq.com/openai
+  verifie_le: 2026-10-13
+- nom: Anthropic
+  pays: [JP, KR, CA]
+  ats: greenhouse
+  slug: anthropic
+  url_carriere: https://job-boards.greenhouse.io/anthropic
+  verifie_le: 2026-10-13
+- nom: Notion
+  pays: [JP, KR]
+  ats: ashby
+  slug: notion
+  url_carriere: https://jobs.ashbyhq.com/notion
+  verifie_le: 2026-10-13
+- nom: Cloudflare
+  pays: [JP, KR, CO, CA]
+  ats: greenhouse
+  slug: cloudflare
+  url_carriere: https://job-boards.greenhouse.io/cloudflare
+  verifie_le: 2026-10-13
+- nom: MongoDB
+  pays: [JP, KR, CA]
+  ats: greenhouse
+  slug: mongodb
+  url_carriere: https://job-boards.greenhouse.io/mongodb
+  verifie_le: 2026-10-13
+- nom: Dataiku
+  pays: [JP, KR]
+  ats: greenhouse
+  slug: dataiku
+  url_carriere: https://job-boards.greenhouse.io/dataiku
+  verifie_le: 2026-10-13
+
+# --- Corée du Sud ------------------------------------------------------------
+- nom: Coupang
+  pays: [KR, JP]
+  ats: greenhouse
+  slug: coupang
+  url_carriere: https://job-boards.greenhouse.io/coupang
+  verifie_le: 2026-10-13
+- nom: KRAFTON
+  pays: [KR]
+  ats: greenhouse
+  slug: krafton
+  url_carriere: https://job-boards.greenhouse.io/krafton
+  verifie_le: 2026-10-13
+- nom: Daangn (Karrot)
+  pays: [KR]
+  ats: greenhouse
+  slug: daangn
+  url_carriere: https://job-boards.greenhouse.io/daangn
+  verifie_le: 2026-10-13
+- nom: Moloco
+  pays: [KR]
+  ats: greenhouse
+  slug: moloco
+  url_carriere: https://job-boards.greenhouse.io/moloco
+  verifie_le: 2026-10-13
+- nom: Sendbird
+  pays: [KR]
+  ats: greenhouse
+  slug: sendbird
+  url_carriere: https://job-boards.greenhouse.io/sendbird
+  verifie_le: 2026-10-13
+
+# --- Colombie ----------------------------------------------------------------
+- nom: Addi
+  pays: [CO]
+  ats: ashby
+  slug: addi
+  url_carriere: https://jobs.ashbyhq.com/addi
+  verifie_le: 2026-10-13
+- nom: Yuno
+  pays: [CO]
+  ats: lever
+  slug: yuno
+  url_carriere: https://jobs.lever.co/yuno
+  verifie_le: 2026-10-13
+- nom: Nubank
+  pays: [CO, CA]
+  ats: ashby
+  slug: nubank
+  url_carriere: https://jobs.ashbyhq.com/nubank
+  verifie_le: 2026-10-13
+- nom: Simetrik
+  pays: [CO]
+  ats: ashby
+  slug: simetrik
+  url_carriere: https://jobs.ashbyhq.com/simetrik
+  verifie_le: 2026-10-13
+- nom: La Haus
+  pays: [CO]
+  ats: lever
+  slug: lahaus
+  url_carriere: https://jobs.lever.co/lahaus
+  verifie_le: 2026-10-13
+- nom: dLocal
+  pays: [CO]
+  ats: lever
+  slug: dlocal
+  url_carriere: https://jobs.lever.co/dlocal
+  verifie_le: 2026-10-13
+
+# --- Canada ------------------------------------------------------------------
+- nom: Cohere
+  pays: [CA, KR, JP]
+  ats: ashby
+  slug: cohere
+  url_carriere: https://jobs.ashbyhq.com/cohere
+  verifie_le: 2026-10-13
+- nom: Stripe
+  pays: [CA, JP]
+  ats: greenhouse
+  slug: stripe
+  url_carriere: https://job-boards.greenhouse.io/stripe
+  verifie_le: 2026-10-13
+- nom: Waabi
+  pays: [CA]
+  ats: lever
+  slug: waabi
+  url_carriere: https://jobs.lever.co/waabi
+  verifie_le: 2026-10-13
+- nom: 1Password
+  pays: [CA]
+  ats: ashby
+  slug: 1password
+  url_carriere: https://jobs.ashbyhq.com/1password
+  verifie_le: 2026-10-13
+- nom: Lightspeed
+  pays: [CA]
+  ats: ashby
+  slug: lightspeedhq
+  url_carriere: https://jobs.ashbyhq.com/lightspeedhq
+  verifie_le: 2026-10-13
+- nom: Wealthsimple
+  pays: [CA]
+  ats: ashby
+  slug: wealthsimple
+  url_carriere: https://jobs.ashbyhq.com/wealthsimple
+  verifie_le: 2026-10-13
+- nom: Neo Financial
+  pays: [CA]
+  ats: ashby
+  slug: neofinancial
+  url_carriere: https://jobs.ashbyhq.com/neofinancial
+  verifie_le: 2026-10-13
+- nom: GitLab
+  pays: [CA, JP, KR]
+  ats: greenhouse
+  slug: gitlab
+  url_carriere: https://job-boards.greenhouse.io/gitlab
+  verifie_le: 2026-10-13
+- nom: Tailscale
+  pays: [CA]
+  ats: greenhouse
+  slug: tailscale
+  url_carriere: https://job-boards.greenhouse.io/tailscale
+  verifie_le: 2026-10-13
+- nom: AppDirect
+  pays: [CA]
+  ats: greenhouse
+  slug: appdirect
+  url_carriere: https://job-boards.greenhouse.io/appdirect
+  verifie_le: 2026-10-13
+- nom: Figma
+  pays: [CA, JP]
+  ats: greenhouse
+  slug: figma
+  url_carriere: https://job-boards.greenhouse.io/figma
+  verifie_le: 2026-10-13
+- nom: Faire
+  pays: [CA]
+  ats: greenhouse
+  slug: faire
+  url_carriere: https://job-boards.greenhouse.io/faire
+  verifie_le: 2026-10-13
+- nom: Samsara
+  pays: [CA]
+  ats: greenhouse
+  slug: samsara
+  url_carriere: https://job-boards.greenhouse.io/samsara
+  verifie_le: 2026-10-13
+- nom: Jobber
+  pays: [CA]
+  ats: ashby
+  slug: jobber
+  url_carriere: https://jobs.ashbyhq.com/jobber
+  verifie_le: 2026-10-13
+- nom: PointClickCare
+  pays: [CA]
+  ats: lever
+  slug: pointclickcare
+  url_carriere: https://jobs.lever.co/pointclickcare
+  verifie_le: 2026-10-13
+- nom: Elastic
+  pays: [CA, JP]
+  ats: greenhouse
+  slug: elastic
+  url_carriere: https://job-boards.greenhouse.io/elastic
+  verifie_le: 2026-10-13

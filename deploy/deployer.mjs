@@ -1,14 +1,14 @@
 // Déploie StageRadar sur le VPS : `npm run deploy`.
 //
-// 1. copie deploy/serveur et les migrations dans /opt/stageradar ;
-// 2. y lance installer.sh (base, authentification, API, nginx, certificat, sauvegardes) ;
+// 1. empaquette le collecteur, puis copie deploy/serveur et les migrations dans /opt/stageradar ;
+// 2. y lance installer.sh (base, authentification, API, nginx, certificat, sauvegardes, collecte) ;
 // 3. construit le front avec l'adresse et la clé publique du serveur ;
 // 4. remplace /var/www/stageradar par la nouvelle version ;
 // 5. vérifie que le site répond.
 //
 // Rejouable : relancer la commande met à jour sans rien perdre.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { copyFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const RACINE = join(import.meta.dirname, '..');
@@ -83,11 +83,18 @@ async function verifier(chemin, attendu, init) {
   return ok;
 }
 
+etape('Empaquetage du collecteur');
+// Un seul fichier JavaScript : le serveur n'a besoin ni des sources ni de `npm install`.
+const COLLECTEUR = join(RACINE, 'packages', 'collector', 'dist');
+executer('npm', ['run', 'bundle', '-w', '@stageradar/collector'], { cwd: RACINE, shell: true });
+copyFileSync(join(RACINE, 'config', 'watchlist.yaml'), join(COLLECTEUR, 'watchlist.yaml'));
+
 etape('Copie des fichiers du serveur');
-// Les migrations sont remplacées en bloc ; le reste (.env, sauvegardes) n'est jamais effacé.
-distant(`mkdir -p ${DISTANT} && rm -rf ${DISTANT}/migrations`);
+// Migrations et collecteur sont remplacés en bloc ; le reste (.env, sauvegardes) n'est jamais effacé.
+distant(`mkdir -p ${DISTANT} && rm -rf ${DISTANT}/migrations ${DISTANT}/collecteur`);
 await envoyer(join(RACINE, 'deploy', 'serveur'), DISTANT);
 await envoyer(join(RACINE, 'supabase', 'migrations'), `${DISTANT}/migrations`);
+await envoyer(COLLECTEUR, `${DISTANT}/collecteur`);
 
 etape('Installation sur le serveur');
 distant(

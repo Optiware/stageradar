@@ -169,14 +169,29 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Sauvegarde de la base chaque nuit à 3 h 15 (UTC).
 15 3 * * * root $RACINE/sauvegarder.sh >>/var/log/stageradar-sauvegarde.log 2>&1
+# Collecte des offres toutes les 6 heures (§2).
+7 */6 * * * root $RACINE/collecter.sh >>/var/log/stageradar-collecte.log 2>&1
 EOF
   chmod 644 /etc/cron.d/stageradar
+
+  cat >/etc/logrotate.d/stageradar <<EOF
+/var/log/stageradar-*.log {
+  monthly
+  rotate 3
+  compress
+  missingok
+  notifempty
+}
+EOF
+  chmod 644 /etc/logrotate.d/stageradar
 }
 
 # Le dossier contient les secrets : réservé à root. roles.sql est lu depuis le conteneur.
 chmod 700 "$RACINE"
 chmod +x ./*.sh
 chmod 644 db/roles.sql
+# Le collecteur tourne sans privilèges dans son conteneur : ses fichiers doivent lui être lisibles.
+if [ -d collecteur ]; then chmod -R u=rwX,go=rX collecteur; fi
 creer_env
 charger_env
 demarrer

@@ -82,6 +82,8 @@ export interface Offer {
 export interface ScoreDetail {
   critere: 'domaine' | 'periode' | 'pays' | 'niveau' | 'langue' | 'fraicheur';
   points: number;
+  /** Poids du critère : le maximum qu'il pouvait rapporter. */
+  max: number;
   libelle: string;
 }
 
@@ -106,6 +108,8 @@ export type RawOffer = Record<string, unknown>;
 
 /** Paramètres de recherche passés aux connecteurs par le collecteur. */
 export interface ConnectorParams {
+  /** Pays à couvrir (codes ISO), pour les sources qui s'interrogent pays par pays. */
+  pays?: string[];
   /** Signal d'annulation (délai global de la collecte). */
   signal?: AbortSignal;
 }

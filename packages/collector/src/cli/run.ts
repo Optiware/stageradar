@@ -1,27 +1,63 @@
-import { connectors } from '../connectors/index';
-import { runConnectors } from '../pipeline/run-connectors';
+import { randomUUID } from 'node:crypto';
+import { buildConnectors } from '../connectors/index';
+import { collect } from '../pipeline/collect';
+import { createDryStore, createStore } from '../pipeline/store';
 
 // Point d'entrée de la collecte : `npm run collect`.
-// Au Lot 0, il se contente d'exécuter le registre (vide) et d'afficher un bilan.
-// L'écriture en base, le dédoublonnage et la notation arrivent au Lot 3.
+//   --a-blanc           classe et note sans rien enregistrer, et affiche les offres retenues
+//   --source <motif>    ne lance que les connecteurs dont l'identifiant contient ce texte
 
-const results = await runConnectors(connectors);
+const args = process.argv.slice(2);
+const aBlanc = args.includes('--a-blanc');
+const filtre = args.includes('--source') ? args[args.indexOf('--source') + 1] : undefined;
 
-if (results.length === 0) {
-  console.log('Aucun connecteur enregistré pour le moment.');
-}
-
-for (const result of results) {
-  const duree = result.fin.getTime() - result.debut.getTime();
-  console.log(
-    `[${result.statut}] ${result.source} : ${result.offers.length} offre(s) en ${duree} ms`,
+const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+const store =
+  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+    ? createStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    : null;
+if (!store && !aBlanc) {
+  console.error(
+    'SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont nécessaires (voir .env.example), ou lancer avec --a-blanc.',
   );
-  for (const erreur of result.erreurs) {
-    console.error(`  - ${erreur}`);
-  }
+  process.exit(1);
 }
+
+const connectors = buildConnectors().filter((c) => !filtre || c.id.includes(filtre));
+if (connectors.length === 0) {
+  console.error('Aucun connecteur ne correspond.');
+  process.exit(1);
+}
+
+// Délai global : une source qui ne répond plus ne bloque pas la collecte suivante.
+// À blanc et sans base : les réglages par défaut suffisent.
+const bilans = await collect(connectors, store ?? createDryStore(), {
+  runId: randomUUID(),
+  maintenant: new Date(),
+  aBlanc,
+  signal: AbortSignal.timeout(15 * 60_000),
+  surOffre: aBlanc
+    ? (offre) =>
+        console.log(
+          `  ${String(offre.score).padStart(3)}  ${offre.pays} ${offre.entreprise} — ${offre.titre}` +
+            (offre.exclue_raison ? `  [masquée : ${offre.exclue_raison}]` : ''),
+        )
+    : undefined,
+});
+
+for (const bilan of bilans) {
+  console.log(
+    `[${bilan.statut}] ${bilan.source} : ${bilan.lues} lue(s), ${bilan.retenues} retenue(s), ` +
+      `${bilan.nouvelles} nouvelle(s), ${bilan.desactivees} désactivée(s)`,
+  );
+  for (const erreur of bilan.erreurs.slice(0, 5)) console.error(`  - ${erreur}`);
+}
+const total = (cle: 'lues' | 'retenues' | 'nouvelles') =>
+  bilans.reduce((somme, bilan) => somme + bilan[cle], 0);
+console.log(
+  `\n${bilans.length} source(s) : ${total('lues')} annonce(s) lue(s), ` +
+    `${total('retenues')} retenue(s), ${total('nouvelles')} nouvelle(s)${aBlanc ? ' (à blanc)' : ''}`,
+);
 
 // La collecte n'échoue que si toutes les sources ont échoué.
-if (results.length > 0 && results.every((result) => result.statut === 'erreur')) {
-  process.exitCode = 1;
-}
+if (bilans.every((bilan) => bilan.statut === 'erreur')) process.exitCode = 1;

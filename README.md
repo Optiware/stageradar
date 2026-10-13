@@ -6,15 +6,15 @@ Le besoin complet est décrit dans [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md
 
 ## État d'avancement
 
-| Lot | Contenu                                                              | État     |
-| --- | -------------------------------------------------------------------- | -------- |
-| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne    | En ligne |
-| 3   | Stages à l'étranger : pipeline de collecte, ATS, Adzuna, fiches pays | À faire  |
-| 2   | Fil, détail, suivi Kanban, hors-ligne                                | À faire  |
-| 1   | Alternance France : La bonne alternance, France Travail (si accès)   | À faire  |
-| 4   | Import manuel : partage Android, URL, bookmarklet                    | À faire  |
-| 5   | Notifications, calendrier, relances                                  | À faire  |
-| 6   | Statistiques, documents, export, APK                                 | À faire  |
+| Lot | Contenu                                                              | État                                                                                 |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne    | En ligne                                                                             |
+| 3   | Stages à l'étranger : pipeline de collecte, ATS, Adzuna, fiches pays | En cours : collecte des sites carrières en ligne ; restent Adzuna et les fiches pays |
+| 2   | Fil, détail, suivi Kanban, hors-ligne                                | À faire                                                                              |
+| 1   | Alternance France : La bonne alternance, France Travail (si accès)   | À faire                                                                              |
+| 4   | Import manuel : partage Android, URL, bookmarklet                    | À faire                                                                              |
+| 5   | Notifications, calendrier, relances                                  | À faire                                                                              |
+| 6   | Statistiques, documents, export, APK                                 | À faire                                                                              |
 
 L'ordre est volontaire : les stages d'été 2027 se recrutent dès l'automne 2026, l'alternance surtout à partir de janvier.
 
@@ -27,7 +27,8 @@ Le cahier prévoyait Supabase hébergé, Cloudflare et un lien magique. Tout tou
 | Supabase hébergé                 | Les mêmes briques (Postgres, GoTrue, PostgREST) en Docker sur le VPS | Données chez soi, aucun compte à créer             |
 | Cloudflare Pages                 | nginx du VPS, certificat Let's Encrypt                               | Un seul endroit à administrer                      |
 | Connexion par lien magique       | Adresse e-mail + mot de passe                                        | Le VPS n'a pas de serveur d'envoi d'e-mails        |
-| Collecte par GitHub Actions cron | cron du VPS (à partir du lot 3)                                      | La clé secrète de la base ne quitte pas le serveur |
+| Collecte par GitHub Actions cron | cron du VPS                                                          | La clé secrète de la base ne quitte pas le serveur |
+| `config/keywords.yaml`           | `packages/shared/src/keywords.ts`, surchargé par les Réglages        | Typé, et lisible aussi par le front                |
 
 Le front utilise toujours `supabase-js` et les migrations restent dans `supabase/migrations` : revenir à Supabase hébergé ne demanderait que de changer deux variables.
 
@@ -38,6 +39,7 @@ apps/web/            Front React + Vite + Tailwind (PWA)
 packages/shared/     Types et fonctions communs au front et au collecteur
 packages/collector/  Collecte des offres (Node)
 supabase/migrations/ Schéma Postgres et règles de sécurité (RLS)
+config/watchlist.yaml Entreprises cibles vérifiées (sites carrières)
 deploy/deployer.mjs  Déploiement vers le VPS (`npm run deploy`)
 deploy/serveur/      Ce qui tourne sur le VPS : Docker Compose, nginx, scripts
 .github/workflows/   Intégration continue
@@ -51,16 +53,17 @@ deploy/serveur/      Ce qui tourne sur le VPS : Docker Compose, nginx, scripts
 
 ## Commandes
 
-| Commande            | Effet                                                        |
-| ------------------- | ------------------------------------------------------------ |
-| `npm run dev`       | Front en développement (<http://localhost:5173>)             |
-| `npm run build`     | Version de production dans `apps/web/dist`                   |
-| `npm run lint`      | ESLint + Prettier                                            |
-| `npm run typecheck` | Vérification TypeScript de tous les paquets                  |
-| `npm test`          | Tests unitaires (Vitest), dont les migrations et la RLS      |
-| `npm run e2e`       | Tests de bout en bout (Playwright), sur mobile et sur bureau |
-| `npm run collect`   | Lance une collecte (aucun connecteur pour l'instant)         |
-| `npm run deploy`    | Met à jour le VPS : base, API, front                         |
+| Commande                      | Effet                                                        |
+| ----------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                 | Front en développement (<http://localhost:5173>)             |
+| `npm run build`               | Version de production dans `apps/web/dist`                   |
+| `npm run lint`                | ESLint + Prettier                                            |
+| `npm run typecheck`           | Vérification TypeScript de tous les paquets                  |
+| `npm test`                    | Tests unitaires (Vitest), dont les migrations et la RLS      |
+| `npm run e2e`                 | Tests de bout en bout (Playwright), sur mobile et sur bureau |
+| `npm run collect`             | Lance une collecte (`-- --a-blanc` : sans rien enregistrer)  |
+| `npm run detect-ats -- <url>` | Teste un site carrière et propose son entrée de watchlist    |
+| `npm run deploy`              | Met à jour le VPS : base, API, front                         |
 
 Première exécution des tests de bout en bout : `npx playwright install chromium` dans `apps/web`.
 
@@ -135,6 +138,28 @@ nginx -t && systemctl reload nginx
 certbot delete --cert-name ton.domaine
 rm -rf /opt/stageradar /var/www/stageradar
 ```
+
+## Collecte des offres
+
+Toutes les 6 heures, le VPS interroge les sites carrières de `config/watchlist.yaml` (API publiques Greenhouse, Lever et Ashby, sans clé), puis pour chaque annonce :
+
+1. **filtre** : ne sont gardés que les stages situés dans un pays visé (et, plus tard, les alternances en France) ;
+2. **classe** : domaines (dev, cyber, DevOps), langues exigées, niveau, période. Les mots-clés sont dans `packages/shared/src/keywords.ts`, surchargés par les Réglages ;
+3. **note** de 0 à 100, avec une ligne d'explication par critère ;
+4. **enregistre** en dédoublonnant (même lien, même URL, même entreprise + titre + ville, titres très proches) ;
+5. **désactive** les offres disparues de leur source trois collectes de suite.
+
+Les offres hors cible (hors domaine, niveau trop élevé, autre période) sont gardées mais masquées par défaut.
+
+```bash
+npm run collect -- --a-blanc                    # essai depuis le PC, sans base ni écriture
+npm run collect -- --a-blanc --source stripe    # une seule source
+npm run detect-ats -- https://jobs.lever.co/woven-by-toyota
+ssh root@adresse-du-serveur /opt/stageradar/collecter.sh          # collecte immédiate sur le serveur
+ssh root@adresse-du-serveur tail -50 /var/log/stageradar-collecte.log
+```
+
+Ajouter une entreprise : `npm run detect-ats` avec l'adresse de son site carrière, coller l'entrée proposée dans `config/watchlist.yaml`, puis `npm run deploy`. Aucune entrée n'est ajoutée sans que l'API ait répondu.
 
 ## Installer l'application
 

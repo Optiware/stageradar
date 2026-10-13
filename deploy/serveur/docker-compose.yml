@@ -106,6 +106,25 @@ services:
       # La description du schéma n'a pas à être publique.
       PGRST_OPENAPI_MODE: disabled
 
+  # Collecte des offres : lancée par cron (collecter.sh), jamais par `docker compose up`.
+  collecteur:
+    image: node:22-alpine
+    profiles: ['collecte']
+    mem_limit: 512m
+    user: node
+    depends_on:
+      rest:
+        condition: service_started
+    volumes:
+      # collect.mjs (collecteur empaqueté en un fichier) et watchlist.yaml, copiés par deployer.mjs.
+      - ./collecteur:/app:ro
+    working_dir: /app
+    environment:
+      SUPABASE_URL: http://rest:3000
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      STAGERADAR_WATCHLIST: /app/watchlist.yaml
+    command: ['node', 'collect.mjs']
+
 volumes:
   db-data:
   db-config:

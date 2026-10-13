@@ -17,3 +17,14 @@ export function normalizeText(input: string | null | undefined): string {
       .trim()
   );
 }
+
+const SANS_ESPACES = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+/**
+ * Vrai si `mot` apparaît dans `texte` (tous deux normalisés) comme mot entier.
+ * Le japonais et le coréen s'écrivent sans espaces : leurs mots se cherchent tels quels.
+ */
+export function containsWord(texte: string, mot: string): boolean {
+  if (SANS_ESPACES.test(mot)) return texte.includes(mot);
+  return ` ${texte} `.includes(` ${mot} `);
+}
