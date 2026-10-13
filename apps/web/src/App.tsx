@@ -10,7 +10,11 @@ import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { ComingSoon } from './pages/ComingSoon';
 import { Feed } from './pages/Feed';
+import { Demarchage } from './pages/Demarchage';
 import { Important } from './pages/Important';
+import { Pays } from './pages/Pays';
+import { Reglages } from './pages/Reglages';
+import { Sources } from './pages/Sources';
 import { Suivi } from './pages/Suivi';
 
 export function App() {
@@ -78,15 +82,10 @@ function OwnerGate({ session }: { session: Session }) {
             </ComingSoon>
           }
         />
-        <Route
-          path="pays"
-          element={
-            <ComingSoon title="Fiches pays" lot={3}>
-              Visa, liens officiels et échéances pour le Japon, la Corée du Sud, la Colombie et le
-              Canada.
-            </ComingSoon>
-          }
-        />
+        <Route path="pays" element={<Pays />} />
+        <Route path="demarchage" element={<Demarchage />} />
+        <Route path="sources" element={<Sources />} />
+        <Route path="reglages" element={<Reglages />} />
         <Route path="plus" element={<More />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

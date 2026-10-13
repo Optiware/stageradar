@@ -13,7 +13,7 @@ export const TELETRAVAIL = ['sur_site', 'hybride', 'remote'] as const;
 export type Teletravail = (typeof TELETRAVAIL)[number];
 
 /** Pays visés pour le stage d'été, par ordre de priorité (codes ISO 3166-1 alpha-2). */
-export const PAYS_STAGE = ['JP', 'KR', 'CO', 'CA'] as const;
+export const PAYS_STAGE = ['JP', 'KR', 'CO', 'CA', 'GB'] as const;
 export type PaysStage = (typeof PAYS_STAGE)[number];
 
 export const LIBELLES_PAYS: Record<PaysStage | 'FR', string> = {
@@ -22,6 +22,8 @@ export const LIBELLES_PAYS: Record<PaysStage | 'FR', string> = {
   KR: 'Corée du Sud',
   CO: 'Colombie',
   CA: 'Canada',
+  // Seule Londres est visée : voir geo.ts.
+  GB: 'Royaume-Uni',
 };
 
 /** Colonnes du Kanban de suivi (§5.1), dans l'ordre d'affichage. */

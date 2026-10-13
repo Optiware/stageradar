@@ -12,7 +12,7 @@ export interface Profil {
 
 export const DEFAULT_PROFIL: Profil = {
   alternance: { rentree: '2027-09-01', villes: [], rayon_km: 30, rythme: null },
-  stage: { debut: '2027-06-01', fin: '2027-08-31', pays: ['JP', 'KR', 'CO', 'CA'] },
+  stage: { debut: '2027-06-01', fin: '2027-08-31', pays: ['JP', 'KR', 'CO', 'CA', 'GB'] },
   langues: [],
 };
 

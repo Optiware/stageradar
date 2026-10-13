@@ -93,13 +93,11 @@ export function CandidatureDialog({
     >
       <form onSubmit={soumettre}>
         <h2 id="titre-candidature" className="text-xl leading-tight font-extrabold break-words">
-          {offre?.titre ?? 'Candidature'}
+          {candidature.resume.titre}
         </h2>
-        {offre && (
-          <p className={`mt-1 text-sm font-bold ${SECONDAIRE}`}>
-            {[offre.entreprise, lieu(offre)].filter(Boolean).join(' · ')}
-          </p>
-        )}
+        <p className={`mt-1 text-sm font-bold ${SECONDAIRE}`}>
+          {[candidature.resume.entreprise, lieu(candidature.resume)].filter(Boolean).join(' · ')}
+        </p>
         {offre && (
           <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             {offre.actif ? (

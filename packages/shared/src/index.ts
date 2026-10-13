@@ -8,3 +8,4 @@ export * from './classify';
 export * from './score';
 export * from './suivi';
 export * from './traduction';
+export * from './messages';

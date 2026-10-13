@@ -38,6 +38,15 @@ const DRAPEAUX: Record<string, ReactNode> = {
       <rect y="15" width="30" height="5" fill="#ce1126" />
     </>
   ),
+  GB: (
+    <>
+      <rect width="30" height="20" fill="#012169" />
+      <path d="M0 0l30 20M30 0L0 20" stroke="#fff" strokeWidth="4" />
+      <path d="M0 0l30 20M30 0L0 20" stroke="#c8102e" strokeWidth="1.6" />
+      <path d="M15 0v20M0 10h30" stroke="#fff" strokeWidth="6.6" />
+      <path d="M15 0v20M0 10h30" stroke="#c8102e" strokeWidth="4" />
+    </>
+  ),
   CA: (
     <>
       <rect width="30" height="20" fill="#fff" />

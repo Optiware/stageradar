@@ -37,3 +37,37 @@ export const SITES_ALTERNANCE: SiteRecherche[] = [
     ],
   },
 ];
+
+// Recherches de stages à l'étranger, ouvertes dans le navigateur. LinkedIn interdit la collecte
+// automatique (§3.4) : ses offres ne se consultent que chez lui. Format de l'adresse de recherche
+// publique vérifié le 13 octobre 2026 (réponse 200 sans compte).
+function linkedIn(motsCles: string, lieu: string): string {
+  const params = new URLSearchParams({ keywords: motsCles, location: lieu });
+  return `https://www.linkedin.com/jobs/search/?${params.toString()}`;
+}
+
+const STAGE_EN = 'software engineer intern';
+
+/** Liens de recherche proposés sur la fiche de chaque pays visé. */
+export const RECHERCHES_STAGE: Record<string, LienRecherche[]> = {
+  JP: [
+    { libelle: 'LinkedIn : stages au Japon', url: linkedIn(STAGE_EN, 'Japan') },
+    // Sites d'offres pour développeurs anglophones au Japon (pages publiques, réponse 200).
+    { libelle: 'TokyoDev', url: 'https://www.tokyodev.com/jobs' },
+    { libelle: 'Japan Dev', url: 'https://japan-dev.com/jobs' },
+  ],
+  KR: [{ libelle: 'LinkedIn : stages en Corée du Sud', url: linkedIn(STAGE_EN, 'South Korea') }],
+  CO: [
+    {
+      libelle: 'LinkedIn : stages en Colombie',
+      url: linkedIn('practicante desarrollo', 'Colombia'),
+    },
+  ],
+  CA: [{ libelle: 'LinkedIn : stages au Canada', url: linkedIn(STAGE_EN, 'Canada') }],
+  GB: [
+    {
+      libelle: 'LinkedIn : stages à Londres',
+      url: linkedIn(STAGE_EN, 'London, England, United Kingdom'),
+    },
+  ],
+};

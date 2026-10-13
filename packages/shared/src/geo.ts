@@ -74,6 +74,16 @@ const PAYS: PaysConnu[] = [
     },
   },
   {
+    // Seule Londres est visée au Royaume-Uni : le pays n'est reconnu que par cette ville, et non
+    // par son nom (« Manchester, United Kingdom » reste hors zone).
+    code: 'GB',
+    noms: [],
+    villes: {
+      london: 'Londres',
+      londres: 'Londres',
+    },
+  },
+  {
     code: 'FR',
     noms: ['france'],
     villes: {

@@ -22,10 +22,29 @@ export type OffreSuivie = Pick<
   'id' | 'titre' | 'entreprise' | 'pays' | 'ville' | 'url' | 'type' | 'actif'
 >;
 
+/** Entreprise d'une candidature spontanée (table `companies`). */
+export interface SocieteSuivie {
+  id: string;
+  nom: string;
+  pays: string | null;
+  ville: string | null;
+}
+
+/** Ce qu'une carte affiche, que la candidature réponde à une offre ou soit spontanée. */
+export interface ResumeCandidature {
+  titre: string;
+  entreprise: string | null;
+  pays: string | null;
+  ville: string | null;
+}
+
 /** Une carte du suivi : la candidature, son offre et ses événements (entretiens, historique). */
 export interface Candidature extends EtatSuivi {
   id: string;
   offer_id: string | null;
+  company_id: string | null;
+  societe: SocieteSuivie | null;
+  resume: ResumeCandidature;
   position: number;
   notes: string | null;
   created_at: string;
@@ -33,11 +52,12 @@ export interface Candidature extends EtatSuivi {
   evenements: Evenement[];
 }
 
-// Les deux liens sont nommés par leur clé étrangère : `events` pointe à la fois vers
+// Les liens sont nommés par leur clé étrangère : `events` pointe à la fois vers
 // `applications` et vers `offers`, et PostgREST doit savoir lequel suivre.
 const SELECTION =
-  'id,offer_id,statut,position,date_candidature,prochaine_relance,notes,created_at,' +
+  'id,offer_id,company_id,statut,position,date_candidature,prochaine_relance,notes,created_at,' +
   'offre:offers!applications_offer_id_fkey(id,titre,entreprise,pays,ville,url,type,actif),' +
+  'societe:companies!applications_company_id_fkey(id,nom,pays,ville),' +
   'evenements:events!events_application_id_fkey(id,type,titre,date,details,fait)';
 
 const CLE = ['candidatures'] as const;
@@ -50,11 +70,33 @@ export function useCandidatures() {
         .from('applications')
         .select(SELECTION)
         .order('position')
-        .overrideTypes<Candidature[], { merge: false }>();
+        .overrideTypes<Omit<Candidature, 'resume'>[], { merge: false }>();
       if (error) throw error;
-      return data;
+      return data.map((candidature): Candidature => ({
+        ...candidature,
+        resume: resumer(candidature),
+      }));
     },
   });
+}
+
+export const CANDIDATURE_SPONTANEE = 'Candidature spontanée';
+
+function resumer({ offre, societe }: Omit<Candidature, 'resume'>): ResumeCandidature {
+  if (offre) {
+    return {
+      titre: offre.titre,
+      entreprise: offre.entreprise,
+      pays: offre.pays,
+      ville: offre.ville,
+    };
+  }
+  return {
+    titre: CANDIDATURE_SPONTANEE,
+    entreprise: societe?.nom ?? null,
+    pays: societe?.pays ?? null,
+    ville: societe?.ville ?? null,
+  };
 }
 
 /** Entretien à venir (ou le dernier saisi) d'une candidature. */
@@ -73,6 +115,20 @@ export function useSuivreOffre() {
         .from('applications')
         // La date sert de rang : une nouvelle carte se place en bas de sa colonne.
         .insert({ offer_id: offerId, statut: 'a_etudier', position: Date.now() });
+      if (error) throw error;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: CLE }),
+  });
+}
+
+/** Ajoute une candidature spontanée auprès d'une entreprise cible. */
+export function useSuivreEntreprise() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ companyId, etat }: { companyId: string; etat: EtatSuivi }) => {
+      const { error } = await supabase!
+        .from('applications')
+        .insert({ company_id: companyId, ...etat, position: Date.now() });
       if (error) throw error;
     },
     onSuccess: () => client.invalidateQueries({ queryKey: CLE }),
@@ -117,7 +173,7 @@ async function enregistrer(candidature: Candidature, valeurs: ValeursCandidature
   const commun = {
     application_id: candidature.id,
     offer_id: candidature.offer_id,
-    pays: candidature.offre?.pays ?? null,
+    pays: candidature.resume.pays,
   };
   if (deplacee) {
     // Historique des changements de colonne : servira aux statistiques (taux de réponse).
@@ -146,8 +202,7 @@ async function enregistrer(candidature: Candidature, valeurs: ValeursCandidature
     const { error: erreur } = await base.from('events').insert({
       ...commun,
       type: 'entretien',
-      titre:
-        `Entretien : ${candidature.offre?.entreprise ?? candidature.offre?.titre ?? ''}`.trim(),
+      titre: `Entretien : ${candidature.resume.entreprise ?? candidature.resume.titre}`,
       date: valeurs.entretien,
       details,
     });

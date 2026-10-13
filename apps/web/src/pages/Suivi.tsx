@@ -72,7 +72,9 @@ function Carte({
   onDeplacer: (vers: StatutSuivi) => void;
 }) {
   const offre = candidature.offre;
-  const titre = offre?.titre ?? 'Candidature spontanée';
+  const { entreprise, titre: intitule } = candidature.resume;
+  // Deux candidatures spontanées doivent garder des noms distincts.
+  const titre = offre || !entreprise ? intitule : `${intitule} : ${entreprise}`;
   const aujourdhui = jourIso(maintenant);
   const entretien = entretienDe(candidature);
   const entretienAVenir =
@@ -94,14 +96,14 @@ function Carte({
     >
       <article aria-label={titre}>
         <button type="button" onClick={onOuvrir} className="block w-full text-left">
-          {offre?.entreprise && (
-            <span className={`block text-xs font-bold ${SECONDAIRE}`}>{offre.entreprise}</span>
+          {entreprise && (
+            <span className={`block text-xs font-bold ${SECONDAIRE}`}>{entreprise}</span>
           )}
-          <span className="mt-0.5 block leading-tight font-bold break-words">{titre}</span>
-          {offre && lieu(offre) && (
+          <span className="mt-0.5 block leading-tight font-bold break-words">{intitule}</span>
+          {lieu(candidature.resume) && (
             <span className={`mt-1 flex items-center gap-1.5 text-xs ${SECONDAIRE}`}>
-              <Flag code={offre.pays} />
-              {lieu(offre)}
+              <Flag code={candidature.resume.pays} />
+              {lieu(candidature.resume)}
             </span>
           )}
         </button>

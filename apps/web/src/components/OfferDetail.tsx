@@ -229,14 +229,15 @@ export function OfferDetail({
       {(PAYS_STAGE as readonly string[]).includes(offre.pays ?? '') && (
         <Section titre="Visa et pays">
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-            {nomPays(offre.pays)} : les règles de visa pour un stage ne sont pas encore vérifiées
-            dans l'application. Renseigne-toi sur le site officiel du pays avant de postuler.
+            {nomPays(offre.pays)} : la fiche du pays rassemble les liens officiels sur le visa et
+            des pistes pour y trouver un stage. Tant qu'elle est marquée « à vérifier », contrôle
+            les règles sur le site officiel avant de postuler.
           </p>
           <Link
-            to="/pays"
+            to={`/pays?pays=${offre.pays}`}
             className="mt-2 inline-block text-sm font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
           >
-            Voir les fiches pays
+            Voir la fiche du pays
           </Link>
         </Section>
       )}

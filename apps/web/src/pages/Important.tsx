@@ -169,7 +169,7 @@ export function Important() {
                 <div key={entretien.id} className={LIGNE}>
                   <Link to={`/suivi?candidature=${candidature.id}`} className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">
-                      {candidature.offre?.entreprise ?? candidature.offre?.titre ?? 'Entretien'}
+                      {candidature.resume.entreprise ?? candidature.resume.titre}
                     </span>
                     <span className={`mt-0.5 block text-xs ${SECONDAIRE}`}>
                       {libelleEntretien(entretien.date, maintenant)}
@@ -206,7 +206,7 @@ export function Important() {
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold">
-                    Relancer {candidature.offre?.entreprise ?? candidature.offre?.titre}
+                    Relancer {candidature.resume.entreprise ?? candidature.resume.titre}
                   </span>
                   <span className={`mt-0.5 block text-xs ${SECONDAIRE}`}>
                     {libelleRelance(candidature.prochaine_relance!, aujourdhui)}
@@ -223,10 +223,10 @@ export function Important() {
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold">
-                    Postuler chez {candidature.offre?.entreprise ?? candidature.offre?.titre}
+                    Postuler chez {candidature.resume.entreprise ?? candidature.resume.titre}
                   </span>
                   <span className={`mt-0.5 block truncate text-xs ${SECONDAIRE}`}>
-                    {candidature.offre?.titre}
+                    {candidature.resume.titre}
                   </span>
                 </span>
                 <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-gray-400" />

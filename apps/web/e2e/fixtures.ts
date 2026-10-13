@@ -40,6 +40,16 @@ function fakeSession(email: string) {
 
 type Ligne = Record<string, unknown>;
 
+const TABLES = [
+  'offers',
+  'applications',
+  'events',
+  'companies',
+  'country_sheets',
+  'sources_status',
+] as const;
+type NomTable = (typeof TABLES)[number];
+
 export interface Backend {
   /** Requêtes reçues par le faux Supabase : « MÉTHODE chemin ». */
   calls: string[];
@@ -53,6 +63,12 @@ export interface Backend {
   applications: Ligne[];
   /** Événements du suivi (table `events`) : entretiens, changements de colonne. */
   events: Ligne[];
+  /** Entreprises cibles du démarchage (table `companies`). */
+  companies: Ligne[];
+  /** Fiches pays (table `country_sheets`, identifiées par `pays`). */
+  country_sheets: Ligne[];
+  /** Passages de la collecte (table `sources_status`). */
+  sources_status: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Ouvre l'application avec une session déjà enregistrée. */
@@ -74,7 +90,10 @@ export const test = base.extend<{ backend: Backend }>({
         offers: [],
         applications: [],
         events: [],
-        settings: { objectif_hebdo: 5 },
+        companies: [],
+        country_sheets: [],
+        sources_status: [],
+        settings: { objectif_hebdo: 5, presentation: '' },
         async signInAs(email, options = {}) {
           isOwner = options.isOwner ?? true;
           await seedSession(page, email);
@@ -130,6 +149,9 @@ export const test = base.extend<{ backend: Backend }>({
               .map((candidature) => ({
                 ...candidature,
                 offre: backend.offers.find((offre) => offre.id === candidature.offer_id) ?? null,
+                societe:
+                  backend.companies.find((societe) => societe.id === candidature.company_id) ??
+                  null,
                 evenements: backend.events.filter(
                   (evenement) => evenement.application_id === candidature.id,
                 ),
@@ -143,26 +165,38 @@ export const test = base.extend<{ backend: Backend }>({
           Object.assign(backend.settings, request.postDataJSON());
           return route.fulfill({ status: 204, body: '' });
         }
-        const table = {
-          '/rest/v1/offers': backend.offers,
-          '/rest/v1/applications': backend.applications,
-          '/rest/v1/events': backend.events,
-        }[path];
-        if (table && request.method() !== 'GET') {
-          const id = new URL(request.url()).searchParams.get('id')?.replace(/^eq\./, '');
+        // Les autres tables se lisent et s'écrivent ligne par ligne, par leur clé (`id=eq.…`).
+        const nom = path.replace('/rest/v1/', '') as NomTable;
+        const cle = nom === 'country_sheets' ? 'pays' : 'id';
+
+        if ((TABLES as readonly string[]).includes(nom)) {
+          const table = backend[nom];
+          const valeur = new URL(request.url()).searchParams.get(cle)?.replace(/^eq\./, '');
+          if (request.method() === 'GET') {
+            return route.fulfill({ json: table });
+          }
           if (request.method() === 'POST') {
             table.push({
               id: crypto.randomUUID(),
               // Valeurs par défaut des colonnes, comme en base.
-              ...(path === '/rest/v1/applications'
-                ? { date_candidature: null, prochaine_relance: null, notes: null }
-                : { details: {}, fait: false, date: new Date().toISOString() }),
+              ...(nom === 'applications'
+                ? {
+                    offer_id: null,
+                    company_id: null,
+                    date_candidature: null,
+                    prochaine_relance: null,
+                    notes: null,
+                  }
+                : {}),
+              ...(nom === 'events'
+                ? { details: {}, fait: false, date: new Date().toISOString() }
+                : {}),
               created_at: new Date().toISOString(),
               ...(request.postDataJSON() as Ligne),
             });
             return route.fulfill({ status: 201, body: '' });
           }
-          const index = table.findIndex((ligne) => ligne.id === id);
+          const index = table.findIndex((ligne) => ligne[cle] === valeur);
           if (index >= 0 && request.method() === 'PATCH') {
             table[index] = { ...table[index], ...(request.postDataJSON() as Ligne) };
             return route.fulfill({ status: 204, body: '' });
@@ -170,8 +204,8 @@ export const test = base.extend<{ backend: Backend }>({
           if (index >= 0 && request.method() === 'DELETE') {
             table.splice(index, 1);
             // Les événements d'une candidature partent avec elle (`on delete cascade`).
-            if (path === '/rest/v1/applications') {
-              backend.events = backend.events.filter((ligne) => ligne.application_id !== id);
+            if (nom === 'applications') {
+              backend.events = backend.events.filter((ligne) => ligne.application_id !== valeur);
             }
             return route.fulfill({ status: 204, body: '' });
           }
