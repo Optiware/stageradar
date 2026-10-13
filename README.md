@@ -6,15 +6,15 @@ Le besoin complet est décrit dans [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md
 
 ## État d'avancement
 
-| Lot | Contenu                                                              | État                                                                                         |
-| --- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne    | En ligne                                                                                     |
-| 3   | Stages à l'étranger : pipeline de collecte, ATS, Adzuna, fiches pays | En cours : collecte des sites carrières en ligne ; restent Adzuna et les fiches pays         |
-| 2   | Fil, détail, suivi Kanban, hors-ligne                                | Fil minimal en ligne (onglets, score expliqué) ; restent filtres, détail, Kanban, hors-ligne |
-| 1   | Alternance France : La bonne alternance, France Travail (si accès)   | À faire                                                                                      |
-| 4   | Import manuel : partage Android, URL, bookmarklet                    | À faire                                                                                      |
-| 5   | Notifications, calendrier, relances                                  | À faire                                                                                      |
-| 6   | Statistiques, documents, export, APK                                 | À faire                                                                                      |
+| Lot | Contenu                                                                   | État                                                                                                                                                |
+| --- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | Socle : monorepo, schéma + RLS, connexion, PWA, CI, mise en ligne         | En ligne                                                                                                                                            |
+| 3   | Stages à l'étranger : pipeline de collecte, ATS, agrégateurs, fiches pays | En cours : collecte des sites carrières en ligne ; restent les agrégateurs, les zones, les sources et les fiches pays                               |
+| 2   | Fil, détail, suivi Kanban, hors-ligne                                     | Fil et détail en ligne (design job board, recherche, filtre par pays, thème clair ou sombre) ; restent les autres filtres, le Kanban, le hors-ligne |
+| 1   | Alternance France : La bonne alternance, France Travail (si accès)        | À faire                                                                                                                                             |
+| 4   | Import manuel : partage Android, URL, bookmarklet                         | À faire                                                                                                                                             |
+| 5   | Notifications, calendrier, relances                                       | À faire                                                                                                                                             |
+| 6   | Statistiques, documents, export, APK                                      | À faire                                                                                                                                             |
 
 L'ordre est volontaire : les stages d'été 2027 se recrutent dès l'automne 2026, l'alternance surtout à partir de janvier.
 

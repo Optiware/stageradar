@@ -74,7 +74,7 @@ export interface Offer {
   competences: string[];
   date_publication: string | null;
   date_expiration: string | null;
-  /** Mention exigée par la source (ex. France Travail, Adzuna). */
+  /** Mention exigée par la source (ex. France Travail). */
   attribution: string | null;
 }
 

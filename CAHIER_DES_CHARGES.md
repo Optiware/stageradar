@@ -2,6 +2,10 @@
 
 > Document destiné à **Claude Code**. À placer à la racine du dépôt (ou à copier dans `CLAUDE.md`).
 > Les passages entre `⟨ ⟩` sont à compléter par moi avant de lancer.
+>
+> **Version 2 (13 octobre 2026)** : Adzuna retiré, Welcome to the Jungle ajouté en recherche pré-remplie,
+> application strictement personnelle, application Android, nouveau design et nouvelles fonctionnalités.
+> Les ajouts sont détaillés au §9 ; les sections qu'ils contredisaient ont été corrigées sur place.
 
 ---
 
@@ -72,7 +76,12 @@ Si Claude Code identifie une alternative **strictement meilleure** sur ces crit�
 |---|---|---|
 | **La bonne alternance** — API « recherche d'offres » (`api.apprentissage.beta.gouv.fr`) | Alternance France (offres LBA + France Travail + partenaires) | Jeton gratuit via l'espace développeurs. Recherche par codes ROME / RNCP, géolocalisation, rayon, niveau de diplôme. Usage non commercial uniquement (OK). Limite de résultats par source → multiplier les requêtes (par code ROME × zone). |
 | **France Travail — API Offres d'emploi v2** (`francetravail.io`) | Alternance France | OAuth2 client credentials, compte gratuit. Filtrer sur la nature de contrat apprentissage / professionnalisation (récupérer les codes exacts via les endpoints de référentiels). Fenêtre de pagination limitée → découper les requêtes (par département, par code ROME). Dédoublonner avec LBA, qui agrège déjà une partie de ces offres. |
-| **Adzuna API** (`developer.adzuna.com`) | **France** et **Canada** | Clé gratuite, quota limité → peu de requêtes bien ciblées, mises en cache. Requêtes type : `alternance développeur`, `apprenti cybersécurité` (FR) ; `summer intern software`, `co-op developer`, `stage été informatique` (CA). |
+| **Careerjet** — API partenaires v4 (`careerjet.com/partners/api`) | Stages à l'étranger (Canada, Japon, Colombie, Corée si la locale existe) | **À confirmer avant de coder.** Clé de compte éditeur, filtre `contract_type=i` (stage). L'API exige l'adresse IP et le navigateur de l'utilisateur final à chaque appel : vérifier dans les conditions du compte qu'une collecte planifiée, sans visiteur, est permise, et que les locales voulues existent. |
+| **Jooble** — API (clé gratuite) | Complément international | **À confirmer avant de coder** (doc officielle, quota, conditions). |
+
+**Adzuna est retiré du projet** (décision du 13 octobre 2026 : service payant, hors budget). Aucun connecteur, aucune clé.
+**JSearch** (Google for Jobs, 200 requêtes gratuites par mois) reste une option, désactivée par défaut, avec un compteur de quota qui bloque avant la limite.
+Les liens des agrégateurs passent par une redirection : stocker l'adresse telle quelle et tenter de retrouver l'adresse finale de l'offre au moment du dédoublonnage.
 
 **Codes ROME** : ne pas les coder en dur. Les récupérer via le référentiel (API ROME de France Travail ou référentiel exposé par l'API) et retenir ceux correspondant à : études et développement informatique, administration / sécurité des systèmes, production et exploitation des SI. Stocker la liste retenue dans `config/rome.json` avec la date de vérification.
 
@@ -91,6 +100,7 @@ Pour chaque site ci-dessous : vérifier l'existence d'un flux RSS/JSON ou d'une 
 
 | Pays | Pistes à évaluer |
 |---|---|
+| France (alternance) | **Welcome to the Jungle** : recherches pré-remplies, filtrées sur l'alternance, dans l'onglet « Alternance » du fil. Pas de connecteur : son `robots.txt` interdit les adresses de recherche à tous les robots (vérifié le 13 octobre 2026). |
 | Japon | Job boards anglophones pour développeurs étrangers (TokyoDev, Japan Dev, GaijinPot…), CCI France Japon |
 | Corée du Sud | Saramin (API officielle sur validation), Wanted, JobKorea, CCI France-Corée (FKCCI) |
 | Colombie | Computrabajo, elempleo, Magneto, rubrique « prácticas » des agrégateurs, CCI France-Colombie |
@@ -169,7 +179,8 @@ Points de départ que j'ai relevés — **Claude Code doit les revérifier sur l
 - Réglables par type ; heures calmes.
 
 ### 5.4 Exigences non fonctionnelles
-- **Mobile-first**, utilisable d'une main ; desktop en 2–3 colonnes. Mode sombre automatique.
+- **Mobile-first**, utilisable d'une main ; sur PC, liste des offres à gauche et détail à droite. **Thème clair par défaut**, thème sombre au choix (§9, C3).
+- **Application strictement personnelle** : un seul compte, inscriptions fermées, aucune donnée visible avant connexion, aucune indexation par les moteurs de recherche (§9, C4).
 - **Hors-ligne** : fil, détails et suivi consultables sans réseau ; modifications synchronisées au retour.
 - Performance : premier affichage < 2 s en 4G ; score Lighthouse PWA/Accessibilité ≥ 90.
 - **Sécurité** : aucune clé API dans le front ; secrets dans GitHub Secrets / variables Supabase ; RLS activée (seul mon compte lit/écrit) ; `.env.example` documenté.
@@ -185,15 +196,15 @@ Monorepo (`apps/web`, `packages/collector`, `packages/shared`), Supabase (schém
 ✅ L'app s'installe sur Windows et Android, je me connecte, la CI est verte.
 
 **Lot 1 — Collecte France (alternance)**
-Connecteurs La bonne alternance + France Travail, normalisation, classification, dédoublonnage, scoring, cron 6 h.
+Connecteurs La bonne alternance + France Travail, normalisation, classification, dédoublonnage, scoring, cron 6 h. Ajout v2 : les zones actives pilotent les requêtes (§9, C1).
 ✅ Une exécution manuelle remplit la base avec des offres d'alternance dev/cyber/devops dans ma zone ; zéro doublon visible entre LBA et France Travail ; tests sur fixtures pour chaque connecteur.
 
 **Lot 2 — Fil + détail + suivi**
-Écrans Fil, Détail, Kanban, filtres, recherche, hors-ligne.
+Écrans Fil, Détail, Kanban, filtres, recherche, hors-ligne. Ajouts v2 : design type job board, filtres par pays et par langue, vue « Mes candidatures » (§9, C1, C3, C6).
 ✅ Je peux filtrer, ouvrir une offre, l'ajouter au suivi sur le téléphone et la retrouver sur le PC.
 
 **Lot 3 — Stages à l'étranger**
-Adzuna (FR + CA), connecteurs ATS génériques + watchlist vérifiée, connecteurs niveau 3 autorisés, liens de recherche pré-remplis, fiches pays.
+Connecteurs ATS génériques + watchlist vérifiée, agrégateurs internationaux (Careerjet, Jooble) s'ils sont confirmés, connecteurs niveau 3 autorisés, liens de recherche pré-remplis (dont Welcome to the Jungle pour l'alternance), fiches pays. Ajouts v2 : écrans « Zones » et « Sources » (§9, C1 et C2).
 ✅ Le filtre « Stage été » affiche des offres pour au moins le Canada et le Japon ; chaque fiche pays a ses liens officiels et une date de vérification.
 
 **Lot 4 — Import manuel**
@@ -201,15 +212,25 @@ Web Share Target Android, champ URL, bookmarklet, extraction JSON-LD `JobPosting
 ✅ Depuis l'appli LinkedIn sur Android, « Partager → StageRadar » crée une offre pré-remplie.
 
 **Lot 5 — Notifications + calendrier + relances**
-Web Push, résumé quotidien, échéances, relances J+7/J+14.
+Web Push, résumé quotidien, échéances, relances J+7/J+14. Ajouts v2 : agenda des entretiens avec export `.ics`, zone « Important », alertes, checklist pays, revue du dimanche (§9, C6 et D).
 ✅ Je reçois une notification sur Android et sur Windows lors d'une collecte de test.
 
 **Lot 6 — Statistiques, documents, export, APK**
-Stats, gestion des CV/lettres, export JSON/CSV, génération d'un APK via PWABuilder/Bubblewrap avec instructions pas à pas dans le README.
+Stats, gestion des CV/lettres, export JSON/CSV, application Android (APK et paquet Play Store générés avec Bubblewrap, instructions pas à pas dans le README). Ajouts v2 : candidature assistée « Postuler en 2 clics », statistiques de retours, objectifs hebdomadaires, sauvegarde chiffrée (§9, C5, C6, D).
 ✅ J'installe l'APK sur mon téléphone ; l'export JSON se réimporte sans perte.
 
 **Lot 7 (optionnel) — Assistance IA**
 Avec ma propre clé API (stockée côté serveur) : résumé d'offre en 3 lignes, points du CV à mettre en avant, brouillon de lettre FR/EN/ES. Désactivé par défaut.
+
+**Lot 8 — Logement et budget** (v2)
+Onglet « Logement » par zone, liens de recherche pré-remplis par pays, suivi manuel des logements repérés, coût de la vie et budget par ville (§9, C7 et D).
+✅ Pour chaque ville de stage, j'ouvre des recherches de logement adaptées à la durée et je vois un budget mensuel estimé.
+
+**Lot 9 — Entreprises, contacts, entretiens** (v2)
+Fiches entreprise, carnet de contacts, préparation d'entretien ; en option, lecture seule de Gmail pour proposer les réponses de recruteurs (§9, C6 et D).
+✅ Depuis une candidature, je retrouve l'entreprise, mes contacts et mes notes d'entretien.
+
+**Ordre de réalisation** : 0, 3, 2, 1, 4, 5, 6, 8, 9, 7.
 
 ---
 
@@ -220,10 +241,79 @@ Avec ma propre clé API (stockée côté serveur) : résumé d'offre en 3 lignes
 3. **Ne jamais inventer de données** (entreprises, offres, règles de visa). En cas de doute : marquer `à vérifier` dans l'UI.
 4. **Tests** : fixtures JSON réelles (anonymisées) pour chaque connecteur ; tests de scoring et de dédoublonnage ; un test E2E Playwright par lot sur viewport mobile et desktop.
 5. **Petits commits** par lot, messages clairs ; README tenu à jour (installation, variables d'environnement, création des comptes API, installation Windows/Android).
-6. **Me demander** quand il faut créer un compte ou une clé (La bonne alternance, francetravail.io, Adzuna, Supabase, Cloudflare/Vercel, VAPID) — avec le lien exact et les champs à remplir.
+6. **Me demander** quand il faut créer un compte ou une clé (La bonne alternance, francetravail.io, Careerjet, Jooble, VAPID, compte développeur Google Play) — avec le lien exact et les champs à remplir.
 7. À la fin : une checklist « ce qui reste manuel » (sources non automatisables, vérifications visa à refaire).
 
 ---
 
 ## 8. Hors périmètre
-Candidature automatique sur les sites, scraping de sites l'interdisant, multi-utilisateurs, monétisation.
+Candidature automatique sur les sites, scraping de sites l'interdisant, multi-utilisateurs, monétisation, sources payantes (Adzuna).
+
+---
+
+## 9. Ajouts de la version 2 (13 octobre 2026)
+
+Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autorisées uniquement) et du §7 s'appliquent à tous.
+
+### A. Sources
+- Adzuna retiré. Careerjet et Jooble à confirmer (§3.1). JSearch en option avec compteur de quota. → Lot 3
+- Welcome to the Jungle en recherche pré-remplie pour l'alternance (§3.3). → fait
+
+### B. Organisation du dépôt → Lot 0
+- Règles de travail dans `AGENTS.md` ; `CLAUDE.md` commence par `@AGENTS.md`. Pas de `GEMINI.md`.
+- `HANDOFF.md` mis à jour à la fin de chaque tâche (fait / en cours / prochaine étape / décisions / commandes de test).
+- Dépôt distant `github.com/Optiware/stageradar` (public) : aucune clé, aucune donnée personnelle, aucune offre réelle ; fixtures anonymisées ; contrôle automatique des secrets en CI (gitleaks). **Rien n'est poussé sans mon accord explicite.**
+
+### C1. Filtres et périmètre de recherche
+- Filtre par pays, à choix multiple, avec drapeaux et nombre d'offres. → fait
+- Filtre Stage / Alternance, sous-filtre « France uniquement » pour l'alternance. → Lot 2
+- Offres rédigées uniquement en anglais incluses à l'étranger ; détection de la langue de l'annonce ; filtres « Langue de l'annonce » et « Langue exigée ». → Lots 3 (détection) et 2 (filtres)
+- Écran « Zones » : zones de recherche (ville + rayon, type, mots-clés), actives ou en pause ; les connecteurs ne collectent que pour les zones actives. → Lots 3 et 1
+
+### C2. Gestion des sources depuis l'application → Lot 3
+- Écran « Sources » : ajouter une page carrière (détection de l'ATS), un flux RSS / JSON, ou un lien de recherche manuel.
+- Test immédiat de la source ajoutée, activation / pause, état de santé.
+- Liste noire `config/blocked_domains.yaml` (linkedin.com, indeed.*, glassdoor.*, welcometothejungle.com…) : ces domaines ne sont proposés qu'en lien manuel.
+
+### C3. Design → fait pour le fil et le détail, à étendre aux écrans suivants
+- Thème clair par défaut, beaucoup de blanc, une seule couleur d'accent ; thème sombre au choix.
+- Mise en page des job boards : liste de cartes à gauche et détail à droite sur PC ; liste puis page de détail sur mobile. Aucun logo, couleur de marque ou texte repris d'un site existant.
+- Carte d'offre : intitulé, entreprise, ville + pays (drapeau), type, rémunération si connue, badges, score, ancienneté de la publication.
+- Page de détail : résumé en tête, bouton « Postuler » bien visible, description, sections « Entreprise » et « Visa et pays ».
+
+### C4. Confidentialité → fait, à l'exception du dépôt public (voir B)
+- Inscriptions fermées, un seul compte propriétaire, RLS sur toutes les tables.
+- Écran de connexion obligatoire, aucune donnée visible avant authentification. (Cloudflare Access ne s'applique pas : l'application est hébergée sur le VPS.)
+- `robots.txt` « Disallow: / », balise `noindex` et en-tête `X-Robots-Tag`.
+
+### C5. Candidature assistée, sans envoi automatique → Lot 6 (brouillon par IA : Lot 7)
+1. « Préparer ma candidature » : choix du CV (FR / EN / ES) et brouillon de lettre à partir d'un modèle.
+2. Ouverture de l'annonce d'origine et copie du texte dans le presse-papiers.
+3. Au retour : « As-tu postulé ? » → l'offre passe en « Postulé » avec la date, la version du CV et le texte envoyé.
+4. Candidature spontanée : ouverture du client de messagerie (`mailto:`) pré-rempli.
+
+### C6. Tableau de bord des retours
+- Vue « Mes candidatures », filtrable par statut, avec les retours reçus et les prochaines actions ; saisie rapide d'un retour. → Lot 2
+- Agenda des entretiens (date, heure, fuseau du pays, lien visio, notes), export `.ics`, rappels la veille et 1 h avant ; zone « Important » sur l'accueil. → Lot 5
+- Statistiques : taux de réponse par pays, source et type ; ce qui a fonctionné. → Lot 6
+- Option : lecture seule de Gmail pour proposer les réponses de recruteurs, validation manuelle obligatoire. → Lot 9
+
+### C7. Logement → Lot 8
+- Par zone : liens de recherche pré-remplis vers les sites adaptés au pays et à la durée (2–3 mois l'été, à l'année pour l'alternance), sans collecte automatique si les conditions du site l'interdisent.
+- Suivi manuel des logements repérés (lien, prix, quartier, distance, statut) et budget mensuel estimé.
+- Quand une offre passe en « Entretien » ou « Offre », proposer l'onglet Logement de la ville.
+
+### C8. Clés API → Lot 0
+- Claude Code ne crée ni compte ni clé. `docs/CLES_API.md` : pour chaque service, lien d'inscription, champs à remplir, emplacement de la clé, nom de la variable.
+- `.env.example` complet ; `npm run check-keys` teste chaque clé présente.
+- Les clés sont copiées du `.env` local vers le serveur par `npm run deploy` (la collecte tourne sur le VPS, pas dans GitHub Actions).
+
+### D. Autres améliorations
+- Alertes (nouvelle offre d'une entreprise suivie, offre suivie disparue), fuseaux horaires, checklist pays avec échéances, revue du dimanche. → Lot 5
+- Objectifs hebdomadaires, sauvegarde hebdomadaire chiffrée en JSON. → Lot 6
+- Coût de la vie et budget par ville. → Lot 8
+- Fiches entreprise, carnet de contacts, préparation d'entretien. → Lot 9
+
+### E. Application Android → Lot 6, avancé
+- L'application web s'installe déjà depuis Chrome. En plus : une application Android (Trusted Web Activity) générée avec Bubblewrap, signée par une clé qui reste sur mon PC.
+- Diffusion privée : installation directe de l'APK, ou piste de **test interne** du Play Store, réservée aux adresses que j'invite. Le compte développeur Google Play est payant (frais uniques) : je le crée moi-même si je veux passer par le Play Store.

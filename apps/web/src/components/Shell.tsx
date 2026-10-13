@@ -42,10 +42,10 @@ function linkClass({ isActive }: { isActive: boolean }): string {
 /** Cadre de l'application : barre d'onglets en bas sur mobile, barre latérale sur grand écran. */
 export function Shell() {
   return (
-    <div className="min-h-dvh md:flex">
+    <div className="min-h-dvh md:flex md:items-start">
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:static md:w-56 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 dark:border-slate-800 dark:bg-slate-900"
+        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:sticky md:top-0 md:h-dvh md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="hidden items-center gap-2 px-3 pt-2 pb-4 md:flex">
           <img src="/logo.svg" alt="" width={28} height={28} className="rounded-lg" />
@@ -69,7 +69,7 @@ export function Shell() {
           </NavLink>
         ))}
       </nav>
-      <main className="mx-auto w-full max-w-5xl px-4 pt-6 pb-24 md:px-8 md:pb-8">
+      <main className="mx-auto w-full max-w-7xl min-w-0 px-4 pt-6 pb-24 md:px-8 md:pb-8">
         <Outlet />
       </main>
     </div>

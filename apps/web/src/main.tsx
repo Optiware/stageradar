@@ -5,6 +5,9 @@ import { BrowserRouter } from 'react-router';
 import { App } from './App';
 import './index.css';
 import { AuthProvider } from './lib/AuthProvider';
+import { appliquerTheme, themeEnregistre } from './lib/theme';
+
+appliquerTheme(themeEnregistre());
 
 const queryClient = new QueryClient();
 

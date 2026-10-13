@@ -103,7 +103,7 @@ describe('ingest_offer', () => {
   it('fusionne la même offre vue sur une autre source (même URL canonique)', async () => {
     await serviceRole(async (query) => {
       const premier = await ingest(query, {});
-      const second = await ingest(query, { source: 'adzuna', source_id: 'A-9', score: 10 });
+      const second = await ingest(query, { source: 'jobboard', source_id: 'A-9', score: 10 });
       expect(second).toEqual({ offer_id: premier.offer_id, nouvelle: false });
 
       const offres = await query<{ source: string; score: number }>(
@@ -114,7 +114,7 @@ describe('ingest_offer', () => {
       const liens = await query<{ source: string }>(
         'select source from public.offer_sources order by source',
       );
-      expect(liens.rows.map((lien) => lien.source)).toEqual(['adzuna', 'greenhouse:exemple']);
+      expect(liens.rows.map((lien) => lien.source)).toEqual(['greenhouse:exemple', 'jobboard']);
     });
   });
 
@@ -122,10 +122,10 @@ describe('ingest_offer', () => {
     await serviceRole(async (query) => {
       const premier = await ingest(query, {});
       const second = await ingest(query, {
-        source: 'adzuna',
+        source: 'jobboard',
         source_id: 'A-1',
-        url: 'https://adzuna.example/1',
-        url_canonique: 'https://adzuna.example/1',
+        url: 'https://jobboard.example/1',
+        url_canonique: 'https://jobboard.example/1',
         titre: 'SOFTWARE ENGINEER INTERN',
         ville: 'tokyo',
       });
@@ -139,10 +139,10 @@ describe('ingest_offer', () => {
         titre_norm: 'software engineer intern summer 2027',
       });
       const second = await ingest(query, {
-        source: 'adzuna',
+        source: 'jobboard',
         source_id: 'A-2',
-        url: 'https://adzuna.example/2',
-        url_canonique: 'https://adzuna.example/2',
+        url: 'https://jobboard.example/2',
+        url_canonique: 'https://jobboard.example/2',
         titre_norm: 'software engineer intern summer 2027 tokyo',
         entreprise_norm: 'exemple inc',
       });
@@ -162,10 +162,10 @@ describe('ingest_offer', () => {
     await serviceRole(async (query) => {
       const premier = await ingest(query, {});
       const second = await ingest(query, {
-        source: 'adzuna',
+        source: 'jobboard',
         source_id: 'A-3',
-        url: 'https://adzuna.example/3',
-        url_canonique: 'https://adzuna.example/3',
+        url: 'https://jobboard.example/3',
+        url_canonique: 'https://jobboard.example/3',
         ...difference,
       });
       expect(second.nouvelle).toBe(true);
@@ -235,7 +235,7 @@ describe('close_source_run', () => {
   it('garde active une offre encore présente sur une autre source', async () => {
     await serviceRole(async (query) => {
       await ingest(query, {}, 'run-1');
-      await ingest(query, { source: 'adzuna', source_id: 'A-9' }, 'run-1');
+      await ingest(query, { source: 'jobboard', source_id: 'A-9' }, 'run-1');
       for (const run of ['run-2', 'run-3', 'run-4']) expect(await clore(query, run)).toBe(0);
     });
   });

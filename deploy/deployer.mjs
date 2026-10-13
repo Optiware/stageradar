@@ -135,6 +135,7 @@ etape('Vérifications');
 const resultats = [
   await verifier('/', 200),
   await verifier('/manifest.webmanifest', 200),
+  await verifier('/robots.txt', 200),
   await verifier('/auth/v1/health', 200),
   // Sans compte : aucun accès aux données, et l'administration des comptes est invisible.
   await verifier('/rest/v1/rpc/is_owner', 401, { method: 'POST' }),

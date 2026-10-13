@@ -38,7 +38,7 @@ export function loadWatchlist(chemin: string = WATCHLIST): WatchlistEntry[] {
 
 /**
  * Connecteurs exécutés à chaque collecte : un par entreprise de la watchlist.
- * Adzuna (clé à créer) et La bonne alternance (Lot 1) s'ajouteront ici.
+ * La bonne alternance (Lot 1) et les agrégateurs retenus au Lot 3 s'ajouteront ici.
  */
 export function buildConnectors(): Connector[] {
   return loadWatchlist().map((entree) => atsConnector(entree));
