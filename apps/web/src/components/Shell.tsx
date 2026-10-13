@@ -1,42 +1,20 @@
+import { CalendarDays, Globe, Kanban, Menu, Radar } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 
 const NAV = [
-  {
-    to: '/',
-    label: 'Fil',
-    // Radar
-    icon: 'M12 12 19 5M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5',
-  },
-  {
-    to: '/suivi',
-    label: 'Suivi',
-    // Colonnes du Kanban
-    icon: 'M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4z',
-  },
-  {
-    to: '/calendrier',
-    label: 'Calendrier',
-    icon: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4',
-  },
-  {
-    to: '/pays',
-    label: 'Pays',
-    // Globe
-    icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
-  },
-  {
-    to: '/plus',
-    label: 'Plus',
-    icon: 'M5 7h14M5 12h14M5 17h14',
-  },
+  { to: '/', label: 'Fil', Icone: Radar },
+  { to: '/suivi', label: 'Suivi', Icone: Kanban },
+  { to: '/calendrier', label: 'Calendrier', Icone: CalendarDays },
+  { to: '/pays', label: 'Pays', Icone: Globe },
+  { to: '/plus', label: 'Plus', Icone: Menu },
 ] as const;
 
 function linkClass({ isActive }: { isActive: boolean }): string {
   const base =
-    'flex flex-1 flex-col items-center gap-1 px-2 py-2 text-xs font-medium md:flex-none md:flex-row md:gap-3 md:rounded-full md:px-4 md:py-2.5 md:text-sm';
+    'flex flex-1 flex-col items-center gap-1 px-2 py-2 text-xs font-bold transition md:flex-none md:flex-row md:gap-3 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm';
   return isActive
-    ? `${base} text-primary-700 md:bg-primary-50 dark:text-primary-400 md:dark:bg-primary-500/15`
-    : `${base} text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100`;
+    ? `${base} text-primary-700 md:bg-primary-50 dark:text-primary-400 md:dark:bg-primary-900/30`
+    : `${base} text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white`;
 }
 
 /** Cadre de l'application : barre d'onglets en bas sur mobile, barre latérale sur grand écran. */
@@ -45,27 +23,16 @@ export function Shell() {
     <div className="min-h-dvh md:flex md:items-start">
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:sticky md:top-0 md:h-dvh md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 dark:border-gray-800 dark:bg-gray-900"
+        className="fixed inset-x-0 bottom-0 z-10 flex border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-md md:sticky md:top-0 md:h-dvh md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-t-0 md:border-r md:p-3 md:shadow-none dark:border-gray-800 dark:bg-gray-900"
       >
         <div className="hidden items-center gap-2 px-3 pt-2 pb-4 md:flex">
           <img src="/logo.svg" alt="" width={28} height={28} className="rounded-xl" />
-          <span className="font-semibold">StageRadar</span>
+          <span className="font-extrabold tracking-tight">StageRadar</span>
         </div>
-        {NAV.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.to === '/'} className={linkClass}>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="size-6 md:size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d={item.icon} />
-            </svg>
-            {item.label}
+        {NAV.map(({ to, label, Icone }) => (
+          <NavLink key={to} to={to} end={to === '/'} className={linkClass}>
+            <Icone aria-hidden="true" className="size-6 md:size-5" strokeWidth={2} />
+            {label}
           </NavLink>
         ))}
       </nav>

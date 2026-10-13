@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BADGE, CARTE, SECONDAIRE } from '../lib/ui';
 
 /** Écran pas encore réalisé : annonce son contenu et le lot qui le livrera. */
 export function ComingSoon({
@@ -13,11 +14,11 @@ export function ComingSoon({
   return (
     <>
       <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
-      <div className="mt-6 rounded-3xl border border-dashed border-gray-300 p-6 dark:border-gray-700">
-        <p className="text-sm font-medium text-primary-700 dark:text-primary-400">
-          Prévu au lot {lot}
+      <div className={`mt-6 max-w-3xl ${CARTE}`}>
+        <p>
+          <span className={BADGE.vert}>Prévu au lot {lot}</span>
         </p>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">{children}</p>
+        <p className={`mt-3 ${SECONDAIRE}`}>{children}</p>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 import { PAYS_STAGE } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
+import { ExternalLink } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
@@ -17,13 +18,14 @@ import {
   type FeedOffer,
 } from '../lib/offres';
 import { supabase } from '../lib/supabase';
+import { BOUTON_PRINCIPAL } from '../lib/ui';
 import { Flag } from './Flag';
 import { CompanyAvatar } from './OfferCard';
 
 function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
     <section className="mt-6 border-t border-gray-200 pt-5 dark:border-gray-800">
-      <h3 className="text-base font-semibold">{titre}</h3>
+      <h3 className="text-base font-bold">{titre}</h3>
       {children}
     </section>
   );
@@ -92,15 +94,15 @@ export function OfferDetail({
       <div className="flex items-start gap-4">
         <CompanyAvatar nom={offre.entreprise} className="size-14 text-2xl" />
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl leading-snug font-semibold break-words">{offre.titre}</h2>
-          <p className="mt-1 text-gray-700 dark:text-gray-200">
+          <h2 className="text-xl leading-tight font-extrabold break-words">{offre.titre}</h2>
+          <p className="mt-1 text-sm font-bold text-gray-500 dark:text-gray-400">
             {[offre.entreprise, lieu(offre)].filter(Boolean).join(' · ')}
           </p>
         </div>
       </div>
 
       {offre.exclue_raison && (
-        <p className="mt-4 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-900 dark:bg-red-900/30 dark:text-red-100">
+        <p className="mt-4 rounded-2xl bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 dark:bg-red-900/30 dark:text-red-400">
           Hors cible : {offre.exclue_raison}
         </p>
       )}
@@ -110,24 +112,13 @@ export function OfferDetail({
           href={lien}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-6 py-3 font-bold text-gray-950 hover:bg-primary-400 sm:w-auto sm:min-w-56"
+          className={`mt-5 flex w-full items-center justify-center gap-2 sm:w-auto sm:min-w-56 ${BOUTON_PRINCIPAL}`}
         >
           Postuler
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="size-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14 5h5v5M19 5l-8 8M11 7H6v11h11v-5" />
-          </svg>
+          <ExternalLink aria-hidden="true" className="size-4" />
         </a>
       ) : (
-        <p className="mt-5 text-sm text-gray-600 dark:text-gray-300">
+        <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
           Le lien de cette offre n'est pas une adresse web valide.
         </p>
       )}
@@ -144,7 +135,7 @@ export function OfferDetail({
             .map(([nom, valeur]) => (
               <div key={nom} className="contents">
                 <dt className="text-gray-500 dark:text-gray-400">{nom}</dt>
-                <dd className="break-words">{valeur}</dd>
+                <dd className="font-bold break-words">{valeur}</dd>
               </div>
             ))}
         </dl>
@@ -153,11 +144,11 @@ export function OfferDetail({
       <Section titre="Pertinence">
         <div className="mt-3 flex items-center gap-3">
           <span
-            className={`flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold ${couleurScore(offre.score ?? 0)}`}
+            className={`flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-extrabold ${couleurScore(offre.score ?? 0)}`}
           >
             {offre.score ?? 0}
           </span>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Score sur 100, calculé d'après ton profil.
           </p>
         </div>
@@ -176,7 +167,7 @@ export function OfferDetail({
 
       <Section titre="Description">
         {description.isPending && (
-          <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">Chargement…</p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Chargement…</p>
         )}
         {description.isError && (
           <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-400">
@@ -189,7 +180,7 @@ export function OfferDetail({
               {description.data}
             </p>
           ) : (
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
               La source ne fournit pas de description : voir l'annonce d'origine.
             </p>
           ))}
@@ -200,7 +191,7 @@ export function OfferDetail({
           <p className="mt-3 text-sm">{offre.entreprise}</p>
           {memeEntreprise.length > 0 && (
             <>
-              <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                 Autres offres de cette entreprise :
               </p>
               <ul className="mt-1.5 space-y-1 text-sm">
@@ -208,7 +199,7 @@ export function OfferDetail({
                   <li key={autre.id}>
                     <Link
                       to={{ search: `?offre=${autre.id}` }}
-                      className="text-primary-700 underline underline-offset-2 dark:text-primary-400"
+                      className="font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
                     >
                       {autre.titre}
                     </Link>
@@ -225,13 +216,13 @@ export function OfferDetail({
 
       {(PAYS_STAGE as readonly string[]).includes(offre.pays ?? '') && (
         <Section titre="Visa et pays">
-          <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
             {nomPays(offre.pays)} : les règles de visa pour un stage ne sont pas encore vérifiées
             dans l'application. Renseigne-toi sur le site officiel du pays avant de postuler.
           </p>
           <Link
             to="/pays"
-            className="mt-2 inline-block text-sm text-primary-700 underline underline-offset-2 dark:text-primary-400"
+            className="mt-2 inline-block text-sm font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
           >
             Voir les fiches pays
           </Link>

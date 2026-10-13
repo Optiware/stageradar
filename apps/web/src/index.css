@@ -3,13 +3,17 @@
 /*
  * Style « Pulse » : très arrondi, vert vif, police Plus Jakarta Sans.
  * Tailwind 4 se configure ici (plus de tailwind.config.ts) : ces lignes en sont l'équivalent.
+ * Les classes communes (cartes, boutons, badges) sont dans lib/ui.ts.
  */
 
 /* Équivalent de `darkMode: 'class'` : la classe est posée par lib/theme.ts. Clair par défaut. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Police servie par l'application elle-même (@fontsource-variable/plus-jakarta-sans). */
+  /*
+   * Police servie par l'application elle-même (@fontsource-variable/plus-jakarta-sans), et non par
+   * Google Fonts : la politique de sécurité du site interdit tout chargement externe.
+   */
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
   --color-primary-50: #ecfdf5;
@@ -36,10 +40,31 @@
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-gray-100 font-medium text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+  }
+
+  /* Classe posée par lib/theme.ts le temps d'un changement de thème. */
+  html.changement-theme body {
+    @apply transition-colors duration-200;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply text-gray-900 dark:text-white;
   }
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-600 dark:outline-primary-400;
+  }
+}
+
+/* Défilement horizontal sans barre visible (rangée de filtres sur téléphone). */
+@utility hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -10,33 +10,21 @@ import {
   lieu,
   type FeedOffer,
 } from '../lib/offres';
+import { BADGE, CARTE_SURVOL, SECONDAIRE } from '../lib/ui';
 import { Flag } from './Flag';
 
-const TEINTES = [
-  'bg-teal-100 text-teal-900',
-  'bg-sky-100 text-sky-900',
-  'bg-violet-100 text-violet-900',
-  'bg-amber-100 text-amber-900',
-  'bg-rose-100 text-rose-900',
-  'bg-lime-100 text-lime-900',
-];
-
-/** Pastille à l'initiale de l'entreprise : la même entreprise garde toujours la même teinte. */
+/** Pastille à l'initiale de l'entreprise. */
 export function CompanyAvatar({ nom, className = '' }: { nom: string | null; className?: string }) {
   const texte = nom?.trim() || '?';
-  let somme = 0;
-  for (const caractere of texte) somme += caractere.codePointAt(0) ?? 0;
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-2xl font-bold ${TEINTES[somme % TEINTES.length]} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 font-extrabold text-primary-600 dark:border-primary-900/50 dark:bg-primary-900/30 dark:text-primary-400 ${className}`}
     >
       {[...texte][0]!.toUpperCase()}
     </span>
   );
 }
-
-const PUCE = 'rounded-full px-2 py-0.5';
 
 export function OfferCard({
   offre,
@@ -57,21 +45,21 @@ export function OfferCard({
         to={{ search: `?offre=${offre.id}` }}
         onClick={onOuvrir}
         aria-current={selectionnee ? 'true' : undefined}
-        className={`block rounded-3xl border p-4 transition-shadow hover:shadow-md ${
+        className={`block rounded-3xl border p-5 shadow-sm ${CARTE_SURVOL} ${
           selectionnee
-            ? 'border-primary-500 bg-primary-50/70 ring-1 ring-primary-500 dark:bg-primary-500/10'
+            ? 'border-primary-500 bg-primary-50/60 ring-1 ring-primary-500 dark:bg-primary-900/20'
             : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
         } ${offre.exclue_raison ? 'opacity-75' : ''}`}
       >
-        <div className="flex items-start gap-3">
-          <CompanyAvatar nom={offre.entreprise} className="size-11 text-lg" />
+        <div className="flex items-start gap-4">
+          <CompanyAvatar nom={offre.entreprise} className="size-12 text-xl" />
           <div className="min-w-0 flex-1">
-            <h2 className="leading-snug font-semibold break-words">{offre.titre}</h2>
+            <h2 className="leading-tight font-bold break-words">{offre.titre}</h2>
             {offre.entreprise && (
-              <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-200">{offre.entreprise}</p>
+              <p className={`mt-1 text-sm font-bold ${SECONDAIRE}`}>{offre.entreprise}</p>
             )}
             {lieu(offre) && (
-              <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+              <p className={`mt-1 flex items-center gap-1.5 text-sm ${SECONDAIRE}`}>
                 <Flag code={offre.pays} />
                 <span className="min-w-0 break-words">{lieu(offre)}</span>
               </p>
@@ -79,48 +67,35 @@ export function OfferCard({
           </div>
           <span
             aria-label={`Score ${offre.score ?? 0} sur 100`}
-            className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${couleurScore(offre.score ?? 0)}`}
+            className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${couleurScore(offre.score ?? 0)}`}
           >
             {offre.score ?? 0}
           </span>
         </div>
 
-        <ul className="mt-3 flex flex-wrap gap-1.5 text-xs">
-          {estNouvelle(offre, maintenant) && (
-            <li className={`${PUCE} bg-primary-500 font-medium text-gray-950`}>Nouveau</li>
-          )}
-          <li className={`${PUCE} border border-gray-300 font-medium dark:border-gray-600`}>
-            {LIBELLES_TYPE[offre.type]}
-          </li>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {estNouvelle(offre, maintenant) && <li className={BADGE.vert}>Nouveau</li>}
+          <li className={BADGE.neutre}>{LIBELLES_TYPE[offre.type]}</li>
           {offre.teletravail && offre.teletravail !== 'sur_site' && (
-            <li className={`${PUCE} bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-100`}>
-              {LIBELLES_TELETRAVAIL[offre.teletravail]}
-            </li>
+            <li className={BADGE.bleu}>{LIBELLES_TELETRAVAIL[offre.teletravail]}</li>
           )}
           {offre.domaines.map((domaine) => (
-            <li key={domaine} className={`${PUCE} bg-gray-100 dark:bg-gray-800`}>
+            <li key={domaine} className={BADGE.neutre}>
               {LIBELLES_DOMAINE[domaine]}
             </li>
           ))}
           {offre.langues_requises
             .filter((langue) => LIBELLES_LANGUE[langue])
             .map((langue) => (
-              <li
-                key={langue}
-                className={`${PUCE} bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100`}
-              >
+              <li key={langue} className={BADGE.ambre}>
                 {LIBELLES_LANGUE[langue]} exigé
               </li>
             ))}
-          {offre.exclue_raison && (
-            <li className={`${PUCE} bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100`}>
-              {offre.exclue_raison}
-            </li>
-          )}
+          {offre.exclue_raison && <li className={BADGE.rouge}>{offre.exclue_raison}</li>}
         </ul>
 
         {(publiee || offre.remuneration_texte) && (
-          <p className="mt-3 flex justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
+          <p className={`mt-3 flex justify-between gap-3 text-xs ${SECONDAIRE}`}>
             <span className="min-w-0 truncate">{offre.remuneration_texte}</span>
             {publiee && <span className="shrink-0">Publiée {publiee}</span>}
           </p>

@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import { Shell } from './components/Shell';
 import { StatusScreen } from './components/StatusScreen';
 import { useAuth } from './lib/auth-context';
+import { BOUTON_PRINCIPAL } from './lib/ui';
 import { supabase } from './lib/supabase';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
@@ -54,11 +55,7 @@ function OwnerGate({ session }: { session: Session }) {
           <strong>{session.user.email}</strong> n'est pas le compte propriétaire de cette
           application.
         </p>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="mt-4 rounded-full bg-primary-500 px-5 py-2.5 font-semibold text-gray-950 hover:bg-primary-400"
-        >
+        <button type="button" onClick={() => void signOut()} className={`mt-4 ${BOUTON_PRINCIPAL}`}>
           Se déconnecter
         </button>
       </StatusScreen>

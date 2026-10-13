@@ -1,11 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../lib/auth-context';
 import { authErrorMessage } from '../lib/auth-errors';
+import { BOUTON_PRINCIPAL, CARTE, CHAMP, SECONDAIRE } from '../lib/ui';
 
 type Status = { step: 'idle' } | { step: 'sending' } | { step: 'error'; message: string };
-
-const FIELD_CLASS =
-  'mt-1.5 block w-full rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-base dark:border-gray-700 dark:bg-gray-900';
 
 export function Login() {
   const { signIn } = useAuth();
@@ -25,52 +23,52 @@ export function Login() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
-      <img src="/logo.svg" alt="" width={64} height={64} className="rounded-2xl" />
-      <h1 className="mt-6 text-2xl font-extrabold tracking-tight">StageRadar</h1>
-      <p className="mt-1 text-gray-600 dark:text-gray-300">
-        Alternance et stages à l'étranger, au même endroit.
-      </p>
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-8">
+      <div className={`${CARTE} sm:p-8`}>
+        <img src="/logo.svg" alt="" width={64} height={64} className="rounded-2xl" />
+        <h1 className="mt-6 text-2xl font-extrabold tracking-tight">StageRadar</h1>
+        <p className={`mt-1 ${SECONDAIRE}`}>Alternance et stages à l'étranger, au même endroit.</p>
 
-      <form onSubmit={onSubmit} className="mt-8">
-        <label htmlFor="email" className="block text-sm font-medium">
-          Adresse e-mail
-        </label>
-        <input
-          id="email"
-          type="email"
-          required
-          autoComplete="username"
-          inputMode="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          className={FIELD_CLASS}
-        />
-        <label htmlFor="password" className="mt-4 block text-sm font-medium">
-          Mot de passe
-        </label>
-        <input
-          id="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className={FIELD_CLASS}
-        />
-        <button
-          type="submit"
-          disabled={status.step === 'sending'}
-          className="mt-6 w-full rounded-full bg-primary-500 px-5 py-3 font-semibold text-gray-950 hover:bg-primary-400 disabled:opacity-60"
-        >
-          {status.step === 'sending' ? 'Connexion…' : 'Se connecter'}
-        </button>
-        {status.step === 'error' && (
-          <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-400">
-            {status.message}
-          </p>
-        )}
-      </form>
+        <form onSubmit={onSubmit} className="mt-8">
+          <label htmlFor="email" className="block text-sm font-bold">
+            Adresse e-mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="username"
+            inputMode="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className={CHAMP}
+          />
+          <label htmlFor="password" className="mt-4 block text-sm font-bold">
+            Mot de passe
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className={CHAMP}
+          />
+          <button
+            type="submit"
+            disabled={status.step === 'sending'}
+            className={`mt-6 w-full ${BOUTON_PRINCIPAL}`}
+          >
+            {status.step === 'sending' ? 'Connexion…' : 'Se connecter'}
+          </button>
+          {status.step === 'error' && (
+            <p role="alert" className="mt-3 text-sm font-bold text-red-700 dark:text-red-400">
+              {status.message}
+            </p>
+          )}
+        </form>
+      </div>
     </main>
   );
 }

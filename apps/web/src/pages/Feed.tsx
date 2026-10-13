@@ -1,5 +1,6 @@
 import { normalizeText, PAYS_STAGE } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, Search } from 'lucide-react';
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Flag } from '../components/Flag';
@@ -8,6 +9,7 @@ import { OfferDetail } from '../components/OfferDetail';
 import { SITES_ALTERNANCE } from '../lib/liens-recherche';
 import { COLONNES_FIL, nomPays, type FeedOffer } from '../lib/offres';
 import { supabase } from '../lib/supabase';
+import { CARTE, pilule, SECONDAIRE } from '../lib/ui';
 
 const ONGLETS = [
   { id: 'alternance', libelle: 'Alternance' },
@@ -21,6 +23,9 @@ const PAYS_FILTRE: readonly string[] = [...PAYS_STAGE, 'FR'];
 
 /** À partir de cette largeur, la liste et le détail sont côte à côte (classe `lg` de Tailwind). */
 const DEUX_COLONNES = '(min-width: 64rem)';
+
+/** Texte posé directement sur le fond gris de la page : un ton plus foncé que dans une carte. */
+const SUR_LA_PAGE = 'text-gray-600 dark:text-gray-400';
 
 function ecouterLargeur(prevenir: () => void) {
   const media = window.matchMedia(DEUX_COLONNES);
@@ -118,33 +123,28 @@ export function Feed() {
       <div className={idOuvert ? 'hidden lg:block' : ''}>
         <h1 className="text-2xl font-extrabold tracking-tight">Fil</h1>
 
-        <label className="relative mt-4 block">
-          <span className="sr-only">Rechercher une offre</span>
-          <svg
+        <div className="relative mt-4">
+          <label htmlFor="recherche" className="sr-only">
+            Rechercher une offre
+          </label>
+          <Search
             aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16 16 4.5 4.5" />
-          </svg>
+            className="pointer-events-none absolute inset-y-0 left-3.5 my-auto size-5 text-gray-400"
+          />
           <input
+            id="recherche"
             type="search"
             value={recherche}
             onChange={(event) => setRecherche(event.target.value)}
             placeholder="Intitulé, entreprise, ville"
-            className="block w-full rounded-full border border-gray-300 bg-white py-2.5 pr-4 pl-10 text-base placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900"
+            className="block w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-11 text-base shadow-sm placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-900"
           />
-        </label>
+        </div>
 
         <div
           role="tablist"
           aria-label="Type d'offre"
-          className="mt-3 flex rounded-full bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800"
+          className="mt-3 flex rounded-full bg-gray-200/70 p-1 text-sm font-bold dark:bg-gray-900"
         >
           {ONGLETS.map(({ id, libelle }) => {
             const actif = id === onglet;
@@ -155,14 +155,14 @@ export function Feed() {
                 role="tab"
                 aria-selected={actif}
                 onClick={() => setOnglet(id)}
-                className={`flex-1 rounded-full px-3 py-1.5 ${
+                className={`flex-1 rounded-full px-3 py-1.5 transition ${
                   actif
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-white'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                 }`}
               >
                 {libelle}{' '}
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className={`font-medium ${SECONDAIRE}`}>
                   {visibles.filter((offre) => dansOnglet(offre, id)).length}
                 </span>
               </button>
@@ -173,32 +173,25 @@ export function Feed() {
         <div
           role="group"
           aria-label="Pays"
-          className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 text-sm lg:mx-0 lg:flex-wrap lg:px-0"
+          className="hide-scroll -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
         >
-          {paysProposes.map((code) => {
-            const choisi = paysChoisis.includes(code);
-            return (
-              <button
-                key={code}
-                type="button"
-                aria-pressed={choisi}
-                onClick={() => basculerPays(code)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 ${
-                  choisi
-                    ? 'border-primary-600 bg-primary-50 font-medium text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
-                    : 'border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
-                }`}
-              >
-                <Flag code={code} />
-                {nomPays(code)}
-                <span className="text-gray-500 dark:text-gray-400">{parPays.get(code) ?? 0}</span>
-              </button>
-            );
-          })}
+          {paysProposes.map((code) => (
+            <button
+              key={code}
+              type="button"
+              aria-pressed={paysChoisis.includes(code)}
+              onClick={() => basculerPays(code)}
+              className={`flex shrink-0 items-center gap-1.5 ${pilule(paysChoisis.includes(code))}`}
+            >
+              <Flag code={code} />
+              {nomPays(code)}
+              <span className={`font-medium ${SECONDAIRE}`}>{parPays.get(code) ?? 0}</span>
+            </button>
+          ))}
         </div>
 
         {nbMasquees > 0 && (
-          <label className="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <label className={`mt-3 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
             <input
               type="checkbox"
               checked={avecMasquees}
@@ -211,21 +204,17 @@ export function Feed() {
 
         {onglet === 'alternance' &&
           SITES_ALTERNANCE.map(({ site, raison, recherches }) => (
-            <section
-              key={site}
-              aria-label={`Recherches sur ${site}`}
-              className="mt-4 rounded-3xl border border-gray-200 p-4 dark:border-gray-800"
-            >
-              <h2 className="font-semibold">Chercher aussi sur {site}</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{raison}</p>
-              <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+            <section key={site} aria-label={`Recherches sur ${site}`} className={`mt-4 ${CARTE}`}>
+              <h2 className="font-bold">Chercher aussi sur {site}</h2>
+              <p className={`mt-1 text-sm ${SECONDAIRE}`}>{raison}</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
                 {recherches.map(({ libelle, url }) => (
                   <li key={libelle}>
                     <a
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block rounded-full border border-primary-600 px-3 py-1.5 font-medium text-primary-700 hover:bg-primary-50 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-500/15"
+                      className="inline-block rounded-full bg-primary-50 px-3.5 py-1.5 text-sm font-bold text-primary-700 transition hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50"
                     >
                       {libelle}
                     </a>
@@ -235,16 +224,14 @@ export function Feed() {
             </section>
           ))}
 
-        {offres.isPending && (
-          <p className="mt-8 text-gray-600 dark:text-gray-300">Chargement des offres…</p>
-        )}
+        {offres.isPending && <p className={`mt-8 ${SUR_LA_PAGE}`}>Chargement des offres…</p>}
         {offres.isError && (
-          <p role="alert" className="mt-8 text-red-700 dark:text-red-400">
+          <p role="alert" className="mt-8 font-bold text-red-700 dark:text-red-400">
             Les offres n'ont pas pu être chargées. Vérifie ta connexion.
           </p>
         )}
         {offres.isSuccess && affichees.length === 0 && (
-          <p className="mt-8 text-gray-600 dark:text-gray-300">
+          <p className={`mt-8 ${SUR_LA_PAGE}`}>
             {toutes.length === 0
               ? 'Aucune offre pour le moment. La collecte tourne toutes les 6 heures.'
               : onglet === 'alternance' && dansLOnglet.length === 0 && mots.length === 0
@@ -269,52 +256,39 @@ export function Feed() {
         </ul>
       </div>
 
-      <div
-        className={`lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:rounded-3xl lg:border lg:border-gray-200 lg:p-6 lg:dark:border-gray-800 ${
-          idOuvert ? '' : 'hidden lg:block'
-        }`}
-      >
+      <div className={`lg:sticky lg:top-4 ${idOuvert ? '' : 'hidden lg:block'}`}>
         {idOuvert && (
           <Link
             to="/"
-            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-primary-700 lg:hidden dark:text-primary-400"
+            className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-primary-700 lg:hidden dark:text-primary-400"
           >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="size-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m14 6-6 6 6 6" />
-            </svg>
+            <ChevronLeft aria-hidden="true" className="size-4" />
             Retour aux offres
           </Link>
         )}
-        {ouverte ? (
-          <OfferDetail
-            key={ouverte.id}
-            offre={ouverte}
-            maintenant={maintenant}
-            memeEntreprise={toutes.filter(
-              (autre) =>
-                autre.id !== ouverte.id &&
-                autre.entreprise === ouverte.entreprise &&
-                autre.exclue_raison === null,
-            )}
-          />
-        ) : (
-          offres.isSuccess && (
-            <p className="text-gray-600 dark:text-gray-300">
-              {idOuvert
-                ? "Cette offre n'est plus disponible."
-                : 'Sélectionne une offre pour afficher son détail.'}
+        <div className={`${CARTE} lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6`}>
+          {ouverte ? (
+            <OfferDetail
+              key={ouverte.id}
+              offre={ouverte}
+              maintenant={maintenant}
+              memeEntreprise={toutes.filter(
+                (autre) =>
+                  autre.id !== ouverte.id &&
+                  autre.entreprise === ouverte.entreprise &&
+                  autre.exclue_raison === null,
+              )}
+            />
+          ) : (
+            <p className={SECONDAIRE}>
+              {!offres.isSuccess
+                ? 'Chargement…'
+                : idOuvert
+                  ? "Cette offre n'est plus disponible."
+                  : 'Sélectionne une offre pour afficher son détail.'}
             </p>
-          )
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

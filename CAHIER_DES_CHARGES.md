@@ -277,7 +277,13 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 
 ### C3. Design → fait pour le fil et le détail, à étendre aux écrans suivants
 - Thème clair par défaut, beaucoup de blanc, une seule couleur d'accent ; thème sombre au choix.
-- **Style « Pulse »** pour toute l'application (décision du 13 octobre 2026) : énergique, très arrondi (« bubbly »), police Plus Jakarta Sans, vert `primary` (50 `#ecfdf5`, 100 `#d1fae5`, 400 `#34d399`, 500 `#10b981`, 600 `#059669`), gris sombres (850 `#1f2937`, 900 `#111827`, 950 `#030712`), thème sombre par classe. Ces valeurs sont définies dans `apps/web/src/index.css` (Tailwind 4 n'a plus de `tailwind.config.ts`). La structure de la page Fil est conservée.
+- **Style « Pulse »** pour toute l'application (design system fourni le 13 octobre 2026) : énergique, très arrondi (« bubbly »), inspiré des applications de fintech et de sport. La structure de la page Fil est conservée.
+  - **Couleurs** : vert `primary` (50 `#ecfdf5`, 100 `#d1fae5`, 400 `#34d399`, 500 `#10b981`, 600 `#059669`), gris sombres (850 `#1f2937`, 900 `#111827`, 950 `#030712`). Clair : page `gray-100`, cartes blanches, titres `gray-900`, texte secondaire `gray-500`. Sombre : page `gray-950`, cartes `gray-900`, titres blancs, texte secondaire `gray-400`. Le thème sombre est obligatoire sur chaque composant.
+  - **Typographie** : Plus Jakarta Sans ; titres et boutons en gras ou extra-gras, texte courant en `font-medium`.
+  - **Formes** : cartes `rounded-3xl`, boutons principaux et champs `rounded-2xl`, badges et petits éléments `rounded-full`. Ombres très discrètes (`shadow-sm` pour les cartes, `shadow-md` pour les éléments flottants). Bordure légère sur les cartes, verte au survol.
+  - **Badges colorés** : fond pastel et texte saturé en clair ; fond translucide et texte clair en sombre.
+  - **Icônes** : uniquement `lucide-react` (les drapeaux sont des dessins, pas des icônes).
+  - **Mise en œuvre** : valeurs dans `apps/web/src/index.css` (Tailwind 4 n'a plus de `tailwind.config.ts`), classes communes dans `apps/web/src/lib/ui.ts`. Trois adaptations assumées : police servie par l'application et non par Google Fonts (la politique de sécurité du site interdit tout chargement externe) ; texte sombre sur les boutons verts et teintes 700 / 900 ajoutées pour le texte vert, par souci de contraste ; thème clair par défaut, sombre au choix.
 - Mise en page des job boards : liste de cartes à gauche et détail à droite sur PC ; liste puis page de détail sur mobile. Aucun logo, couleur de marque ou texte repris d'un site existant.
 - Carte d'offre : intitulé, entreprise, ville + pays (drapeau), type, rémunération si connue, badges, score, ancienneté de la publication.
 - Page de détail : résumé en tête, bouton « Postuler » bien visible, description, sections « Entreprise » et « Visa et pays ».
