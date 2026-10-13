@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { Connector } from '@stageradar/shared';
 import type { Notifieur } from '../notifications/envoi';
+import { essayerSite, reconnaitreAts } from '../connectors/detecter';
 import { collect } from '../pipeline/collect';
 import type { Store } from '../pipeline/store';
 import { DemandeInvalide, importerOffre, type DemandeImport } from './importer';
@@ -15,7 +16,7 @@ const CORPS_MAX = 64 * 1024;
 
 export interface Dependances {
   store: Store;
-  connecteurs: () => Connector[];
+  connecteurs: () => Connector[] | Promise<Connector[]>;
   /** Vrai si ce jeton (en-tête Authorization) est celui du propriétaire. */
   estProprietaire: (autorisation: string) => Promise<boolean>;
   lire?: (url: string) => Promise<string>;
@@ -96,11 +97,14 @@ export function creerServeur(dependances: Dependances) {
     }
 
     if (chemin === '/collecter') {
-      collecteEnCours ??= collect(dependances.connecteurs(), dependances.store, {
-        runId: randomUUID(),
-        maintenant: new Date(),
-        signal: AbortSignal.timeout(10 * 60_000),
-      })
+      collecteEnCours ??= Promise.resolve(dependances.connecteurs())
+        .then((connecteurs) =>
+          collect(connecteurs, dependances.store, {
+            runId: randomUUID(),
+            maintenant: new Date(),
+            signal: AbortSignal.timeout(10 * 60_000),
+          }),
+        )
         .then(async (bilans) => {
           // Une notification manquée ne doit pas faire échouer la collecte.
           await dependances.notifieur
@@ -122,6 +126,24 @@ export function creerServeur(dependances: Dependances) {
           collecteEnCours = null;
         });
       return repondre(reponse, 200, await collecteEnCours);
+    }
+
+    if (chemin === '/sources/detecter') {
+      const { url } = (await lireJson(requete)) as { url?: string };
+      if (!url || !/^https?:\/\//i.test(url)) {
+        throw new DemandeInvalide("Donne l'adresse de la page carrière (https://…).");
+      }
+      // D'abord l'adresse elle-même ; sinon la page, qui renvoie souvent vers le site carrière.
+      let candidats = reconnaitreAts(url);
+      if (candidats.length === 0) {
+        const html = await (dependances.lire ?? lirePage)(url).catch(() => '');
+        candidats = reconnaitreAts(html).slice(0, 3);
+      }
+      for (const [ats, slug] of candidats) {
+        const site = await essayerSite(ats, slug);
+        if (site) return repondre(reponse, 200, { site });
+      }
+      return repondre(reponse, 200, { site: null });
     }
 
     if (chemin === '/push/cle') {

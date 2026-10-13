@@ -105,3 +105,25 @@ describe('sites d’annonces lus par leur plan', () => {
     ).toThrow(/aucune offre lisible/);
   });
 });
+
+describe('reconnaissance d’un site carrière', () => {
+  it('reconnaît une adresse de site carrière', async () => {
+    const { reconnaitreAts } = await import('../src/connectors/detecter');
+    expect(reconnaitreAts('https://jobs.lever.co/woven-by-toyota/84925f74')).toEqual([
+      ['lever', 'woven-by-toyota'],
+    ]);
+    expect(reconnaitreAts('https://job-boards.greenhouse.io/datadog')).toEqual([
+      ['greenhouse', 'datadog'],
+    ]);
+    expect(reconnaitreAts('https://exemple.test/carrieres')).toEqual([]);
+  });
+
+  it('retrouve le site carrière cité dans une page, sans les chemins techniques', async () => {
+    const { reconnaitreAts } = await import('../src/connectors/detecter');
+    const html =
+      '<script src="https://boards.greenhouse.io/embed/job_board/js?for=exemple"></script>' +
+      '<a href="https://jobs.ashbyhq.com/Exemple.Labs/123">Postes</a>' +
+      '<a href="https://jobs.ashbyhq.com/exemple.labs">Tous</a>';
+    expect(reconnaitreAts(html)).toEqual([['ashby', 'Exemple.Labs']]);
+  });
+});

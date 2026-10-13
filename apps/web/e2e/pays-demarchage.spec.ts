@@ -175,6 +175,51 @@ test.describe('Démarchage', () => {
     await expect(fenetre).toContainText('Kumo Labs · Tokyo, Japon');
   });
 
+  test('reconnaît le site carrière d’une startup pour collecter ses offres', async ({
+    page,
+    backend,
+  }) => {
+    backend.apiReponses['/sources/detecter'] = {
+      corps: {
+        site: {
+          ats: 'ashby',
+          slug: 'kumo',
+          url_carriere: 'https://jobs.ashbyhq.com/kumo',
+          annonces: 12,
+          stages: 2,
+          pays: ['JP'],
+        },
+      },
+    };
+    await page.goto('/demarchage');
+    await page.getByRole('button', { name: 'Ajouter une entreprise' }).click();
+    await page.getByLabel("Nom de l'entreprise").fill('Kumo Labs');
+    await page
+      .getByLabel("Page carrière de l'entreprise")
+      .fill('https://kumo.example.test/careers');
+    await page
+      .getByRole('button', { name: 'Vérifier si ses offres peuvent être collectées' })
+      .click();
+
+    await expect(page.getByRole('status')).toContainText(
+      'Site carrière reconnu : 12 annonces en ce moment, dont 2 stages.',
+    );
+    expect(backend.api[0]).toEqual({
+      chemin: '/sources/detecter',
+      corps: { url: 'https://kumo.example.test/careers' },
+    });
+    await page.getByRole('button', { name: "Ajouter l'entreprise" }).click();
+
+    await expect(page.getByRole('article', { name: 'Kumo Labs' })).toContainText(
+      'Offres collectées automatiquement',
+    );
+    expect(backend.companies[0]).toMatchObject({
+      ats: 'ashby',
+      slug: 'kumo',
+      url_carriere: 'https://jobs.ashbyhq.com/kumo',
+    });
+  });
+
   test('propose les entreprises déjà vues dans le fil', async ({ page, backend }) => {
     backend.offers = [
       {

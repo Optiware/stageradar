@@ -65,6 +65,7 @@ function fauxStore() {
       return Promise.resolve({ id: `id-${enregistrees.length}`, nouvelle: true });
     },
     importer: () => Promise.resolve({ id: 'manuel', nouvelle: true }),
+    lireSitesCarrieres: () => Promise.resolve([]),
     cloreSource(source) {
       closes.push(source);
       return Promise.resolve(0);

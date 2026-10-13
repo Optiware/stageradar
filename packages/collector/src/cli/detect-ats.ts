@@ -1,5 +1,6 @@
 import { stringify } from 'yaml';
-import { ATS_IDS, atsConnector, type AtsId, type WatchlistEntry } from '../connectors/ats';
+import { ATS_IDS, type AtsId, type WatchlistEntry } from '../connectors/ats';
+import { essayerSite, reconnaitreAts } from '../connectors/detecter';
 
 // Devine l'ATS d'un site carrière et propose l'entrée à ajouter à config/watchlist.yaml :
 //   npm run detect-ats -- https://jobs.lever.co/woven-by-toyota
@@ -7,21 +8,7 @@ import { ATS_IDS, atsConnector, type AtsId, type WatchlistEntry } from '../conne
 //   npm run detect-ats -- datadog            (essaie ce nom sur chaque ATS)
 //
 // Rien n'est deviné sans preuve : l'entrée n'est proposée que si l'API publique répond.
-
-const MOTIFS: [AtsId, RegExp][] = [
-  [
-    'greenhouse',
-    /(?:job-boards|boards)(?:\.eu)?\.greenhouse\.io\/(?:embed\/job_board\?for=)?([\w-]+)/i,
-  ],
-  ['lever', /jobs\.lever\.co\/([\w-]+)/i],
-  ['ashby', /jobs\.ashbyhq\.com\/([\w.-]+)/i],
-];
-
-const PAGE: Record<AtsId, (slug: string) => string> = {
-  greenhouse: (slug) => `https://job-boards.greenhouse.io/${slug}`,
-  lever: (slug) => `https://jobs.lever.co/${slug}`,
-  ashby: (slug) => `https://jobs.ashbyhq.com/${slug}`,
-};
+// Depuis l'application, la même vérification se fait sur la fiche d'une entreprise (Démarchage).
 
 const entree = process.argv[2];
 if (!entree) {
@@ -29,11 +16,7 @@ if (!entree) {
   process.exit(1);
 }
 
-const candidats: [AtsId, string][] = [];
-for (const [ats, motif] of MOTIFS) {
-  const trouve = motif.exec(entree);
-  if (trouve?.[1]) candidats.push([ats, trouve[1]]);
-}
+let candidats: [AtsId, string][] = reconnaitreAts(entree);
 if (candidats.length === 0) {
   if (/^https?:/i.test(entree)) {
     console.error(
@@ -42,48 +25,32 @@ if (candidats.length === 0) {
     );
     process.exit(1);
   }
-  for (const ats of ATS_IDS) candidats.push([ats, entree.toLowerCase()]);
+  candidats = ATS_IDS.map((ats) => [ats, entree.toLowerCase()]);
 }
 
 let trouve = false;
 for (const [ats, slug] of candidats) {
-  const proposition: WatchlistEntry = {
-    nom: slug,
-    pays: [],
-    ats,
-    slug,
-    url_carriere: PAGE[ats](slug),
-    verifie_le: new Date().toISOString().slice(0, 10),
-  };
-  const connecteur = atsConnector(proposition);
-  let annonces: unknown[];
-  try {
-    annonces = await connecteur.fetch({ pays: [] });
-  } catch {
+  const site = await essayerSite(ats, slug);
+  if (!site) {
     console.error(`${ats} : pas de site carrière public pour « ${slug} »`);
     continue;
   }
-
-  const parPays = new Map<string, number>();
-  let stages = 0;
-  for (const brute of annonces) {
-    const offre = connecteur.normalize(brute as never);
-    if (offre.type === 'stage' || /\bintern|stage|co-?op|인턴|インターン/i.test(offre.titre))
-      stages++;
-    const code = offre.pays ?? '??';
-    parPays.set(code, (parPays.get(code) ?? 0) + 1);
-  }
-  proposition.pays = [...parPays.keys()].filter((code) => code !== '??' && code !== 'FR');
   trouve = true;
-
-  console.log(`\n${ats} « ${slug} » : ${annonces.length} annonce(s), dont ${stages} stage(s)`);
-  console.log(
-    `Par pays suivi (?? = ailleurs ou non reconnu) : ${[...parPays].map(([code, n]) => `${code}=${n}`).join(' ')}`,
-  );
-  if (proposition.pays.length === 0) {
+  const pays = site.pays.filter((code) => code !== 'FR');
+  console.log(`\n${ats} « ${slug} » : ${site.annonces} annonce(s), dont ${site.stages} stage(s)`);
+  console.log(`Pays suivis où elle recrute : ${site.pays.join(' ') || 'aucun'}`);
+  if (pays.length === 0) {
     console.log('Aucun poste dans les pays visés : entrée sans intérêt pour le moment.');
     continue;
   }
+  const proposition: WatchlistEntry = {
+    nom: slug,
+    pays,
+    ats,
+    slug,
+    url_carriere: site.url_carriere,
+    verifie_le: new Date().toISOString().slice(0, 10),
+  };
   console.log('\nÀ coller dans config/watchlist.yaml (corriger `nom`) :\n');
   console.log(stringify([proposition]));
 }

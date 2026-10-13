@@ -13,6 +13,14 @@ export interface Entreprise {
   contact_email: string | null;
   contact_linkedin: string | null;
   notes: string | null;
+  /** Page carrière de l'entreprise. */
+  url_carriere: string | null;
+  /**
+   * Logiciel de recrutement et identifiant reconnus sur cette page : s'ils sont renseignés, les
+   * offres de l'entreprise sont lues à chaque collecte, comme celles de la watchlist.
+   */
+  ats: string | null;
+  slug: string | null;
 }
 
 export type ChampsEntreprise = Omit<Entreprise, 'id'>;
@@ -26,7 +34,20 @@ export const ENTREPRISE_VIDE: ChampsEntreprise = {
   contact_email: null,
   contact_linkedin: null,
   notes: null,
+  url_carriere: null,
+  ats: null,
+  slug: null,
 };
+
+/** Réponse du serveur quand il reconnaît le site carrière d'une entreprise. */
+export interface SiteCarriere {
+  ats: string;
+  slug: string;
+  url_carriere: string;
+  annonces: number;
+  stages: number;
+  pays: string[];
+}
 
 const CLE = ['companies'] as const;
 
@@ -36,7 +57,9 @@ export function useEntreprises() {
     queryFn: async () => {
       const { data, error } = await supabase!
         .from('companies')
-        .select('id,nom,pays,ville,site,contact_nom,contact_email,contact_linkedin,notes')
+        .select(
+          'id,nom,pays,ville,site,contact_nom,contact_email,contact_linkedin,notes,url_carriere,ats,slug',
+        )
         .order('created_at', { ascending: false })
         .overrideTypes<Entreprise[], { merge: false }>();
       if (error) throw error;

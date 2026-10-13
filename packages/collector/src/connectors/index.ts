@@ -42,9 +42,15 @@ export function loadWatchlist(chemin: string = WATCHLIST): WatchlistEntry[] {
  * d'annonces lus par leur plan de site. La bonne alternance (Lot 1) et les agrégateurs à clé
  * s'ajouteront ici.
  */
-export function buildConnectors(): Connector[] {
+export function buildConnectors(ajoutees: WatchlistEntry[] = []): Connector[] {
+  // Une entreprise ajoutée depuis l'application et déjà dans la watchlist n'est lue qu'une fois.
+  const entrees = new Map<string, WatchlistEntry>();
+  for (const entree of [...loadWatchlist(), ...ajoutees]) {
+    const cle = `${entree.ats}:${entree.slug.toLowerCase()}`;
+    if (!entrees.has(cle)) entrees.set(cle, entree);
+  }
   return [
-    ...loadWatchlist().map((entree) => atsConnector(entree)),
+    ...[...entrees.values()].map((entree) => atsConnector(entree)),
     ...SITES_ANNONCES.map((site) => siteAnnoncesConnector(site) as unknown as Connector),
   ];
 }

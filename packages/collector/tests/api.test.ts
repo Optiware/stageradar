@@ -27,6 +27,7 @@ function fauxStore() {
       importees.push(offre);
       return Promise.resolve({ id: 'id-importe', nouvelle: true });
     },
+    lireSitesCarrieres: () => Promise.resolve([]),
     cloreSource: () => Promise.resolve(0),
     journaliser: () => Promise.resolve(),
   };

@@ -43,7 +43,9 @@ if (args.includes('--notifier')) {
   process.exit(0);
 }
 
-const connectors = buildConnectors().filter((c) => !filtre || c.id.includes(filtre));
+const connectors = buildConnectors(store ? await store.lireSitesCarrieres() : []).filter(
+  (c) => !filtre || c.id.includes(filtre),
+);
 if (connectors.length === 0) {
   console.error('Aucun connecteur ne correspond.');
   process.exit(1);

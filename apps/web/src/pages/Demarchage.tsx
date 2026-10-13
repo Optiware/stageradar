@@ -10,10 +10,12 @@ import {
   type LangueMessage,
   type TypeMessage,
 } from '@stageradar/shared';
+import { useMutation } from '@tanstack/react-query';
 import { Copy, Mail, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Flag } from '../components/Flag';
+import { appelerApi } from '../lib/api';
 import {
   ENTREPRISE_VIDE,
   useEnregistrerEntreprise,
@@ -21,6 +23,7 @@ import {
   useSupprimerEntreprise,
   type ChampsEntreprise,
   type Entreprise,
+  type SiteCarriere,
 } from '../lib/entreprises';
 import { useOffresDuFil } from '../lib/fil';
 import { ANNUAIRES } from '../lib/methodes';
@@ -57,6 +60,19 @@ function FormulaireEntreprise({
 }) {
   const [champs, setChamps] = useState<ChampsEntreprise>(entreprise ?? ENTREPRISE_VIDE);
   const enregistrer = useEnregistrerEntreprise();
+  // Le serveur regarde si la page carrière repose sur un logiciel dont l'API est publique
+  // (Greenhouse, Lever, Ashby) : si oui, les offres de l'entreprise rejoignent la collecte.
+  const verifier = useMutation({
+    mutationFn: () =>
+      appelerApi<{ site: SiteCarriere | null }>('/sources/detecter', { url: champs.url_carriere }),
+    onSuccess: ({ site }) =>
+      setChamps((actuels) => ({
+        ...actuels,
+        ats: site?.ats ?? null,
+        slug: site?.slug ?? null,
+        url_carriere: site?.url_carriere ?? actuels.url_carriere,
+      })),
+  });
   const texte = (cle: keyof ChampsEntreprise) => ({
     value: champs[cle] ?? '',
     onChange: (evenement: { target: { value: string } }) =>
@@ -103,6 +119,63 @@ function FormulaireEntreprise({
         Son adresse e-mail
         <input type="email" {...texte('contact_email')} />
       </label>
+      <div className="sm:col-span-2">
+        <label className={LIBELLE}>
+          Page carrière de l'entreprise
+          <input
+            type="url"
+            placeholder="https://"
+            value={champs.url_carriere ?? ''}
+            onChange={(evenement) => {
+              verifier.reset();
+              // Une adresse modifiée n'est plus celle qui a été reconnue.
+              setChamps({
+                ...champs,
+                url_carriere: evenement.target.value.trim() || null,
+                ats: null,
+                slug: null,
+              });
+            }}
+            className={CHAMP}
+          />
+        </label>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={!champs.url_carriere || verifier.isPending}
+            onClick={() => verifier.mutate()}
+            className={BOUTON_DOUX}
+          >
+            {verifier.isPending
+              ? 'Vérification…'
+              : 'Vérifier si ses offres peuvent être collectées'}
+          </button>
+          {champs.ats && champs.slug && !verifier.isSuccess && (
+            <span className={BADGE.vert}>Offres collectées</span>
+          )}
+        </div>
+        {verifier.isSuccess &&
+          (verifier.data.site ? (
+            <p
+              role="status"
+              className="mt-2 text-sm font-bold text-primary-700 dark:text-primary-400"
+            >
+              Site carrière reconnu : {verifier.data.site.annonces} annonces en ce moment, dont{' '}
+              {verifier.data.site.stages} stages. Une fois l'entreprise enregistrée, ses offres
+              seront lues à chaque collecte.
+            </p>
+          ) : (
+            <p role="status" className={`mt-2 text-sm ${SECONDAIRE}`}>
+              Cette page ne repose pas sur un site carrière lisible automatiquement. L'entreprise
+              reste dans ta liste ; ses offres ne seront pas collectées.
+            </p>
+          ))}
+        {verifier.isError && (
+          <p role="alert" className="mt-2 text-sm font-bold text-red-700 dark:text-red-400">
+            La vérification a échoué. Réessaie dans un instant.
+          </p>
+        )}
+      </div>
       <label className={`${LIBELLE} sm:col-span-2`}>
         Son profil LinkedIn
         <input
@@ -330,6 +403,11 @@ function CarteEntreprise({
             <span className={BADGE.neutre}>Pas encore contactée</span>
           )}
         </div>
+        {entreprise.ats && entreprise.slug && (
+          <p className="mt-2">
+            <span className={BADGE.bleu}>Offres collectées automatiquement</span>
+          </p>
+        )}
 
         <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
           {site && (

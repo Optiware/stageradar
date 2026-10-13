@@ -7,6 +7,7 @@ import {
   type Poids,
   type Profil,
 } from '@stageradar/shared';
+import { ATS_IDS, type AtsId, type WatchlistEntry } from '../connectors/ats';
 import type { OffreEnrichie, Reglages } from './enrich';
 import type { ConnectorResult } from './run-connectors';
 
@@ -17,6 +18,8 @@ export interface Store {
   enregistrer(offre: OffreEnrichie, runId: string): Promise<{ id: string; nouvelle: boolean }>;
   /** Enregistre une offre ajoutée à la main et renvoie son identifiant. */
   importer(offre: OffreEnrichie): Promise<{ id: string; nouvelle: boolean }>;
+  /** Sites carrières ajoutés depuis l'application (entreprises du démarchage), en plus de la watchlist. */
+  lireSitesCarrieres(): Promise<WatchlistEntry[]>;
   /** Clôt la collecte d'une source lue en entier ; renvoie le nombre d'offres désactivées. */
   cloreSource(source: string, runId: string): Promise<number>;
   journaliser(runId: string, resultat: ConnectorResult, nbNouvelles: number): Promise<void>;
@@ -33,6 +36,7 @@ export function createDryStore(): Store {
       }),
     enregistrer: () => Promise.resolve({ id: '', nouvelle: false }),
     importer: () => Promise.resolve({ id: '', nouvelle: false }),
+    lireSitesCarrieres: () => Promise.resolve([]),
     cloreSource: () => Promise.resolve(0),
     journaliser: () => Promise.resolve(),
   };
@@ -80,6 +84,36 @@ export function createStore(url: string, cleSecrete: string): Store {
         .single<{ offer_id: string; nouvelle: boolean }>();
       if (error) throw new Error(`Import de « ${offre.titre} » : ${error.message}`);
       return { id: data.offer_id, nouvelle: data.nouvelle };
+    },
+
+    async lireSitesCarrieres() {
+      const { data, error } = await db
+        .from('companies')
+        .select('nom,pays,ats,slug,url_carriere,created_at')
+        .not('ats', 'is', null)
+        .not('slug', 'is', null)
+        .overrideTypes<
+          {
+            nom: string;
+            pays: string | null;
+            ats: string;
+            slug: string;
+            url_carriere: string | null;
+            created_at: string;
+          }[],
+          { merge: false }
+        >();
+      if (error) throw new Error(`Lecture des sites carrières : ${error.message}`);
+      return data
+        .filter((ligne) => (ATS_IDS as readonly string[]).includes(ligne.ats))
+        .map((ligne) => ({
+          nom: ligne.nom,
+          pays: ligne.pays ? [ligne.pays] : [],
+          ats: ligne.ats as AtsId,
+          slug: ligne.slug,
+          url_carriere: ligne.url_carriere ?? '',
+          verifie_le: ligne.created_at.slice(0, 10),
+        }));
     },
 
     async cloreSource(source, runId) {

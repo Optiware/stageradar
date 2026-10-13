@@ -22,10 +22,11 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const cles = clesVapid();
 const port = Number(process.env.PORT ?? 3000);
+const store = createStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 creerServeur({
-  store: createStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY),
+  store,
   // Relue à chaque collecte : la liste des entreprises peut avoir été mise à jour entre-temps.
-  connecteurs: buildConnectors,
+  connecteurs: async () => buildConnectors(await store.lireSitesCarrieres()),
   estProprietaire: verificateur(SUPABASE_URL),
   notifieur: cles ? creerNotifieur(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, cles) : null,
   clePublique: cles?.publique ?? null,
