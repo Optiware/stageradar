@@ -200,7 +200,9 @@ export function Calendrier() {
                   const passee = jourDe(ligne) < aujourdhui;
                   const contenu = (
                     <>
-                      <span className="w-20 shrink-0 text-sm font-bold sm:w-28">{quand(ligne)}</span>
+                      <span className="w-20 shrink-0 text-sm font-bold sm:w-28">
+                        {quand(ligne)}
+                      </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-1.5 text-sm font-bold break-words">
                           <Flag code={ligne.pays ?? null} />
