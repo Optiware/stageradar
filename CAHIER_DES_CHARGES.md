@@ -4,7 +4,7 @@
 > Les passages entre `⟨ ⟩` sont à compléter par moi avant de lancer.
 >
 > **Version 2 (13 octobre 2026)** : Adzuna retiré, Welcome to the Jungle ajouté en recherche pré-remplie,
-> application strictement personnelle, application Android, nouveau design et nouvelles fonctionnalités.
+> application strictement personnelle, nouveau design et nouvelles fonctionnalités.
 > Les ajouts sont détaillés au §9 ; les sections qu'ils contredisaient ont été corrigées sur place.
 
 ---
@@ -45,7 +45,7 @@ Utilisateur unique (moi). Budget : **0 €** (offres gratuites uniquement). Inte
 
 ## 2. Choix technique imposé (et pourquoi)
 
-**Application web progressive (PWA) + petit backend serverless.** Une seule base de code, installable sur Windows (Chrome/Edge → « Installer l'application ») et sur Android (Chrome → « Ajouter à l'écran d'accueil »), avec en option un vrai fichier **APK** généré via PWABuilder / Bubblewrap (Trusted Web Activity).
+**Application web progressive (PWA) + petit backend serverless.** Une seule base de code, installable sur Windows (Chrome/Edge → « Installer l'application ») et sur Android (Chrome → « Ajouter à l'écran d'accueil »).
 
 Pourquoi pas une appli native (Flutter, Tauri, React Native + Electron) : deux chaînes de build, signature, et surtout **la collecte doit tourner même quand mes appareils sont éteints**, et les deux appareils doivent voir les mêmes données. Un backend planifié + une PWA résout les deux problèmes.
 
@@ -215,9 +215,9 @@ Web Share Target Android, champ URL, bookmarklet, extraction JSON-LD `JobPosting
 Web Push, résumé quotidien, échéances, relances J+7/J+14. Ajouts v2 : agenda des entretiens avec export `.ics`, zone « Important », alertes, checklist pays, revue du dimanche (§9, C6 et D).
 ✅ Je reçois une notification sur Android et sur Windows lors d'une collecte de test.
 
-**Lot 6 — Statistiques, documents, export, APK**
-Stats, gestion des CV/lettres, export JSON/CSV, application Android (APK et paquet Play Store générés avec Bubblewrap, instructions pas à pas dans le README). Ajouts v2 : candidature assistée « Postuler en 2 clics », statistiques de retours, objectifs hebdomadaires, sauvegarde chiffrée (§9, C5, C6, D).
-✅ J'installe l'APK sur mon téléphone ; l'export JSON se réimporte sans perte.
+**Lot 6 — Statistiques, documents, export**
+Stats, gestion des CV/lettres, export JSON/CSV. Ajouts v2 : candidature assistée « Postuler en 2 clics », statistiques de retours, objectifs hebdomadaires, sauvegarde chiffrée (§9, C5, C6, D).
+✅ L'export JSON se réimporte sans perte.
 
 **Lot 7 (optionnel) — Assistance IA**
 Avec ma propre clé API (stockée côté serveur) : résumé d'offre en 3 lignes, points du CV à mettre en avant, brouillon de lettre FR/EN/ES. Désactivé par défaut.
@@ -241,7 +241,7 @@ Fiches entreprise, carnet de contacts, préparation d'entretien ; en option, lec
 3. **Ne jamais inventer de données** (entreprises, offres, règles de visa). En cas de doute : marquer `à vérifier` dans l'UI.
 4. **Tests** : fixtures JSON réelles (anonymisées) pour chaque connecteur ; tests de scoring et de dédoublonnage ; un test E2E Playwright par lot sur viewport mobile et desktop.
 5. **Petits commits** par lot, messages clairs ; README tenu à jour (installation, variables d'environnement, création des comptes API, installation Windows/Android).
-6. **Me demander** quand il faut créer un compte ou une clé (La bonne alternance, francetravail.io, Careerjet, Jooble, VAPID, compte développeur Google Play) — avec le lien exact et les champs à remplir.
+6. **Me demander** quand il faut créer un compte ou une clé (La bonne alternance, francetravail.io, Careerjet, Jooble, VAPID) — avec le lien exact et les champs à remplir.
 7. À la fin : une checklist « ce qui reste manuel » (sources non automatisables, vérifications visa à refaire).
 
 ---
@@ -314,6 +314,5 @@ Chaque ajout indique le lot qui le réalise. Les règles du §3 (sources autoris
 - Coût de la vie et budget par ville. → Lot 8
 - Fiches entreprise, carnet de contacts, préparation d'entretien. → Lot 9
 
-### E. Application Android → Lot 6, avancé
-- L'application web s'installe déjà depuis Chrome. En plus : une application Android (Trusted Web Activity) générée avec Bubblewrap, signée par une clé qui reste sur mon PC.
-- Diffusion privée : installation directe de l'APK, ou piste de **test interne** du Play Store, réservée aux adresses que j'invite. Le compte développeur Google Play est payant (frais uniques) : je le crée moi-même si je veux passer par le Play Store.
+### E. Application Android → non retenue
+- Décision du 13 octobre 2026 : pas d'APK ni de publication sur le Play Store. L'application s'installe depuis Chrome (« Ajouter à l'écran d'accueil » sur Android, icône d'installation sur PC), ce qui donne une icône et une fenêtre propres, comme une application.

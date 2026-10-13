@@ -14,7 +14,7 @@ Le besoin complet est décrit dans [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md
 | 1   | Alternance France : La bonne alternance, France Travail (si accès)        | À faire                                                                                                                                             |
 | 4   | Import manuel : partage Android, URL, bookmarklet                         | À faire                                                                                                                                             |
 | 5   | Notifications, calendrier, relances                                       | À faire                                                                                                                                             |
-| 6   | Statistiques, documents, export, APK                                      | À faire                                                                                                                                             |
+| 6   | Statistiques, documents, export                                           | À faire                                                                                                                                             |
 
 L'ordre est volontaire : les stages d'été 2027 se recrutent dès l'automne 2026, l'alternance surtout à partir de janvier.
 
