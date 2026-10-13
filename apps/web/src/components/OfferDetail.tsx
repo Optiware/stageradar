@@ -1,7 +1,7 @@
 import { LIBELLES_STATUT, PAYS_STAGE } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
   anciennete,
@@ -24,6 +24,7 @@ import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
 import { cleTexteOffre, OfferDescription, type TexteOffre } from './OfferDescription';
+import { NotesOffre, QuestionPostule } from './OfferExtras';
 
 function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
@@ -64,16 +65,22 @@ export function OfferDetail({
     queryFn: async (): Promise<TexteOffre> => {
       const { data, error } = await supabase!
         .from('offers')
-        .select('description,traduction')
+        .select('description,traduction,notes')
         .eq('id', offre.id)
         .maybeSingle()
         .overrideTypes<TexteOffre, { merge: false }>();
       if (error) throw error;
-      return { description: data?.description ?? null, traduction: data?.traduction ?? null };
+      return {
+        description: data?.description ?? null,
+        traduction: data?.traduction ?? null,
+        notes: data?.notes ?? null,
+      };
     },
     staleTime: 5 * 60_000,
   });
 
+  // Vrai entre le clic sur « Postuler » et la réponse à « As-tu postulé ? ».
+  const [partiPostuler, setPartiPostuler] = useState(false);
   const lien = lienSur(offre.url);
   const publiee = anciennete(offre.date_publication, maintenant);
   const langues = offre.langues_requises.map((code) => LIBELLES_LANGUE[code]).filter(Boolean);
@@ -120,6 +127,7 @@ export function OfferDetail({
           href={lien}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => setPartiPostuler(true)}
           className={`mt-5 flex w-full items-center justify-center gap-2 sm:w-auto sm:min-w-56 ${BOUTON_PRINCIPAL}`}
         >
           Postuler
@@ -134,6 +142,13 @@ export function OfferDetail({
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Ouvre l'annonce d'origine dans un nouvel onglet.
         </p>
+      )}
+      {partiPostuler && (
+        <QuestionPostule
+          offre={offre}
+          candidature={candidature}
+          onRepondu={() => setPartiPostuler(false)}
+        />
       )}
 
       <OfferActions
@@ -196,6 +211,14 @@ export function OfferDetail({
           </p>
         )}
         {description.isSuccess && <OfferDescription offre={offre} texte={description.data} />}
+      </Section>
+
+      <Section titre="Mes notes">
+        {description.isSuccess ? (
+          <NotesOffre offre={offre} notes={description.data.notes} />
+        ) : (
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Chargement…</p>
+        )}
       </Section>
 
       {offre.entreprise && (

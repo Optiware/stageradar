@@ -6,7 +6,7 @@ import {
   STATUTS_SUIVI,
   type StatutSuivi,
 } from '@stageradar/shared';
-import { Video } from 'lucide-react';
+import { Kanban, List, Video } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { CandidatureDialog } from '../components/CandidatureDialog';
@@ -21,7 +21,7 @@ import {
   valeursDe,
   type Candidature,
 } from '../lib/suivi';
-import { BADGE, CARTE, pilule, SECONDAIRE } from '../lib/ui';
+import { BADGE, CARTE, CARTE_SURVOL, pilule, SECONDAIRE } from '../lib/ui';
 
 interface Teinte {
   colonne: string;
@@ -146,12 +146,145 @@ function Carte({
   );
 }
 
+const BADGES_STATUT: Record<StatutSuivi, string> = {
+  a_etudier: BADGE.neutre,
+  a_postuler: BADGE.neutre,
+  postule: BADGE.vert,
+  relance: BADGE.ambre,
+  entretien: BADGE.violet,
+  offre: BADGE.vert,
+  refus: BADGE.rouge,
+};
+
+/** « Mes candidatures » : la même chose que le tableau, en liste filtrable par étape. */
+function Liste({
+  toutes,
+  maintenant,
+  onOuvrir,
+}: {
+  toutes: Candidature[];
+  maintenant: Date;
+  onOuvrir: (id: string) => void;
+}) {
+  const [etape, setEtape] = useState<StatutSuivi | null>(null);
+  const aujourdhui = jourIso(maintenant);
+  const affichees = toutes
+    .filter((candidature) => etape === null || candidature.statut === etape)
+    .sort(
+      (a, b) =>
+        STATUTS_SUIVI.indexOf(a.statut) - STATUTS_SUIVI.indexOf(b.statut) ||
+        a.position - b.position,
+    );
+
+  return (
+    <>
+      <div role="group" aria-label="Étape" className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          aria-pressed={etape === null}
+          onClick={() => setEtape(null)}
+          className={pilule(etape === null)}
+        >
+          Toutes <span className={`font-medium ${SECONDAIRE}`}>{toutes.length}</span>
+        </button>
+        {STATUTS_SUIVI.map((statut) => (
+          <button
+            key={statut}
+            type="button"
+            aria-pressed={etape === statut}
+            onClick={() => setEtape(statut)}
+            className={pilule(etape === statut)}
+          >
+            {LIBELLES_STATUT[statut]}{' '}
+            <span className={`font-medium ${SECONDAIRE}`}>
+              {toutes.filter((candidature) => candidature.statut === statut).length}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {affichees.length === 0 && (
+        <p className="mt-6 text-gray-600 dark:text-gray-400">Aucune candidature à cette étape.</p>
+      )}
+      <ul aria-label="Mes candidatures" className="mt-4 max-w-3xl space-y-3">
+        {affichees.map((candidature) => {
+          const { titre, entreprise } = candidature.resume;
+          const entretien = entretienDe(candidature);
+          const aVenir = entretien && jourIso(new Date(entretien.date)) >= aujourdhui;
+          const relance =
+            candidature.prochaine_relance !== null &&
+            (candidature.statut === 'postule' || candidature.statut === 'relance')
+              ? candidature.prochaine_relance
+              : null;
+          return (
+            <li key={candidature.id}>
+              <button
+                type="button"
+                onClick={() => onOuvrir(candidature.id)}
+                className={`block w-full text-left ${CARTE} ${CARTE_SURVOL}`}
+              >
+                <span className="flex flex-wrap items-start justify-between gap-2">
+                  <span className="min-w-0">
+                    {entreprise && (
+                      <span className={`block text-xs font-bold ${SECONDAIRE}`}>{entreprise}</span>
+                    )}
+                    <span className="block font-bold break-words">{titre}</span>
+                  </span>
+                  <span className={BADGES_STATUT[candidature.statut]}>
+                    {LIBELLES_STATUT[candidature.statut]}
+                  </span>
+                </span>
+                <span
+                  className={`mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm ${SECONDAIRE}`}
+                >
+                  {lieu(candidature.resume) && (
+                    <span className="flex items-center gap-1.5">
+                      <Flag code={candidature.resume.pays} />
+                      {lieu(candidature.resume)}
+                    </span>
+                  )}
+                  {candidature.date_candidature && (
+                    <span>
+                      Envoyée le{' '}
+                      {new Date(`${candidature.date_candidature}T12:00:00`).toLocaleDateString(
+                        'fr-FR',
+                        { day: 'numeric', month: 'short' },
+                      )}
+                    </span>
+                  )}
+                  {aVenir && (
+                    <span className="font-bold text-purple-700 dark:text-purple-400">
+                      Entretien {libelleEntretien(entretien.date, maintenant)}
+                    </span>
+                  )}
+                  {relance && (
+                    <span
+                      className={
+                        relanceDue(candidature, aujourdhui)
+                          ? 'font-bold text-red-700 dark:text-red-400'
+                          : 'font-bold text-amber-700 dark:text-amber-400'
+                      }
+                    >
+                      {libelleRelance(relance, aujourdhui)}
+                    </span>
+                  )}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
 /** Tableau de suivi : une colonne par étape, de « À étudier » à « Refus / Abandon ». */
 export function Suivi() {
   const candidatures = useCandidatures();
   const enregistrer = useEnregistrerCandidature();
   const [params, setParams] = useSearchParams();
   const [survolee, setSurvolee] = useState<StatutSuivi | null>(null);
+  const [vue, setVue] = useState<'tableau' | 'liste'>('tableau');
 
   const toutes = candidatures.data ?? [];
   // Heure du dernier chargement : les libellés (« demain », « en retard ») ne dépendent pas
@@ -174,8 +307,28 @@ export function Suivi() {
     <>
       <h1 className="text-2xl font-extrabold tracking-tight">Suivi</h1>
       <p className="mt-1 text-gray-600 dark:text-gray-400">
-        Fais glisser une carte vers une autre colonne, ou change sa colonne depuis la carte.
+        {vue === 'tableau'
+          ? 'Fais glisser une carte vers une autre colonne, ou change sa colonne depuis la carte.'
+          : 'Toutes tes candidatures, avec leur prochaine action.'}
       </p>
+      <div role="group" aria-label="Affichage" className="mt-3 flex gap-2">
+        {(['tableau', 'liste'] as const).map((choix) => (
+          <button
+            key={choix}
+            type="button"
+            aria-pressed={vue === choix}
+            onClick={() => setVue(choix)}
+            className={`flex items-center gap-2 ${pilule(vue === choix)}`}
+          >
+            {choix === 'tableau' ? (
+              <Kanban aria-hidden="true" className="size-4" />
+            ) : (
+              <List aria-hidden="true" className="size-4" />
+            )}
+            {choix === 'tableau' ? 'Tableau' : 'Liste'}
+          </button>
+        ))}
+      </div>
 
       {candidatures.isPending && (
         <p className="mt-8 text-gray-600 dark:text-gray-400">Chargement du suivi…</p>
@@ -207,7 +360,7 @@ export function Suivi() {
       )}
 
       {/* Les sept colonnes ne tiennent pas à l'écran : ces raccourcis amènent chacune en vue. */}
-      {candidatures.isSuccess && toutes.length > 0 && (
+      {candidatures.isSuccess && vue === 'tableau' && toutes.length > 0 && (
         <div
           role="group"
           aria-label="Aller à une colonne"
@@ -233,7 +386,15 @@ export function Suivi() {
         </div>
       )}
 
-      {candidatures.isSuccess && (
+      {candidatures.isSuccess && vue === 'liste' && toutes.length > 0 && (
+        <Liste
+          toutes={toutes}
+          maintenant={maintenant}
+          onOuvrir={(id) => setParams({ candidature: id })}
+        />
+      )}
+
+      {candidatures.isSuccess && vue === 'tableau' && (
         <div className="relative -mx-4 mt-4 flex snap-x scroll-px-4 items-start gap-4 overflow-x-auto px-4 pb-4 max-md:hide-scroll md:-mx-8 md:scroll-px-8 md:px-8">
           {STATUTS_SUIVI.map((statut) => {
             const cartes = toutes.filter((candidature) => candidature.statut === statut);

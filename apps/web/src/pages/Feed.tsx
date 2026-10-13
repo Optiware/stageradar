@@ -2,6 +2,13 @@ import { normalizeText, PAYS_STAGE } from '@stageradar/shared';
 import { ChevronLeft, Search } from 'lucide-react';
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import {
+  AUCUN_FILTRE,
+  FeedFilters,
+  nombreDeFiltres,
+  passeLesFiltres,
+  type Filtres,
+} from '../components/FeedFilters';
 import { Flag } from '../components/Flag';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetail } from '../components/OfferDetail';
@@ -51,6 +58,7 @@ export function Feed() {
   const [onglet, setOnglet] = useState<Onglet>('tout');
   const [paysChoisis, setPaysChoisis] = useState<string[]>([]);
   const [recherche, setRecherche] = useState('');
+  const [filtres, setFiltres] = useState<Filtres>(AUCUN_FILTRE);
   const [avecHorsCible, setAvecHorsCible] = useState(false);
   const [avecMasquees, setAvecMasquees] = useState(false);
   const [derniereMasquee, setDerniereMasquee] = useState<FeedOffer | null>(null);
@@ -84,6 +92,7 @@ export function Feed() {
     (offre) =>
       (avecHorsCible || offre.exclue_raison === null) &&
       (avecMasquees || !offre.masquee) &&
+      passeLesFiltres(offre, filtres, maintenant) &&
       correspond(offre, mots),
   );
   const dansLOnglet = visibles.filter((offre) => dansOnglet(offre, onglet));
@@ -191,6 +200,8 @@ export function Feed() {
           ))}
         </div>
 
+        <FeedFilters filtres={filtres} onChange={setFiltres} />
+
         {nbHorsCible > 0 && (
           <label className={`mt-3 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
             <input
@@ -262,7 +273,10 @@ export function Feed() {
           <p className={`mt-8 ${SUR_LA_PAGE}`}>
             {toutes.length === 0
               ? 'Aucune offre pour le moment. La collecte tourne toutes les 6 heures.'
-              : onglet === 'alternance' && dansLOnglet.length === 0 && mots.length === 0
+              : onglet === 'alternance' &&
+                  dansLOnglet.length === 0 &&
+                  mots.length === 0 &&
+                  nombreDeFiltres(filtres) === 0
                 ? "Aucune offre d'alternance collectée pour le moment."
                 : 'Aucune offre ne correspond à ces filtres.'}
           </p>

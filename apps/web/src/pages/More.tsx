@@ -20,11 +20,12 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
   { title: 'Réglages', vers: '/reglages', text: 'Dates, pays, langues, poids du score, objectif.' },
   {
     title: 'Calendrier',
-    lot: 5,
-    text: 'Dates limites, entretiens, relances et échéances par pays.',
+    vers: '/calendrier',
+    text: 'Entretiens, relances, échéances par pays, export vers ton agenda.',
   },
-  { title: 'Documents', lot: 6, text: 'CV et lettres, avec leurs versions.' },
-  { title: 'Statistiques', lot: 6, text: 'Candidatures par semaine, taux de réponse, entonnoir.' },
+  { title: 'Statistiques', vers: '/statistiques', text: 'Envois, réponses, ce qui fonctionne.' },
+  { title: 'Documents', vers: '/documents', text: 'Versions de CV et de lettres envoyées.' },
+  { title: 'Mes données', vers: '/donnees', text: 'Sauvegarde, export tableur, réimport.' },
 ];
 
 const THEMES: { id: Theme; libelle: string }[] = [

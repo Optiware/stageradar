@@ -6,6 +6,7 @@ import {
 } from '@stageradar/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
+import { nomDocument, useDocuments } from '../lib/documents';
 import { lienSur, lieu } from '../lib/offres';
 import {
   STATUTS_AVANT_ENTRETIEN,
@@ -50,6 +51,9 @@ export function CandidatureDialog({
   const fenetre = useRef<HTMLDialogElement>(null);
   const [valeurs, setValeurs] = useState<ValeursCandidature>(() => valeursDe(candidature));
   const [retraitDemande, setRetraitDemande] = useState(false);
+  const documents = useDocuments();
+  const cvs = (documents.data ?? []).filter((document) => document.type === 'cv');
+  const lettres = (documents.data ?? []).filter((document) => document.type !== 'cv');
   const enregistrer = useEnregistrerCandidature();
   const retirer = useRetirerCandidature();
   const offre = candidature.offre;
@@ -174,6 +178,44 @@ export function CandidatureDialog({
               className={CHAMP}
             />
           </label>
+          {cvs.length > 0 && (
+            <label className={LIBELLE}>
+              CV envoyé
+              <select
+                value={valeurs.cv_document_id ?? ''}
+                onChange={(evenement) =>
+                  changer({ cv_document_id: evenement.target.value || null })
+                }
+                className={CHAMP}
+              >
+                <option value="">Non précisé</option>
+                {cvs.map((document) => (
+                  <option key={document.id} value={document.id}>
+                    {nomDocument(document)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {lettres.length > 0 && (
+            <label className={LIBELLE}>
+              Lettre envoyée
+              <select
+                value={valeurs.lettre_document_id ?? ''}
+                onChange={(evenement) =>
+                  changer({ lettre_document_id: evenement.target.value || null })
+                }
+                className={CHAMP}
+              >
+                <option value="">Aucune ou non précisée</option>
+                {lettres.map((document) => (
+                  <option key={document.id} value={document.id}>
+                    {nomDocument(document)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className={`${LIBELLE} sm:col-span-2`}>
             Notes
             <textarea

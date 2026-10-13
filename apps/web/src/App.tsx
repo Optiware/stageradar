@@ -8,9 +8,12 @@ import { BOUTON_PRINCIPAL } from './lib/ui';
 import { supabase } from './lib/supabase';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
-import { ComingSoon } from './pages/ComingSoon';
 import { Feed } from './pages/Feed';
+import { Calendrier } from './pages/Calendrier';
 import { Demarchage } from './pages/Demarchage';
+import { Documents } from './pages/Documents';
+import { Donnees } from './pages/Donnees';
+import { Statistiques } from './pages/Statistiques';
 import { Important } from './pages/Important';
 import { Pays } from './pages/Pays';
 import { Reglages } from './pages/Reglages';
@@ -74,14 +77,10 @@ function OwnerGate({ session }: { session: Session }) {
         <Route index element={<Feed />} />
         <Route path="suivi" element={<Suivi />} />
         <Route path="important" element={<Important />} />
-        <Route
-          path="calendrier"
-          element={
-            <ComingSoon title="Calendrier" lot={5}>
-              Dates limites, entretiens, relances et échéances administratives par pays.
-            </ComingSoon>
-          }
-        />
+        <Route path="calendrier" element={<Calendrier />} />
+        <Route path="statistiques" element={<Statistiques />} />
+        <Route path="documents" element={<Documents />} />
+        <Route path="donnees" element={<Donnees />} />
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />
         <Route path="sources" element={<Sources />} />

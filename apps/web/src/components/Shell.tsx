@@ -1,4 +1,5 @@
 import { Globe, Kanban, Layers, Menu, Moon, Radar, Sun, Zap } from 'lucide-react';
+import { useSyncExternalStore } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { choisirTheme, useTheme } from '../lib/theme';
 
@@ -51,11 +52,21 @@ function BoutonTheme({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function ecouterReseau(prevenir: () => void): () => void {
+  window.addEventListener('online', prevenir);
+  window.addEventListener('offline', prevenir);
+  return () => {
+    window.removeEventListener('online', prevenir);
+    window.removeEventListener('offline', prevenir);
+  };
+}
+
 /**
  * Cadre de l'application. Sur téléphone : bandeau en haut, barre d'onglets flottante en bas.
  * Sur grand écran : barre latérale.
  */
 export function Shell() {
+  const enLigne = useSyncExternalStore(ecouterReseau, () => navigator.onLine);
   return (
     <div className="min-h-dvh md:flex md:items-start">
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 md:hidden dark:border-gray-800 dark:bg-gray-900">
@@ -90,6 +101,15 @@ export function Shell() {
         <BoutonTheme />
       </nav>
       <main className="mx-auto w-full max-w-7xl min-w-0 px-4 pt-6 pb-28 md:px-8 md:pb-8">
+        {!enLigne && (
+          <p
+            role="status"
+            className="mb-4 rounded-2xl bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          >
+            Hors ligne : tu vois les dernières données gardées sur cet appareil. Les modifications
+            attendront le retour du réseau.
+          </p>
+        )}
         <Outlet />
       </main>
     </div>

@@ -47,6 +47,7 @@ const TABLES = [
   'companies',
   'country_sheets',
   'sources_status',
+  'documents',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -69,6 +70,8 @@ export interface Backend {
   country_sheets: Ligne[];
   /** Passages de la collecte (table `sources_status`). */
   sources_status: Ligne[];
+  /** CV et lettres (table `documents`). */
+  documents: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Ouvre l'application avec une session déjà enregistrée. */
@@ -93,6 +96,7 @@ export const test = base.extend<{ backend: Backend }>({
         companies: [],
         country_sheets: [],
         sources_status: [],
+        documents: [],
         settings: { objectif_hebdo: 5, presentation: '' },
         async signInAs(email, options = {}) {
           isOwner = options.isOwner ?? true;
@@ -135,12 +139,18 @@ export const test = base.extend<{ backend: Backend }>({
                 .map((offre) => ({
                   description: offre.description ?? null,
                   traduction: offre.traduction ?? null,
+                  notes: offre.notes ?? null,
                 })),
             });
           }
           return route.fulfill({ json: backend.offers });
         }
-        if (path === '/rest/v1/applications' && request.method() === 'GET') {
+        if (
+          path === '/rest/v1/applications' &&
+          request.method() === 'GET' &&
+          // Une lecture brute (export) ne demande ni l'offre ni les événements.
+          new URL(request.url()).searchParams.get('select')?.includes('offre:')
+        ) {
           // Chaque candidature est renvoyée avec son offre et ses événements, comme le fait
           // PostgREST pour `select=…,offre:offers(…),evenements:events(…)`.
           return route.fulfill({
@@ -176,24 +186,37 @@ export const test = base.extend<{ backend: Backend }>({
             return route.fulfill({ json: table });
           }
           if (request.method() === 'POST') {
-            table.push({
-              id: crypto.randomUUID(),
-              // Valeurs par défaut des colonnes, comme en base.
-              ...(nom === 'applications'
-                ? {
-                    offer_id: null,
-                    company_id: null,
-                    date_candidature: null,
-                    prochaine_relance: null,
-                    notes: null,
-                  }
-                : {}),
-              ...(nom === 'events'
-                ? { details: {}, fait: false, date: new Date().toISOString() }
-                : {}),
-              created_at: new Date().toISOString(),
-              ...(request.postDataJSON() as Ligne),
-            });
+            // Une ligne ou plusieurs ; une ligne dont la clé existe déjà est remplacée (upsert).
+            const corps = request.postDataJSON() as Ligne | Ligne[];
+            for (const ligne of Array.isArray(corps) ? corps : [corps]) {
+              const existante = table.findIndex(
+                (autre) => ligne[cle] !== undefined && autre[cle] === ligne[cle],
+              );
+              if (existante >= 0) {
+                table[existante] = { ...table[existante], ...ligne };
+                continue;
+              }
+              table.push({
+                id: crypto.randomUUID(),
+                // Valeurs par défaut des colonnes, comme en base.
+                ...(nom === 'applications'
+                  ? {
+                      offer_id: null,
+                      company_id: null,
+                      date_candidature: null,
+                      prochaine_relance: null,
+                      notes: null,
+                      cv_document_id: null,
+                      lettre_document_id: null,
+                    }
+                  : {}),
+                ...(nom === 'events'
+                  ? { details: {}, fait: false, date: new Date().toISOString() }
+                  : {}),
+                created_at: new Date().toISOString(),
+                ...ligne,
+              });
+            }
             return route.fulfill({ status: 201, body: '' });
           }
           const index = table.findIndex((ligne) => ligne[cle] === valeur);

@@ -1,4 +1,5 @@
 import {
+  changerStatut,
   joursEntre,
   LIBELLES_STATUT,
   type EtatSuivi,
@@ -47,6 +48,8 @@ export interface Candidature extends EtatSuivi {
   resume: ResumeCandidature;
   position: number;
   notes: string | null;
+  cv_document_id: string | null;
+  lettre_document_id: string | null;
   created_at: string;
   offre: OffreSuivie | null;
   evenements: Evenement[];
@@ -56,6 +59,7 @@ export interface Candidature extends EtatSuivi {
 // `applications` et vers `offers`, et PostgREST doit savoir lequel suivre.
 const SELECTION =
   'id,offer_id,company_id,statut,position,date_candidature,prochaine_relance,notes,created_at,' +
+  'cv_document_id,lettre_document_id,' +
   'offre:offers!applications_offer_id_fkey(id,titre,entreprise,pays,ville,url,type,actif),' +
   'societe:companies!applications_company_id_fkey(id,nom,pays,ville),' +
   'evenements:events!events_application_id_fkey(id,type,titre,date,details,fait)';
@@ -121,6 +125,25 @@ export function useSuivreOffre() {
   });
 }
 
+/** Range une offre dans « Postulé » : la candidature vient d'être envoyée sur le site d'origine. */
+export function usePostulerOffre() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ offerId, aujourdhui }: { offerId: string; aujourdhui: string }) => {
+      const etat = changerStatut(
+        { statut: 'a_postuler', date_candidature: null, prochaine_relance: null },
+        'postule',
+        aujourdhui,
+      );
+      const { error } = await supabase!
+        .from('applications')
+        .insert({ offer_id: offerId, ...etat, position: Date.now() });
+      if (error) throw error;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: CLE }),
+  });
+}
+
 /** Ajoute une candidature spontanée auprès d'une entreprise cible. */
 export function useSuivreEntreprise() {
   const client = useQueryClient();
@@ -137,6 +160,8 @@ export function useSuivreEntreprise() {
 
 export interface ValeursCandidature extends EtatSuivi {
   notes: string | null;
+  cv_document_id: string | null;
+  lettre_document_id: string | null;
   /** Date et heure de l'entretien (ISO), ou `null` s'il n'y en a pas. */
   entretien: string | null;
   lien_entretien: string | null;
@@ -150,6 +175,8 @@ export function valeursDe(candidature: Candidature): ValeursCandidature {
     date_candidature: candidature.date_candidature,
     prochaine_relance: candidature.prochaine_relance,
     notes: candidature.notes,
+    cv_document_id: candidature.cv_document_id,
+    lettre_document_id: candidature.lettre_document_id,
     entretien: entretien?.date ?? null,
     lien_entretien: entretien?.details.lien ?? null,
   };
@@ -165,6 +192,8 @@ async function enregistrer(candidature: Candidature, valeurs: ValeursCandidature
       date_candidature: valeurs.date_candidature,
       prochaine_relance: valeurs.prochaine_relance,
       notes: valeurs.notes,
+      cv_document_id: valeurs.cv_document_id,
+      lettre_document_id: valeurs.lettre_document_id,
       ...(deplacee ? { position: Date.now() } : {}),
     })
     .eq('id', candidature.id);

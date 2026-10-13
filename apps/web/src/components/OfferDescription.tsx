@@ -16,6 +16,7 @@ import { BOUTON_SECONDAIRE, SECONDAIRE } from '../lib/ui';
 export interface TexteOffre {
   description: string | null;
   traduction: TraductionOffre | null;
+  notes: string | null;
 }
 
 export function cleTexteOffre(id: string) {
@@ -60,10 +61,7 @@ export function OfferDescription({ offre, texte }: { offre: FeedOffer; texte: Te
   const traduire = useMutation({
     mutationFn: async () => {
       const resultat = await traduireOffre(langue!, offre.titre, description, setAvancement);
-      client.setQueryData<TexteOffre>(cleTexteOffre(offre.id), {
-        description,
-        traduction: resultat,
-      });
+      client.setQueryData<TexteOffre>(cleTexteOffre(offre.id), { ...texte, traduction: resultat });
       const { error } = await supabase!
         .from('offers')
         .update({ traduction: resultat })
