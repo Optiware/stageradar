@@ -88,6 +88,10 @@ export function CandidatureDialog({
   }
 
   const annonce = offre && lienSur(offre.url);
+  const avantEntretien = STATUTS_AVANT_ENTRETIEN.includes(valeurs.statut);
+  // Un entretien ou une offre : il est temps de regarder où se loger (§9, C7).
+  const paysLogement =
+    (valeurs.statut === 'entretien' || valeurs.statut === 'offre') && candidature.resume.pays;
   return (
     <dialog
       ref={fenetre}
@@ -116,6 +120,15 @@ export function CandidatureDialog({
                 Annonce d'origine
               </a>
             )}
+          </p>
+        )}
+
+        {paysLogement && (
+          <p className="mt-3 rounded-2xl bg-primary-50 px-4 py-2.5 text-sm dark:bg-primary-900/20">
+            Ça avance : pense au logement.{' '}
+            <Link to={`/logement?pays=${paysLogement}`} className={LIEN}>
+              Voir le logement et le budget pour ce pays
+            </Link>
           </p>
         )}
 
@@ -214,6 +227,40 @@ export function CandidatureDialog({
                   </option>
                 ))}
               </select>
+            </label>
+          )}
+          <label className={LIBELLE}>
+            Personne en contact
+            <input
+              value={valeurs.contact_nom ?? ''}
+              placeholder="Prénom Nom, rôle"
+              onChange={(evenement) => changer({ contact_nom: evenement.target.value || null })}
+              className={CHAMP}
+            />
+          </label>
+          <label className={LIBELLE}>
+            Son adresse e-mail
+            <input
+              type="email"
+              value={valeurs.contact_email ?? ''}
+              onChange={(evenement) =>
+                changer({ contact_email: evenement.target.value.trim() || null })
+              }
+              className={CHAMP}
+            />
+          </label>
+          {(valeurs.entretien || valeurs.notes_entretien || !avantEntretien) && (
+            <label className={`${LIBELLE} sm:col-span-2`}>
+              Préparation et compte rendu d'entretien
+              <textarea
+                rows={4}
+                value={valeurs.notes_entretien ?? ''}
+                placeholder="Avant : ce que fait l'entreprise, trois questions à poser, un projet à raconter. Après : ce qui s'est dit, la suite annoncée."
+                onChange={(evenement) =>
+                  changer({ notes_entretien: evenement.target.value || null })
+                }
+                className={CHAMP}
+              />
             </label>
           )}
           <label className={`${LIBELLE} sm:col-span-2`}>

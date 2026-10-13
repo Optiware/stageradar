@@ -6,6 +6,7 @@ import { StatusScreen } from './components/StatusScreen';
 import { useAuth } from './lib/auth-context';
 import { BOUTON_PRINCIPAL } from './lib/ui';
 import { supabase } from './lib/supabase';
+import { Logement } from './pages/Logement';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { Feed } from './pages/Feed';
@@ -85,6 +86,7 @@ function OwnerGate({ session }: { session: Session }) {
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />
         <Route path="importer" element={<Importer />} />
+        <Route path="logement" element={<Logement />} />
         <Route path="sources" element={<Sources />} />
         <Route path="reglages" element={<Reglages />} />
         <Route path="plus" element={<More />} />

@@ -50,6 +50,9 @@ export interface Candidature extends EtatSuivi {
   notes: string | null;
   cv_document_id: string | null;
   lettre_document_id: string | null;
+  contact_nom: string | null;
+  contact_email: string | null;
+  notes_entretien: string | null;
   created_at: string;
   offre: OffreSuivie | null;
   evenements: Evenement[];
@@ -59,7 +62,7 @@ export interface Candidature extends EtatSuivi {
 // `applications` et vers `offers`, et PostgREST doit savoir lequel suivre.
 const SELECTION =
   'id,offer_id,company_id,statut,position,date_candidature,prochaine_relance,notes,created_at,' +
-  'cv_document_id,lettre_document_id,' +
+  'cv_document_id,lettre_document_id,contact_nom,contact_email,notes_entretien,' +
   'offre:offers!applications_offer_id_fkey(id,titre,entreprise,pays,ville,url,type,actif),' +
   'societe:companies!applications_company_id_fkey(id,nom,pays,ville),' +
   'evenements:events!events_application_id_fkey(id,type,titre,date,details,fait)';
@@ -162,6 +165,9 @@ export interface ValeursCandidature extends EtatSuivi {
   notes: string | null;
   cv_document_id: string | null;
   lettre_document_id: string | null;
+  contact_nom: string | null;
+  contact_email: string | null;
+  notes_entretien: string | null;
   /** Date et heure de l'entretien (ISO), ou `null` s'il n'y en a pas. */
   entretien: string | null;
   lien_entretien: string | null;
@@ -177,6 +183,9 @@ export function valeursDe(candidature: Candidature): ValeursCandidature {
     notes: candidature.notes,
     cv_document_id: candidature.cv_document_id,
     lettre_document_id: candidature.lettre_document_id,
+    contact_nom: candidature.contact_nom,
+    contact_email: candidature.contact_email,
+    notes_entretien: candidature.notes_entretien,
     entretien: entretien?.date ?? null,
     lien_entretien: entretien?.details.lien ?? null,
   };
@@ -194,6 +203,9 @@ async function enregistrer(candidature: Candidature, valeurs: ValeursCandidature
       notes: valeurs.notes,
       cv_document_id: valeurs.cv_document_id,
       lettre_document_id: valeurs.lettre_document_id,
+      contact_nom: valeurs.contact_nom,
+      contact_email: valeurs.contact_email,
+      notes_entretien: valeurs.notes_entretien,
       ...(deplacee ? { position: Date.now() } : {}),
     })
     .eq('id', candidature.id);

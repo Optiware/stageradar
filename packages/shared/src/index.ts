@@ -12,3 +12,4 @@ export * from './messages';
 export * from './agenda';
 export * from './stats';
 export * from './jobposting';
+export * from './budget';

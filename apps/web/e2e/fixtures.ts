@@ -49,6 +49,8 @@ const TABLES = [
   'sources_status',
   'documents',
   'push_subscriptions',
+  'housings',
+  'budgets',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -75,6 +77,10 @@ export interface Backend {
   documents: Ligne[];
   /** Appareils abonnés aux notifications (table `push_subscriptions`, identifiés par `endpoint`). */
   push_subscriptions: Ligne[];
+  /** Logements repérés (table `housings`). */
+  housings: Ligne[];
+  /** Budgets par pays (table `budgets`, identifiés par `pays`). */
+  budgets: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Demandes reçues par le service de l'application (/api/…), avec leur corps. */
@@ -105,6 +111,8 @@ export const test = base.extend<{ backend: Backend }>({
         sources_status: [],
         documents: [],
         push_subscriptions: [],
+        housings: [],
+        budgets: [],
         api: [],
         apiReponses: {},
         settings: { objectif_hebdo: 5, presentation: '' },
@@ -188,7 +196,11 @@ export const test = base.extend<{ backend: Backend }>({
         // Les autres tables se lisent et s'écrivent ligne par ligne, par leur clé (`id=eq.…`).
         const nom = path.replace('/rest/v1/', '') as NomTable;
         const cle =
-          nom === 'country_sheets' ? 'pays' : nom === 'push_subscriptions' ? 'endpoint' : 'id';
+          nom === 'country_sheets' || nom === 'budgets'
+            ? 'pays'
+            : nom === 'push_subscriptions'
+              ? 'endpoint'
+              : 'id';
 
         if ((TABLES as readonly string[]).includes(nom)) {
           const table = backend[nom];
@@ -219,6 +231,9 @@ export const test = base.extend<{ backend: Backend }>({
                       notes: null,
                       cv_document_id: null,
                       lettre_document_id: null,
+                      contact_nom: null,
+                      contact_email: null,
+                      notes_entretien: null,
                     }
                   : {}),
                 ...(nom === 'events'

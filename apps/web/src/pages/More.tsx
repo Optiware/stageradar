@@ -18,6 +18,11 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
     text: 'Ajouter une annonce trouvée ailleurs, par son adresse ou par « Partager ».',
   },
   {
+    title: 'Logement et budget',
+    vers: '/logement',
+    text: 'Où chercher par pays, logements repérés, coût du séjour.',
+  },
+  {
     title: 'Sources',
     vers: '/sources',
     text: 'État de la collecte et sites à consulter à la main.',

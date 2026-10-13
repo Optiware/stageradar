@@ -82,6 +82,9 @@ function candidature(overrides: Record<string, unknown>) {
     notes: null,
     cv_document_id: null,
     lettre_document_id: null,
+    contact_nom: null,
+    contact_email: null,
+    notes_entretien: null,
     created_at: '2026-10-01T00:00:00Z',
     ...overrides,
   };
