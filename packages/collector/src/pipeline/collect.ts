@@ -13,6 +13,18 @@ export interface BilanSource {
   nouvelles: number;
   desactivees: number;
   erreurs: string[];
+  /** Offres vues pour la première fois pendant cette collecte : matière des notifications. */
+  nouvellesOffres: OffreNouvelle[];
+}
+
+export interface OffreNouvelle {
+  id: string;
+  titre: string;
+  entreprise: string | null;
+  pays: string | null;
+  score: number;
+  /** Renseigné si l'offre est hors cible : elle n'est alors pas signalée. */
+  exclue_raison: string | null;
 }
 
 export interface OptionsCollecte {
@@ -51,6 +63,7 @@ export async function collect(
       nouvelles: 0,
       desactivees: 0,
       erreurs: [...resultat.erreurs],
+      nouvellesOffres: [],
     };
 
     for (const offre of resultat.offers) {
@@ -60,7 +73,18 @@ export async function collect(
       options.surOffre?.(enrichie);
       if (options.aBlanc) continue;
       try {
-        if (await store.enregistrer(enrichie, options.runId)) bilan.nouvelles++;
+        const { id, nouvelle } = await store.enregistrer(enrichie, options.runId);
+        if (nouvelle) {
+          bilan.nouvelles++;
+          bilan.nouvellesOffres.push({
+            id,
+            titre: enrichie.titre,
+            entreprise: enrichie.entreprise,
+            pays: enrichie.pays,
+            score: enrichie.score,
+            exclue_raison: enrichie.exclue_raison,
+          });
+        }
       } catch (erreur) {
         bilan.erreurs.push(erreur instanceof Error ? erreur.message : String(erreur));
         if (bilan.statut === 'ok') bilan.statut = 'partiel';

@@ -22,7 +22,7 @@ function fauxStore() {
   const store: Store = {
     lireReglages: () =>
       Promise.resolve({ profil: DEFAULT_PROFIL, poids: DEFAULT_POIDS, motsCles: DEFAULT_KEYWORDS }),
-    enregistrer: () => Promise.resolve(true),
+    enregistrer: () => Promise.resolve({ id: 'id', nouvelle: true }),
     importer(offre) {
       importees.push(offre);
       return Promise.resolve({ id: 'id-importe', nouvelle: true });

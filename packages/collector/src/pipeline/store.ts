@@ -13,8 +13,8 @@ import type { ConnectorResult } from './run-connectors';
 /** Ce dont la collecte a besoin côté base. Remplacé par un double dans les tests. */
 export interface Store {
   lireReglages(): Promise<Reglages>;
-  /** Enregistre une offre ; `true` si elle n'était pas encore connue. */
-  enregistrer(offre: OffreEnrichie, runId: string): Promise<boolean>;
+  /** Enregistre une offre ; `nouvelle` est vrai si elle n'était pas encore connue. */
+  enregistrer(offre: OffreEnrichie, runId: string): Promise<{ id: string; nouvelle: boolean }>;
   /** Enregistre une offre ajoutée à la main et renvoie son identifiant. */
   importer(offre: OffreEnrichie): Promise<{ id: string; nouvelle: boolean }>;
   /** Clôt la collecte d'une source lue en entier ; renvoie le nombre d'offres désactivées. */
@@ -31,7 +31,7 @@ export function createDryStore(): Store {
         poids: DEFAULT_POIDS,
         motsCles: mergeKeywords(null),
       }),
-    enregistrer: () => Promise.resolve(false),
+    enregistrer: () => Promise.resolve({ id: '', nouvelle: false }),
     importer: () => Promise.resolve({ id: '', nouvelle: false }),
     cloreSource: () => Promise.resolve(0),
     journaliser: () => Promise.resolve(),
@@ -71,7 +71,7 @@ export function createStore(url: string, cleSecrete: string): Store {
         .rpc('ingest_offer', { o: offre, p_run_id: runId })
         .single<{ offer_id: string; nouvelle: boolean }>();
       if (error) throw new Error(`Enregistrement de « ${offre.titre} » : ${error.message}`);
-      return data.nouvelle;
+      return { id: data.offer_id, nouvelle: data.nouvelle };
     },
 
     async importer(offre) {

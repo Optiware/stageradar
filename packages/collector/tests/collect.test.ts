@@ -62,7 +62,7 @@ function fauxStore() {
     enregistrer(o) {
       if (o.titre.includes('KO')) return Promise.reject(new Error('refus de la base'));
       enregistrees.push(o);
-      return Promise.resolve(true);
+      return Promise.resolve({ id: `id-${enregistrees.length}`, nouvelle: true });
     },
     importer: () => Promise.resolve({ id: 'manuel', nouvelle: true }),
     cloreSource(source) {

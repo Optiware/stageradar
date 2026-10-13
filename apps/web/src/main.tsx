@@ -74,9 +74,12 @@ createRoot(document.getElementById('root')!).render(
         // À changer quand la forme des données gardées change : l'ancien cache est alors ignoré.
         buster: '1',
         dehydrateOptions: {
-          // Ce que sait faire le navigateur (traduction sur l'appareil) se redemande à chaque visite.
+          // Ce qui dépend du navigateur (traduction sur l'appareil, abonnement aux notifications)
+          // se redemande à chaque visite.
           shouldDehydrateQuery: (requete) =>
-            requete.state.status === 'success' && requete.queryKey[0] !== 'traduction',
+            requete.state.status === 'success' &&
+            requete.queryKey[0] !== 'traduction' &&
+            requete.queryKey[0] !== 'notifications',
         },
       }}
     >

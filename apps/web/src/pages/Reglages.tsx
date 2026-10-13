@@ -2,6 +2,7 @@ import { LIBELLES_PAYS, PAYS_STAGE, type Poids, type PaysStage } from '@stagerad
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Flag } from '../components/Flag';
+import { NotificationsAppareil } from '../components/NotificationsAppareil';
 import { useEnregistrerReglages, useReglages, type Reglages as Valeurs } from '../lib/reglages';
 import { BOUTON_PRINCIPAL, CARTE, CHAMP, SECONDAIRE } from '../lib/ui';
 
@@ -47,7 +48,7 @@ function Formulaire({ initiales }: { initiales: Valeurs }) {
   }
 
   return (
-    <form onSubmit={soumettre} className="mt-6 space-y-4">
+    <form onSubmit={soumettre} className="mt-4 space-y-4">
       <section aria-label="Stage d'été" className={CARTE}>
         <h2 className="font-bold">Stage d'été</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -266,7 +267,90 @@ function Formulaire({ initiales }: { initiales: Valeurs }) {
               className={CHAMP}
             />
           </label>
+          <label className={LIBELLE}>
+            Heures calmes : début
+            <input
+              type="time"
+              required
+              value={notifications.heures_calmes.debut}
+              onChange={(evenement) =>
+                setValeurs({
+                  ...valeurs,
+                  notifications: {
+                    ...notifications,
+                    heures_calmes: {
+                      ...notifications.heures_calmes,
+                      debut: evenement.target.value,
+                    },
+                  },
+                })
+              }
+              className={CHAMP}
+            />
+          </label>
+          <label className={LIBELLE}>
+            Heures calmes : fin
+            <input
+              type="time"
+              required
+              value={notifications.heures_calmes.fin}
+              onChange={(evenement) =>
+                setValeurs({
+                  ...valeurs,
+                  notifications: {
+                    ...notifications,
+                    heures_calmes: { ...notifications.heures_calmes, fin: evenement.target.value },
+                  },
+                })
+              }
+              className={CHAMP}
+            />
+          </label>
+          <label className={LIBELLE}>
+            Heure du résumé du soir (heure de Paris)
+            <input
+              type="time"
+              required
+              value={notifications.resume_quotidien.heure}
+              onChange={(evenement) =>
+                setValeurs({
+                  ...valeurs,
+                  notifications: {
+                    ...notifications,
+                    resume_quotidien: {
+                      ...notifications.resume_quotidien,
+                      heure: evenement.target.value,
+                    },
+                  },
+                })
+              }
+              className={CHAMP}
+            />
+          </label>
+          <label className="flex items-center gap-2 self-end pb-3 text-sm font-bold">
+            <input
+              type="checkbox"
+              checked={notifications.resume_quotidien.actif}
+              onChange={(evenement) =>
+                setValeurs({
+                  ...valeurs,
+                  notifications: {
+                    ...notifications,
+                    resume_quotidien: {
+                      ...notifications.resume_quotidien,
+                      actif: evenement.target.checked,
+                    },
+                  },
+                })
+              }
+              className="size-4 accent-primary-600"
+            />
+            Recevoir le résumé du soir
+          </label>
         </div>
+        <p className={`mt-3 text-sm ${SECONDAIRE}`}>
+          Pendant les heures calmes, rien n'est envoyé : les alertes attendent la fin de la plage.
+        </p>
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -304,6 +388,9 @@ export function Reglages() {
           Les réglages n'ont pas pu être chargés. Vérifie ta connexion.
         </p>
       )}
+      <div className="mt-6">
+        <NotificationsAppareil />
+      </div>
       {reglages.isSuccess && <Formulaire initiales={reglages.data} />}
     </div>
   );

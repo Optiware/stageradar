@@ -57,6 +57,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Réception des notifications : public/push-sw.js.
+        importScripts: ['push-sw.js'],
         navigateFallback: '/index.html',
         // Ces adresses appartiennent au serveur : elles ne doivent jamais recevoir l'application.
         navigateFallbackDenylist: [/^\/api\//, /^\/rest\//, /^\/auth\//],

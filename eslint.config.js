@@ -33,5 +33,10 @@ export default defineConfig(
     ],
     languageOptions: { globals: globals.node },
   },
+  {
+    // Script du service worker (réception des notifications).
+    files: ['apps/web/public/*.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
   prettier,
 );

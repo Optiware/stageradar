@@ -48,6 +48,7 @@ const TABLES = [
   'country_sheets',
   'sources_status',
   'documents',
+  'push_subscriptions',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -72,6 +73,8 @@ export interface Backend {
   sources_status: Ligne[];
   /** CV et lettres (table `documents`). */
   documents: Ligne[];
+  /** Appareils abonnés aux notifications (table `push_subscriptions`, identifiés par `endpoint`). */
+  push_subscriptions: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Demandes reçues par le service de l'application (/api/…), avec leur corps. */
@@ -101,6 +104,7 @@ export const test = base.extend<{ backend: Backend }>({
         country_sheets: [],
         sources_status: [],
         documents: [],
+        push_subscriptions: [],
         api: [],
         apiReponses: {},
         settings: { objectif_hebdo: 5, presentation: '' },
@@ -183,7 +187,8 @@ export const test = base.extend<{ backend: Backend }>({
         }
         // Les autres tables se lisent et s'écrivent ligne par ligne, par leur clé (`id=eq.…`).
         const nom = path.replace('/rest/v1/', '') as NomTable;
-        const cle = nom === 'country_sheets' ? 'pays' : 'id';
+        const cle =
+          nom === 'country_sheets' ? 'pays' : nom === 'push_subscriptions' ? 'endpoint' : 'id';
 
         if ((TABLES as readonly string[]).includes(nom)) {
           const table = backend[nom];

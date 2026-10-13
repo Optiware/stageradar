@@ -65,6 +65,28 @@ EOF
   echo "Secrets générés dans $RACINE/.env"
 }
 
+# Clés des notifications (Web Push, « VAPID ») : une paire propre à ce serveur, générée une fois.
+# La clé privée ne quitte jamais le serveur ; la clé publique est remise au navigateur qui s'abonne.
+creer_cles_notifications() {
+  if grep -q '^VAPID_PUBLIC_KEY=' .env || [ ! -f collecteur/api.mjs ]; then return; fi
+  local cles
+  cles="$(compose run --rm --no-deps -T api node api.mjs --cles-vapid)"
+  if ! grep -q '^VAPID_PUBLIC_KEY=.\+' <<<"$cles" || ! grep -q '^VAPID_PRIVATE_KEY=.\+' <<<"$cles"; then
+    echo "Les clés de notification n'ont pas pu être générées." >&2
+    return 1
+  fi
+  (
+    umask 077
+    {
+      printf '# Clés des notifications (Web Push), générées par installer.sh.\n'
+      grep '^VAPID_P' <<<"$cles"
+      # Contact exigé par le protocole : l'adresse du site, pas une adresse e-mail.
+      printf 'VAPID_SUBJECT=%s\n' "$SITE_URL"
+    } >>.env
+  )
+  echo "Clés de notification générées dans $RACINE/.env"
+}
+
 demarrer() {
   compose pull --quiet
   compose up -d --wait --remove-orphans
@@ -175,6 +197,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 15 3 * * * root $RACINE/sauvegarder.sh >>/var/log/stageradar-sauvegarde.log 2>&1
 # Collecte des offres toutes les 6 heures (§2).
 7 */6 * * * root $RACINE/collecter.sh >>/var/log/stageradar-collecte.log 2>&1
+# Chaque heure : notifications en attente (heures calmes) et résumé du soir (§5.3).
+20 * * * * root $RACINE/notifier.sh >>/var/log/stageradar-notifications.log 2>&1
 EOF
   chmod 644 /etc/cron.d/stageradar
 
@@ -197,6 +221,7 @@ chmod 644 db/roles.sql
 # Le collecteur et le service tournent sans privilèges dans leur conteneur : ses fichiers doivent lui être lisibles.
 if [ -d collecteur ]; then chmod -R u=rwX,go=rX collecteur; fi
 creer_env
+creer_cles_notifications
 charger_env
 demarrer
 ./migrer.sh

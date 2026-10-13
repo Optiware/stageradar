@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { Connector } from '@stageradar/shared';
+import type { Notifieur } from '../notifications/envoi';
 import { collect } from '../pipeline/collect';
 import type { Store } from '../pipeline/store';
 import { DemandeInvalide, importerOffre, type DemandeImport } from './importer';
@@ -18,6 +19,10 @@ export interface Dependances {
   /** Vrai si ce jeton (en-tête Authorization) est celui du propriétaire. */
   estProprietaire: (autorisation: string) => Promise<boolean>;
   lire?: (url: string) => Promise<string>;
+  /** Absent tant que les clés de notification ne sont pas en place. */
+  notifieur?: Notifieur | null;
+  /** Clé publique que le navigateur doit présenter pour s'abonner aux notifications. */
+  clePublique?: string | null;
 }
 
 /**
@@ -96,6 +101,16 @@ export function creerServeur(dependances: Dependances) {
         maintenant: new Date(),
         signal: AbortSignal.timeout(10 * 60_000),
       })
+        .then(async (bilans) => {
+          // Une notification manquée ne doit pas faire échouer la collecte.
+          await dependances.notifieur
+            ?.nouvelles(
+              bilans.flatMap((bilan) => bilan.nouvellesOffres),
+              new Date(),
+            )
+            .catch((erreur: unknown) => console.error('Notifications :', erreur));
+          return bilans;
+        })
         .then((bilans) => ({
           sources: bilans.length,
           en_erreur: bilans.filter((bilan) => bilan.statut === 'erreur').length,
@@ -107,6 +122,17 @@ export function creerServeur(dependances: Dependances) {
           collecteEnCours = null;
         });
       return repondre(reponse, 200, await collecteEnCours);
+    }
+
+    if (chemin === '/push/cle') {
+      return repondre(reponse, 200, { cle: dependances.clePublique ?? null });
+    }
+
+    if (chemin === '/push/essai') {
+      if (!dependances.notifieur) {
+        return repondre(reponse, 503, { message: 'Notifications non configurées sur le serveur.' });
+      }
+      return repondre(reponse, 200, { appareils: await dependances.notifieur.essai() });
     }
 
     return repondre(reponse, 404, { message: 'Introuvable.' });
