@@ -41,8 +41,8 @@ export default defineConfig({
           method: 'GET',
           params: { title: 'titre', text: 'texte', url: 'url' },
         },
-        background_color: '#f3f4f6',
-        theme_color: '#f3f4f6',
+        background_color: '#f4f4f5',
+        theme_color: '#f4f4f5',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

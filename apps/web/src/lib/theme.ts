@@ -4,7 +4,7 @@ export type Theme = 'clair' | 'sombre';
 
 const CLE = 'stageradar-theme';
 // Couleur de la barre du système (Android) et de la barre de titre (Windows).
-const COULEUR_BARRE: Record<Theme, string> = { clair: '#f3f4f6', sombre: '#030712' };
+const COULEUR_BARRE: Record<Theme, string> = { clair: '#f4f4f5', sombre: '#000000' };
 
 /** Thème choisi sur cet appareil. Clair tant que rien n'a été choisi. */
 export function themeEnregistre(): Theme {

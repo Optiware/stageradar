@@ -26,7 +26,7 @@ const BADGES: Record<TypeEcheance, string> = {
   entretien: BADGE.violet,
   relance: BADGE.ambre,
   echeance: BADGE.bleu,
-  stage: BADGE.vert,
+  stage: BADGE.accent,
 };
 
 /** Une échéance et l'écran de l'application où la traiter. */

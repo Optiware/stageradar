@@ -26,7 +26,7 @@ export function NotificationsAppareil() {
     <section aria-label="Notifications sur cet appareil" className={CARTE}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold">Notifications sur cet appareil</h2>
-        {etat.data === 'actives' && <span className={BADGE.vert}>Activées</span>}
+        {etat.data === 'actives' && <span className={BADGE.accent}>Activées</span>}
         {etat.data === 'inactives' && <span className={BADGE.neutre}>Désactivées</span>}
         {etat.data === 'bloquees' && <span className={BADGE.rouge}>Bloquées</span>}
       </div>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import {
   anciennete,
-  couleurScore,
+  couleurTexteScore,
   estNouvelle,
   LIBELLES_DOMAINE,
   LIBELLES_LANGUE,
@@ -15,13 +15,13 @@ import { BADGE, CARTE_SURVOL, SECONDAIRE } from '../lib/ui';
 import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 
-/** Pastille à l'initiale de l'entreprise. */
+/** Logo de l'entreprise : son initiale sur un carré teinté. */
 export function CompanyAvatar({ nom, className = '' }: { nom: string | null; className?: string }) {
   const texte = nom?.trim() || '?';
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 font-extrabold text-primary-600 dark:border-primary-900/50 dark:bg-primary-900/30 dark:text-primary-400 ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-2xl bg-primary-50 font-extrabold text-primary-700 dark:bg-primary-400/15 dark:text-primary-400 ${className}`}
     >
       {[...texte][0]!.toUpperCase()}
     </span>
@@ -48,45 +48,51 @@ export function OfferCard({
   return (
     <article
       aria-label={offre.titre}
-      className={`rounded-3xl border shadow-sm ${CARTE_SURVOL} ${
+      className={`relative mt-3.5 rounded-3xl border-2 bg-white shadow-sm dark:bg-gray-900 ${CARTE_SURVOL} ${
         selectionnee
-          ? 'border-primary-500 bg-primary-50/60 ring-1 ring-primary-500 dark:bg-primary-900/20'
-          : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
-      } ${offre.exclue_raison || offre.masquee ? 'opacity-75' : ''}`}
+          ? 'border-primary-600 dark:border-primary-400'
+          : 'border-gray-200 hover:opacity-100 dark:border-gray-800'
+      } ${selectionnee ? '' : offre.exclue_raison || offre.masquee ? 'opacity-60' : 'opacity-80'}`}
     >
+      <span
+        aria-label={`Score ${offre.score ?? 0} sur 100`}
+        className={`absolute -top-3.5 right-3.5 flex size-12 items-center justify-center rounded-full border-2 text-base font-extrabold shadow-sm ${
+          selectionnee
+            ? 'border-primary-600 bg-primary-600 text-white dark:border-primary-400 dark:bg-primary-400 dark:text-primary-ink'
+            : `border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 ${couleurTexteScore(offre.score ?? 0)}`
+        }`}
+      >
+        {offre.score ?? 0}
+      </span>
       <Link
         to={{ search: `?offre=${offre.id}` }}
         onClick={onOuvrir}
         aria-current={selectionnee ? 'true' : undefined}
         className="block rounded-3xl p-5 pb-4"
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 pr-12">
           <CompanyAvatar nom={offre.entreprise} className="size-12 text-xl" />
           <div className="min-w-0 flex-1">
-            <h2 className="leading-tight font-bold break-words">{offre.titre}</h2>
-            {offre.entreprise && (
-              <p className={`mt-1 text-sm font-bold ${SECONDAIRE}`}>{offre.entreprise}</p>
-            )}
-            {lieu(offre) && (
-              <p className={`mt-1 flex items-center gap-1.5 text-sm ${SECONDAIRE}`}>
-                <Flag code={offre.pays} />
-                <span className="min-w-0 break-words">{lieu(offre)}</span>
-              </p>
-            )}
+            <p className={`flex flex-wrap items-center gap-x-1.5 text-[0.8125rem] ${SECONDAIRE}`}>
+              {offre.entreprise && <span className="font-bold">{offre.entreprise}</span>}
+              {offre.entreprise && lieu(offre) && <span aria-hidden="true">•</span>}
+              {lieu(offre) && (
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="min-w-0 break-words">{lieu(offre)}</span>
+                  <Flag code={offre.pays} />
+                </span>
+              )}
+            </p>
+            <h2 className="mt-1 leading-[1.3] font-extrabold break-words">{offre.titre}</h2>
           </div>
-          <span
-            aria-label={`Score ${offre.score ?? 0} sur 100`}
-            className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${couleurScore(offre.score ?? 0)}`}
-          >
-            {offre.score ?? 0}
-          </span>
         </div>
 
         <ul className="mt-4 flex flex-wrap gap-2">
-          {estNouvelle(offre, maintenant) && <li className={BADGE.vert}>Nouveau</li>}
-          <li className={BADGE.neutre}>{LIBELLES_TYPE[offre.type]}</li>
+          <li className={offre.type === 'stage' ? BADGE.violet : BADGE.accent}>
+            {LIBELLES_TYPE[offre.type]}
+          </li>
           {offre.teletravail && offre.teletravail !== 'sur_site' && (
-            <li className={BADGE.bleu}>{LIBELLES_TELETRAVAIL[offre.teletravail]}</li>
+            <li className={BADGE.neutre}>{LIBELLES_TELETRAVAIL[offre.teletravail]}</li>
           )}
           {offre.domaines.map((domaine) => (
             <li key={domaine} className={BADGE.neutre}>
@@ -100,6 +106,7 @@ export function OfferCard({
                 {LIBELLES_LANGUE[langue]} exigé
               </li>
             ))}
+          {estNouvelle(offre, maintenant) && <li className={BADGE.ambre}>Nouveau</li>}
           {offre.exclue_raison && <li className={BADGE.rouge}>{offre.exclue_raison}</li>}
           {offre.masquee && <li className={BADGE.neutre}>Masquée</li>}
         </ul>

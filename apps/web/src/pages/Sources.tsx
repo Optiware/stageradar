@@ -20,7 +20,7 @@ interface Passage {
 
 const LIEN = 'font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400';
 const LIBELLES_STATUT = { ok: 'Fonctionne', partiel: 'Partiel', erreur: 'En erreur' } as const;
-const BADGES_STATUT = { ok: BADGE.vert, partiel: BADGE.ambre, erreur: BADGE.rouge } as const;
+const BADGES_STATUT = { ok: BADGE.accent, partiel: BADGE.ambre, erreur: BADGE.rouge } as const;
 
 function quand(dateIso: string): string {
   return new Date(dateIso).toLocaleString('fr-FR', {

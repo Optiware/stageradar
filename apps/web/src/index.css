@@ -1,7 +1,8 @@
 @import 'tailwindcss';
 
 /*
- * Style « Pulse » : très arrondi, vert vif, police Plus Jakarta Sans.
+ * Style « Pulse », palette noir + cyan (maquette « design_handoff_stageradar » du 14 octobre 2026) :
+ * très arrondi, police Plus Jakarta Sans.
  * Tailwind 4 se configure ici (plus de tailwind.config.ts) : ces lignes en sont l'équivalent.
  * Les classes communes (cartes, boutons, badges) sont dans lib/ui.ts.
  */
@@ -16,18 +17,42 @@
    */
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
-  --color-primary-50: #ecfdf5;
-  --color-primary-100: #d1fae5;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
-  /* Hors design system, même famille : texte vert lisible sur fond clair (contraste AA). */
-  --color-primary-700: #047857;
-  --color-primary-900: #064e3b;
+  /* Accent cyan. Clair : 600 pour l'accent, 700 pour le texte et les fonds pleins. Sombre : 400. */
+  --color-primary-50: #ecfeff;
+  --color-primary-100: #cffafe;
+  --color-primary-300: #67e8f9;
+  --color-primary-400: #22d3ee;
+  --color-primary-500: #06b6d4;
+  --color-primary-600: #0891b2;
+  --color-primary-700: #0e7490;
+  --color-primary-900: #164e63;
+  /* Texte posé sur le cyan vif du thème sombre. */
+  --color-primary-ink: #03222b;
 
-  --color-gray-850: #1f2937;
-  --color-gray-900: #111827;
-  --color-gray-950: #030712;
+  /* Gris neutres (zinc) ; 800 à 950 reprennent les surfaces sombres de la maquette. */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  /* Bordures en sombre. */
+  --color-gray-800: #232327;
+  /* Blocs gris et badges neutres en sombre. */
+  --color-gray-850: #1a1a1e;
+  /* Cartes et barre latérale en sombre. */
+  --color-gray-900: #0e0e10;
+  /* Texte principal en clair, bouton principal et pilule active. */
+  --color-gray-950: #09090b;
+
+  /* Fonds des colonnes du suivi, en clair. */
+  --color-colonne-neutre: #e9e9ec;
+  --color-colonne-cyan: #e0f4f8;
+  --color-colonne-violet: #e8ebfc;
+
+  --shadow-sm: 0 1px 2px rgb(9 9 11 / 0.04), 0 8px 24px rgb(9 9 11 / 0.06);
 }
 
 @layer base {
@@ -40,7 +65,7 @@
   }
 
   body {
-    @apply bg-gray-100 font-medium text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-gray-100 font-medium text-gray-950 antialiased dark:bg-black dark:text-gray-50;
   }
 
   /* Classe posée par lib/theme.ts le temps d'un changement de thème. */
@@ -51,7 +76,7 @@
   h1,
   h2,
   h3 {
-    @apply text-gray-900 dark:text-white;
+    @apply text-gray-950 dark:text-gray-50;
   }
 
   :focus-visible {

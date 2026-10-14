@@ -257,7 +257,7 @@ export function Pays() {
               {fiche.nom}
             </h2>
             {fiche.statut === 'verifie' ? (
-              <span className={BADGE.vert}>
+              <span className={BADGE.accent}>
                 Vérifiée le {dateLongue(fiche.derniere_verification)}
               </span>
             ) : (

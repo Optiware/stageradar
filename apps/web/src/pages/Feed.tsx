@@ -129,9 +129,15 @@ export function Feed() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
+    <div className="lg:grid lg:grid-cols-[minmax(0,27.5rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
       <div className={idOuvert ? 'hidden lg:block' : ''}>
-        <h1 className="text-2xl font-extrabold tracking-tight">Fil</h1>
+        <h1 className="text-[1.75rem] font-extrabold tracking-[-0.03em]">Fil</h1>
+        {offres.isSuccess && (
+          <p className={`mt-1 text-sm ${SECONDAIRE}`}>
+            {affichees.length} offre{affichees.length > 1 ? 's' : ''} triée
+            {affichees.length > 1 ? 's' : ''} par score
+          </p>
+        )}
 
         <div className="relative mt-4">
           <label htmlFor="recherche" className="sr-only">
@@ -147,14 +153,14 @@ export function Feed() {
             value={recherche}
             onChange={(event) => setRecherche(event.target.value)}
             placeholder="Intitulé, entreprise, ville"
-            className="block w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-11 text-base shadow-sm placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-900"
+            className="block w-full rounded-[1.25rem] border border-gray-200 bg-white py-3.5 pr-4 pl-11 text-base shadow-sm placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-900"
           />
         </div>
 
         <div
           role="tablist"
           aria-label="Type d'offre"
-          className="mt-3 flex rounded-full bg-gray-200/70 p-1 text-sm font-bold dark:bg-gray-900"
+          className="hide-scroll -mx-[1.125rem] mt-4 flex gap-2 overflow-x-auto px-[1.125rem] pb-1 md:mx-0 md:px-0"
         >
           {ONGLETS.map(({ id, libelle }) => {
             const actif = id === onglet;
@@ -165,14 +171,10 @@ export function Feed() {
                 role="tab"
                 aria-selected={actif}
                 onClick={() => setOnglet(id)}
-                className={`flex-1 rounded-full px-3 py-1.5 transition ${
-                  actif
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                }`}
+                className={`shrink-0 ${pilule(actif)}`}
               >
                 {libelle}{' '}
-                <span className={`font-medium ${SECONDAIRE}`}>
+                <span className={`font-medium ${actif ? 'opacity-70' : SECONDAIRE}`}>
                   {visibles.filter((offre) => dansOnglet(offre, id)).length}
                 </span>
               </button>
@@ -282,7 +284,7 @@ export function Feed() {
           </p>
         )}
 
-        <ul className="mt-4 space-y-3">
+        <ul className="mt-2">
           {affichees.map((offre) => (
             <li key={offre.id}>
               <OfferCard
@@ -310,7 +312,7 @@ export function Feed() {
             Retour aux offres
           </Link>
         )}
-        <div className={`${CARTE} lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6`}>
+        <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8 lg:mt-4 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:rounded-tl-[3rem] lg:px-14 lg:py-12 lg:shadow-[-16px_0_48px_rgba(9,9,11,0.07)] dark:border-gray-800 dark:bg-gray-900 lg:dark:shadow-[-16px_0_48px_rgba(0,0,0,0.5)]">
           {ouverte ? (
             <OfferDetail
               key={ouverte.id}

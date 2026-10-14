@@ -38,6 +38,7 @@ import {
 } from '../lib/suivi';
 import {
   BADGE,
+  BOUTON_ACCENT,
   BOUTON_DOUX,
   BOUTON_PRINCIPAL,
   BOUTON_SECONDAIRE,
@@ -151,7 +152,7 @@ function FormulaireEntreprise({
               : 'Vérifier si ses offres peuvent être collectées'}
           </button>
           {champs.ats && champs.slug && !verifier.isSuccess && (
-            <span className={BADGE.vert}>Offres collectées</span>
+            <span className={BADGE.accent}>Offres collectées</span>
           )}
         </div>
         {verifier.isSuccess &&
@@ -396,7 +397,7 @@ function CarteEntreprise({
             )}
           </div>
           {candidature ? (
-            <Link to={`/suivi?candidature=${candidature.id}`} className={BADGE.vert}>
+            <Link to={`/suivi?candidature=${candidature.id}`} className={BADGE.accent}>
               Suivi : {LIBELLES_STATUT[candidature.statut]}
             </Link>
           ) : (
@@ -441,7 +442,7 @@ function CarteEntreprise({
             type="button"
             aria-expanded={volet === 'message'}
             onClick={() => setVolet(volet === 'message' ? null : 'message')}
-            className="rounded-2xl bg-primary-500 px-4 py-2.5 text-sm font-bold text-gray-950 transition hover:bg-primary-400"
+            className={BOUTON_ACCENT}
           >
             Préparer un message
           </button>

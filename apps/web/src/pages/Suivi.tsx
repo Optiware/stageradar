@@ -25,38 +25,45 @@ import { BADGE, CARTE, CARTE_SURVOL, pilule, SECONDAIRE } from '../lib/ui';
 
 interface Teinte {
   colonne: string;
-  titre: string;
+  /** Pastille de couleur devant le titre de la colonne. */
+  pastille: string;
   compteur: string;
+  /** Bordure des cartes de la colonne (les entretiens ressortent). */
+  carte: string;
 }
 
 const NEUTRE: Teinte = {
-  colonne: 'border-gray-200 bg-gray-200/50 dark:border-gray-800 dark:bg-gray-900',
-  titre: 'text-gray-700 dark:text-gray-300',
-  compteur: 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+  colonne: 'bg-colonne-neutre dark:bg-gray-950',
+  pastille: 'bg-gray-400 dark:bg-gray-500',
+  compteur: 'bg-white text-gray-700 dark:bg-gray-850 dark:text-gray-400',
+  carte: 'border border-gray-200 dark:border-gray-800',
 };
-const VERT: Teinte = {
-  colonne: 'border-primary-100 bg-primary-50 dark:border-primary-900/30 dark:bg-primary-900/10',
-  titre: 'text-primary-900 dark:text-primary-400',
-  compteur: 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-400',
+const CYAN: Teinte = {
+  colonne: 'bg-colonne-cyan dark:bg-primary-400/[0.07]',
+  pastille: 'bg-primary-600 dark:bg-primary-400',
+  compteur: 'bg-white text-primary-700 dark:bg-primary-400/15 dark:text-primary-400',
+  carte: 'border border-gray-200 dark:border-gray-800',
 };
 const AMBRE: Teinte = {
-  colonne: 'border-amber-100 bg-amber-50 dark:border-amber-900/30 dark:bg-amber-900/10',
-  titre: 'text-amber-900 dark:text-amber-400',
-  compteur: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400',
+  colonne: 'bg-amber-50 dark:bg-amber-500/[0.07]',
+  pastille: 'bg-amber-500 dark:bg-amber-400',
+  compteur: 'bg-white text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+  carte: 'border border-gray-200 dark:border-gray-800',
 };
 const VIOLET: Teinte = {
-  colonne: 'border-purple-100 bg-purple-50 dark:border-purple-900/30 dark:bg-purple-900/10',
-  titre: 'text-purple-900 dark:text-purple-400',
-  compteur: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400',
+  colonne: 'bg-colonne-violet dark:bg-indigo-500/[0.09]',
+  pastille: 'bg-indigo-600 dark:bg-indigo-400',
+  compteur: 'bg-white text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
+  carte: 'border-2 border-indigo-600 dark:border-indigo-400',
 };
 
 const TEINTES: Record<StatutSuivi, Teinte> = {
   a_etudier: NEUTRE,
   a_postuler: NEUTRE,
-  postule: VERT,
+  postule: CYAN,
   relance: AMBRE,
   entretien: VIOLET,
-  offre: VERT,
+  offre: CYAN,
   refus: NEUTRE,
 };
 
@@ -92,14 +99,14 @@ function Carte({
         evenement.dataTransfer.setData('text/plain', candidature.id);
         evenement.dataTransfer.effectAllowed = 'move';
       }}
-      className="cursor-grab rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      className={`cursor-grab rounded-[1.25rem] bg-white p-4 shadow-sm active:cursor-grabbing dark:bg-gray-900 ${TEINTES[candidature.statut].carte}`}
     >
       <article aria-label={titre}>
         <button type="button" onClick={onOuvrir} className="block w-full text-left">
           {entreprise && (
             <span className={`block text-xs font-bold ${SECONDAIRE}`}>{entreprise}</span>
           )}
-          <span className="mt-0.5 block leading-tight font-bold break-words">{intitule}</span>
+          <span className="mt-0.5 block leading-tight font-extrabold break-words">{intitule}</span>
           {lieu(candidature.resume) && (
             <span className={`mt-1 flex items-center gap-1.5 text-xs ${SECONDAIRE}`}>
               <Flag code={candidature.resume.pays} />
@@ -149,10 +156,10 @@ function Carte({
 const BADGES_STATUT: Record<StatutSuivi, string> = {
   a_etudier: BADGE.neutre,
   a_postuler: BADGE.neutre,
-  postule: BADGE.vert,
+  postule: BADGE.accent,
   relance: BADGE.ambre,
   entretien: BADGE.violet,
-  offre: BADGE.vert,
+  offre: BADGE.accent,
   refus: BADGE.rouge,
 };
 
@@ -253,7 +260,7 @@ function Liste({
                     </span>
                   )}
                   {aVenir && (
-                    <span className="font-bold text-purple-700 dark:text-purple-400">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
                       Entretien {libelleEntretien(entretien.date, maintenant)}
                     </span>
                   )}
@@ -305,7 +312,7 @@ export function Suivi() {
 
   return (
     <>
-      <h1 className="text-2xl font-extrabold tracking-tight">Suivi</h1>
+      <h1 className="text-[1.75rem] font-extrabold tracking-[-0.03em]">Suivi</h1>
       <p className="mt-1 text-gray-600 dark:text-gray-400">
         {vue === 'tableau'
           ? 'Fais glisser une carte vers une autre colonne, ou change sa colonne depuis la carte.'
@@ -416,13 +423,23 @@ export function Suivi() {
                   const candidature = toutes.find((autre) => autre.id === id);
                   if (candidature) deplacer(candidature, statut);
                 }}
-                className={`w-72 shrink-0 snap-start rounded-3xl border p-3 transition ${teinte.colonne} ${
-                  survolee === statut ? 'ring-2 ring-primary-500' : ''
+                className={`w-80 shrink-0 snap-start rounded-3xl p-3.5 outline-offset-2 transition ${teinte.colonne} ${
+                  survolee === statut
+                    ? 'outline-2 outline-primary-600 outline-dashed dark:outline-primary-400'
+                    : ''
                 }`}
               >
                 <header className="flex items-center justify-between px-2 py-1">
-                  <h2 className={`font-bold ${teinte.titre}`}>{LIBELLES_STATUT[statut]}</h2>
-                  <span className={`rounded-lg px-2 py-1 text-xs font-bold ${teinte.compteur}`}>
+                  <h2 className="flex items-center gap-2 font-bold">
+                    <span
+                      aria-hidden="true"
+                      className={`size-2.5 rounded-full ${teinte.pastille}`}
+                    />
+                    {LIBELLES_STATUT[statut]}
+                  </h2>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${teinte.compteur}`}
+                  >
                     {cartes.length}
                   </span>
                 </header>

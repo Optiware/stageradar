@@ -3,13 +3,12 @@ import { Link } from 'react-router';
 import { useMasquerOffre } from '../lib/fil';
 import type { FeedOffer } from '../lib/offres';
 import { useSuivreOffre, type Candidature } from '../lib/suivi';
-import { BOUTON_DOUX } from '../lib/ui';
+import { BOUTON_ACCENT, BOUTON_DOUX } from '../lib/ui';
 
 const BASE = 'flex flex-1 items-center justify-center gap-2';
-const VERT =
-  'rounded-2xl bg-primary-500 px-4 py-2.5 text-sm font-bold text-gray-950 transition hover:bg-primary-400 disabled:opacity-60';
+/** Offre déjà sauvée : même bouton, en fond teinté. */
 const SUIVIE =
-  'rounded-2xl border border-primary-500 px-4 py-2.5 text-sm font-bold text-primary-700 transition hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20';
+  'rounded-2xl bg-primary-50 px-4 py-2.5 text-sm font-bold text-primary-700 transition hover:bg-primary-100 dark:bg-primary-400/15 dark:text-primary-400 dark:hover:bg-primary-400/25';
 
 /** Les deux actions rapides d'une offre : la masquer du fil, ou la garder dans le suivi. */
 export function OfferActions({
@@ -61,7 +60,7 @@ export function OfferActions({
             type="button"
             disabled={suivre.isPending}
             onClick={() => suivre.mutate(offre.id)}
-            className={`${BASE} ${VERT}`}
+            className={`${BASE} ${BOUTON_ACCENT}`}
           >
             <Bookmark aria-hidden="true" className="size-4" /> Sauver
           </button>

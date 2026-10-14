@@ -1,6 +1,6 @@
 import { LIBELLES_STATUT, PAYS_STAGE } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Target, Zap } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
@@ -11,6 +11,7 @@ import {
   LIBELLES_LANGUE,
   LIBELLES_TELETRAVAIL,
   LIBELLES_TYPE,
+  libelleScore,
   lienSur,
   lieu,
   nomPays,
@@ -19,12 +20,16 @@ import {
 } from '../lib/offres';
 import type { Candidature } from '../lib/suivi';
 import { supabase } from '../lib/supabase';
-import { BADGE, BOUTON_PRINCIPAL } from '../lib/ui';
+import { BADGE } from '../lib/ui';
 import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
 import { cleTexteOffre, OfferDescription, type TexteOffre } from './OfferDescription';
 import { NotesOffre, QuestionPostule } from './OfferExtras';
+
+/** « Postuler » : l'élément le plus visible de la page, avec un léger zoom au survol. */
+const POSTULER =
+  'rounded-[1.25rem] bg-gray-950 px-6 py-[1.125rem] text-base font-extrabold text-white transition duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100 dark:bg-primary-400 dark:text-primary-ink';
 
 function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
@@ -106,15 +111,24 @@ export function OfferDetail({
 
   return (
     <article aria-label={`Détail : ${offre.titre}`}>
-      <div className="flex items-start gap-4">
-        <CompanyAvatar nom={offre.entreprise} className="size-14 text-2xl" />
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl leading-tight font-extrabold break-words">{offre.titre}</h2>
-          <p className="mt-1 text-sm font-bold text-gray-500 dark:text-gray-400">
-            {[offre.entreprise, lieu(offre)].filter(Boolean).join(' · ')}
-          </p>
-        </div>
+      <p
+        className={`inline-flex items-center gap-2 ${BADGE.accent} px-3.5 py-1.5 text-[0.8125rem]`}
+      >
+        <Target aria-hidden="true" className="size-4" strokeWidth={2} />
+        Score : {offre.score ?? 0}/100 ({libelleScore(offre.score ?? 0)})
+      </p>
+      <div className="mt-5 flex items-center gap-4">
+        <CompanyAvatar
+          nom={offre.entreprise}
+          className="size-[3.75rem] rounded-[1.25rem] text-2xl"
+        />
+        <p className="min-w-0 text-[0.9375rem] font-bold text-gray-600 dark:text-gray-400">
+          {[offre.entreprise, lieu(offre)].filter(Boolean).join(' • ')}
+        </p>
       </div>
+      <h2 className="mt-4 text-[1.75rem] leading-[1.12] font-extrabold tracking-[-0.035em] break-words md:text-[2.125rem] min-[1400px]:text-[2.5rem]">
+        {offre.titre}
+      </h2>
 
       {offre.exclue_raison && (
         <p className="mt-4 rounded-2xl bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 dark:bg-red-900/30 dark:text-red-400">
@@ -128,10 +142,11 @@ export function OfferDetail({
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => setPartiPostuler(true)}
-          className={`mt-5 flex w-full items-center justify-center gap-2 sm:w-auto sm:min-w-56 ${BOUTON_PRINCIPAL}`}
+          className={`mt-6 flex w-full items-center justify-center gap-2.5 sm:w-auto sm:min-w-72 ${POSTULER}`}
         >
+          <Zap aria-hidden="true" className="size-5" strokeWidth={2} />
           Postuler
-          <ExternalLink aria-hidden="true" className="size-4" />
+          <ExternalLink aria-hidden="true" className="size-4 opacity-70" />
         </a>
       ) : (
         <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
@@ -160,22 +175,25 @@ export function OfferDetail({
       {candidature && (
         <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
           Statut dans ton suivi :{' '}
-          <span className={BADGE.vert}>{LIBELLES_STATUT[candidature.statut]}</span>
+          <span className={BADGE.accent}>{LIBELLES_STATUT[candidature.statut]}</span>
         </p>
       )}
 
-      <Section titre="En bref">
-        <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+      <section className="mt-6 rounded-3xl bg-gray-100 p-5 dark:bg-gray-850">
+        <h3 className="text-base font-bold">En bref</h3>
+        <dl className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(9.375rem,1fr))] gap-3 text-sm">
           {enBref
             .filter(([, valeur]) => valeur)
             .map(([nom, valeur]) => (
-              <div key={nom} className="contents">
-                <dt className="text-gray-500 dark:text-gray-400">{nom}</dt>
-                <dd className="font-bold break-words">{valeur}</dd>
+              <div key={nom} className="rounded-2xl bg-white p-3.5 dark:bg-gray-900">
+                <dt className="text-[0.6875rem] font-extrabold tracking-[0.06em] text-gray-400 uppercase dark:text-gray-500">
+                  {nom}
+                </dt>
+                <dd className="mt-1 font-bold break-words">{valeur}</dd>
               </div>
             ))}
         </dl>
-      </Section>
+      </section>
 
       <Section titre="Pertinence">
         <div className="mt-3 flex items-center gap-3">
