@@ -21,6 +21,7 @@ import { Importer } from './pages/Importer';
 import { Pays } from './pages/Pays';
 import { Reglages } from './pages/Reglages';
 import { Sources } from './pages/Sources';
+import { Startups } from './pages/Startups';
 import { Suivi } from './pages/Suivi';
 
 export function App() {
@@ -87,6 +88,7 @@ function OwnerGate({ session }: { session: Session }) {
         <Route path="donnees" element={<Donnees />} />
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />
+        <Route path="startups" element={<Startups />} />
         <Route path="importer" element={<Importer />} />
         <Route path="logement" element={<Logement />} />
         <Route path="sources" element={<Sources />} />

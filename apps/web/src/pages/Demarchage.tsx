@@ -600,6 +600,11 @@ export function Demarchage() {
         <p className={`mt-1 text-sm ${SECONDAIRE}`}>
           Annuaires à parcourir chez eux. Quand une entreprise te plaît, ajoute-la ci-dessous.
         </p>
+        <p className="mt-2 text-sm">
+          <Link to="/startups" className={LIEN}>
+            Startups du Japon et de la Corée déjà repérées, avec leurs contacts
+          </Link>
+        </p>
         <ul className="mt-3 space-y-2 text-sm">
           {ANNUAIRES.map(({ pays, liens }) => (
             <li key={pays ?? 'tous'} className="flex flex-wrap items-center gap-x-4 gap-y-1">

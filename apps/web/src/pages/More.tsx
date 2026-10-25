@@ -13,6 +13,11 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
     text: 'Startups à contacter, personnes à joindre, messages prêts à envoyer.',
   },
   {
+    title: 'Startups Japon et Corée',
+    vers: '/startups',
+    text: 'Startups qui prennent des stagiaires étrangers : sites, offres, fondateurs, contacts.',
+  },
+  {
     title: 'Importer une offre',
     vers: '/importer',
     text: 'Ajouter une annonce trouvée ailleurs, par son adresse ou par « Partager ».',
