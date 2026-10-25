@@ -11,6 +11,7 @@ import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { Feed } from './pages/Feed';
 import { Calendrier } from './pages/Calendrier';
+import { Cv } from './pages/Cv';
 import { Demarchage } from './pages/Demarchage';
 import { Documents } from './pages/Documents';
 import { Donnees } from './pages/Donnees';
@@ -82,6 +83,7 @@ function OwnerGate({ session }: { session: Session }) {
         <Route path="calendrier" element={<Calendrier />} />
         <Route path="statistiques" element={<Statistiques />} />
         <Route path="documents" element={<Documents />} />
+        <Route path="cv" element={<Cv />} />
         <Route path="donnees" element={<Donnees />} />
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />

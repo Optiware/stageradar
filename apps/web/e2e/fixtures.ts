@@ -148,13 +148,14 @@ export const test = base.extend<{ backend: Backend }>({
           return route.fulfill({ json: fakeSession(OWNER_EMAIL).user });
         }
         if (path === '/rest/v1/offers' && request.method() === 'GET') {
-          // Lecture de la description d'une seule offre (filtre PostgREST `id=eq.…`).
+          // Lecture d'une seule offre, avec sa description (filtre PostgREST `id=eq.…`).
           const id = new URL(request.url()).searchParams.get('id')?.replace(/^eq\./, '');
           if (id) {
             return route.fulfill({
               json: backend.offers
                 .filter((offre) => offre.id === id)
                 .map((offre) => ({
+                  ...offre,
                   description: offre.description ?? null,
                   traduction: offre.traduction ?? null,
                   notes: offre.notes ?? null,

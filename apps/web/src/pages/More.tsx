@@ -34,6 +34,11 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
     text: 'Entretiens, relances, échéances par pays, export vers ton agenda.',
   },
   { title: 'Statistiques', vers: '/statistiques', text: 'Envois, réponses, ce qui fonctionne.' },
+  {
+    title: 'Générateur de CV',
+    vers: '/cv',
+    text: 'Ton CV mis en forme pour chaque pays et adapté à une offre.',
+  },
   { title: 'Documents', vers: '/documents', text: 'Versions de CV et de lettres envoyées.' },
   { title: 'Mes données', vers: '/donnees', text: 'Sauvegarde, export tableur, réimport.' },
 ];

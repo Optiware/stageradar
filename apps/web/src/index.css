@@ -93,3 +93,36 @@
     display: none;
   }
 }
+
+/*
+ * Impression du générateur de CV : seul l'exemplaire posé dans <body> sort, sur A4, noir sur blanc,
+ * quel que soit le thème. Le reste de l'application n'est pas imprimé.
+ */
+.cv-impression {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  html.dark {
+    color-scheme: light;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  body:has(.cv-impression) > :not(.cv-impression) {
+    display: none !important;
+  }
+
+  .cv-impression {
+    display: block;
+    print-color-adjust: exact;
+  }
+}

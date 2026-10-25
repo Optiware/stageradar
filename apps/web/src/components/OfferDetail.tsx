@@ -239,6 +239,18 @@ export function OfferDetail({
         )}
       </Section>
 
+      <Section titre="CV">
+        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+          Ton CV aux usages du pays de l'offre, avec les compétences qu'elle demande en tête.
+        </p>
+        <Link
+          to={`/cv?offre=${offre.id}`}
+          className="mt-2 inline-block text-sm font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
+        >
+          Adapter mon CV à cette offre
+        </Link>
+      </Section>
+
       {offre.entreprise && (
         <Section titre="Entreprise">
           <p className="mt-3 text-sm">{offre.entreprise}</p>
