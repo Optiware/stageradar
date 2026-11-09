@@ -51,8 +51,20 @@ test.describe('Startups Japon et Corée', () => {
 
   test('cherche par mot', async ({ page }) => {
     await page.goto('/startups');
-    await page.getByLabel('Chercher').fill('robot');
-    await expect(page.getByRole('status')).toHaveText('2 startups');
+    await page.getByLabel('Chercher').fill('lunaires');
+    await expect(page.getByRole('status')).toHaveText('1 startup');
+    await expect(page.getByRole('article', { name: 'ispace' })).toContainText('9 novembre 2026');
+  });
+
+  test('filtre la robotique et le matériel', async ({ page }) => {
+    await page.goto('/startups');
+    await page
+      .getByRole('group', { name: 'Secteur' })
+      .getByRole('button', { name: 'Robotique, spatial, matériel' })
+      .click();
     await expect(page.getByRole('article', { name: 'Mujin' })).toBeVisible();
+    await expect(page.getByRole('article', { name: 'Seoul Robotics' })).toBeVisible();
+    await expect(page.getByRole('article', { name: 'HENNGE' })).toHaveCount(0);
+    await expect(page.getByRole('status')).toHaveText('14 startups');
   });
 });

@@ -15,7 +15,7 @@ const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] =
   {
     title: 'Startups Japon et Corée',
     vers: '/startups',
-    text: 'Startups qui prennent des stagiaires étrangers : sites, offres, fondateurs, contacts.',
+    text: 'Startups en info et en robotique où l’anglais suffit : stages, offres, fondateurs, contacts.',
   },
   {
     title: 'Importer une offre',

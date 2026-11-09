@@ -6,13 +6,14 @@ import { Flag } from '../components/Flag';
 import { useEnregistrerEntreprise, useEntreprises } from '../lib/entreprises';
 import { nomPays } from '../lib/offres';
 import {
+  dateVerification,
   LIBELLES_ACCES,
   LIBELLES_LANGUE_TRAVAIL,
+  LIBELLES_SECTEUR,
   rechercheLinkedinEntreprise,
   rechercheLinkedinPersonne,
   rechercheRecruteurs,
   STARTUPS,
-  VERIFICATION_STARTUPS,
   type AccesStage,
   type FicheStartup,
 } from '../lib/startups';
@@ -52,7 +53,7 @@ function versEntreprise(fiche: FicheStartup) {
     contact_nom: fondateur ? `${fondateur.nom} (${fondateur.role})` : null,
     contact_email: fiche.email ?? null,
     contact_linkedin: fiche.linkedin ?? null,
-    notes: `${fiche.pourquoi}\n${LIBELLES_LANGUE_TRAVAIL[fiche.langue]}. Fiche vérifiée le ${VERIFICATION_STARTUPS}.`,
+    notes: `${fiche.pourquoi}\n${LIBELLES_LANGUE_TRAVAIL[fiche.langue]}. Fiche vérifiée le ${dateVerification(fiche)}.`,
     url_carriere: fiche.carriere,
     ats: null,
     slug: null,
@@ -72,6 +73,7 @@ function CarteStartup({ fiche, suivie }: { fiche: FicheStartup; suivie: boolean 
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
+          <span className={BADGE.neutre}>{LIBELLES_SECTEUR[fiche.secteur]}</span>
           <span className={COULEUR_ACCES[fiche.acces]}>{LIBELLES_ACCES[fiche.acces]}</span>
           <span className={fiche.langue === 'local' ? BADGE.ambre : BADGE.neutre}>
             {LIBELLES_LANGUE_TRAVAIL[fiche.langue]}
@@ -153,7 +155,7 @@ function CarteStartup({ fiche, suivie }: { fiche: FicheStartup; suivie: boolean 
 
       <details className="mt-4 text-sm">
         <summary className={`cursor-pointer font-bold ${SECONDAIRE}`}>
-          Sources (lues le {VERIFICATION_STARTUPS})
+          Sources (lues le {dateVerification(fiche)})
         </summary>
         <ul className="mt-1.5 list-disc space-y-1 pl-5">
           {fiche.sources.map((source) => (
@@ -191,6 +193,7 @@ function CarteStartup({ fiche, suivie }: { fiche: FicheStartup; suivie: boolean 
 
 const FILTRES_PAYS = [null, 'JP', 'KR'] as const;
 const FILTRES_ACCES = [null, 'programme', 'offre', 'spontanee'] as const;
+const FILTRES_SECTEUR = [null, 'info', 'meca'] as const;
 
 /**
  * Startups du Japon et de la Corée qui peuvent prendre un stagiaire étranger en informatique,
@@ -200,6 +203,7 @@ export function Startups() {
   const entreprises = useEntreprises();
   const [pays, setPays] = useState<(typeof FILTRES_PAYS)[number]>(null);
   const [acces, setAcces] = useState<(typeof FILTRES_ACCES)[number]>(null);
+  const [secteur, setSecteur] = useState<(typeof FILTRES_SECTEUR)[number]>(null);
   const [recherche, setRecherche] = useState('');
 
   const suivies = new Set(
@@ -210,6 +214,7 @@ export function Startups() {
     (fiche) =>
       (!pays || fiche.pays === pays) &&
       (!acces || fiche.acces === acces) &&
+      (!secteur || fiche.secteur === secteur) &&
       (!terme || normalizeText(`${fiche.nom} ${fiche.activite} ${fiche.ville}`).includes(terme)),
   );
 
@@ -217,10 +222,11 @@ export function Startups() {
     <div className="max-w-5xl">
       <h1 className="text-2xl font-extrabold tracking-tight">Startups Japon et Corée</h1>
       <p className={`mt-1 max-w-3xl ${SECONDAIRE}`}>
-        Entreprises tech qui accueillent des stagiaires étrangers ou recrutent des ingénieurs sans
-        exiger le japonais ou le coréen. Chaque fiche a été vérifiée le {VERIFICATION_STARTUPS} et
-        cite ses sources. Les e-mails sont ceux que l’entreprise publie ; pour une personne, le lien
-        ouvre une recherche LinkedIn, aucun profil n’est deviné.
+        Startups en informatique, ou en robotique, spatial et matériel avec une équipe logicielle,
+        qui accueillent des stagiaires étrangers ou recrutent des ingénieurs sans exiger le japonais
+        ou le coréen. Chaque fiche donne sa date de vérification et cite ses sources. Les e-mails
+        sont ceux que l’entreprise publie ; pour une personne, le lien ouvre une recherche LinkedIn,
+        aucun profil n’est deviné.
       </p>
 
       <div className="mt-5 space-y-3">
@@ -235,6 +241,19 @@ export function Startups() {
             >
               {code && <Flag code={code} />}
               {code ? nomPays(code) : 'Tous'}
+            </button>
+          ))}
+        </div>
+        <div role="group" aria-label="Secteur" className="flex flex-wrap gap-2">
+          {FILTRES_SECTEUR.map((code) => (
+            <button
+              key={code ?? 'tous'}
+              type="button"
+              aria-pressed={secteur === code}
+              onClick={() => setSecteur(code)}
+              className={pilule(secteur === code)}
+            >
+              {code ? LIBELLES_SECTEUR[code] : 'Tous les secteurs'}
             </button>
           ))}
         </div>
