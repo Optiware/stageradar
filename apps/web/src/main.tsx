@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
+import '@fontsource-variable/inter';
 import '@fontsource-variable/plus-jakarta-sans';
 import './index.css';
 import { AuthProvider } from './lib/AuthProvider';

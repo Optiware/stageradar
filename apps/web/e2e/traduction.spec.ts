@@ -53,9 +53,9 @@ async function traducteur(page: Page, present: boolean) {
   }, present);
 }
 
-async function ouvrir(page: Page, isMobile: boolean) {
+async function ouvrir(page: Page) {
   await page.goto('/');
-  if (isMobile) await page.locator('li > article').first().click();
+  await page.locator('li > article').first().click();
   return page.getByRole('article', { name: /^Détail/ });
 }
 
@@ -68,10 +68,9 @@ test.describe('Traduction des annonces', () => {
   test('traduit une annonce japonaise sur l’appareil, l’enregistre et la réaffiche', async ({
     page,
     backend,
-    isMobile,
   }) => {
     await traducteur(page, true);
-    const detail = await ouvrir(page, isMobile);
+    const detail = await ouvrir(page);
     const bloc = detail.getByRole('group', { name: 'Traduction' });
 
     await expect(bloc).toContainText('Annonce rédigée en japonais');
@@ -97,9 +96,9 @@ test.describe('Traduction des annonces', () => {
     await expect(bloc).toContainText('Traduite automatiquement en français');
   });
 
-  test('sans traducteur intégré, propose Google Traduction', async ({ page, isMobile }) => {
+  test('sans traducteur intégré, propose Google Traduction', async ({ page }) => {
     await traducteur(page, false);
-    const detail = await ouvrir(page, isMobile);
+    const detail = await ouvrir(page);
     const bloc = detail.getByRole('group', { name: 'Traduction' });
 
     await expect(bloc).toContainText('Ce navigateur ne traduit pas sur place');
@@ -117,7 +116,7 @@ test.describe('Traduction des annonces', () => {
     expect(texte).toContain('サーバーサイドの開発');
   });
 
-  test('ne propose rien pour une annonce en anglais', async ({ page, backend, isMobile }) => {
+  test('ne propose rien pour une annonce en anglais', async ({ page, backend }) => {
     backend.offers = [
       offre({
         titre: 'Backend Engineer Intern',
@@ -128,7 +127,7 @@ test.describe('Traduction des annonces', () => {
       }),
     ];
     await traducteur(page, true);
-    const detail = await ouvrir(page, isMobile);
+    const detail = await ouvrir(page);
 
     await expect(detail).toContainText('We are looking for an intern');
     await expect(detail.getByRole('group', { name: 'Traduction' })).toHaveCount(0);

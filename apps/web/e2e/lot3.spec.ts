@@ -118,11 +118,16 @@ test.describe('Lot 3 — fil des offres', () => {
     await page.goto('/');
     const cartes = page.locator('li > article');
 
-    await page.getByLabel('Rechercher une offre').fill('seoul');
+    await page.getByLabel('Quoi').fill('seoul');
     await expect(cartes).toHaveCount(1);
     await expect(cartes).toContainText('Stage hiver à Séoul');
 
-    await page.getByLabel('Rechercher une offre').fill('rien de tel');
+    // Le champ « Où » ne regarde que la ville et le pays.
+    await page.getByLabel('Quoi').fill('');
+    await page.getByLabel('Où').fill('japon');
+    await expect(cartes).toHaveCount(2);
+
+    await page.getByLabel('Quoi').fill('rien de tel');
     await expect(page.getByText('Aucune offre ne correspond à ces filtres.')).toBeVisible();
   });
 
@@ -137,21 +142,18 @@ test.describe('Lot 3 — fil des offres', () => {
 
   test('ouvre le détail : résumé, score expliqué, description et bouton pour postuler', async ({
     page,
-    isMobile,
   }) => {
     await page.goto('/');
     const detail = page.getByRole('article', { name: 'Détail : Stage backend à Tokyo' });
 
-    if (isMobile) {
-      // Sur téléphone, la liste d'abord ; le détail remplace la liste.
-      await expect(detail).toHaveCount(0);
-      await page.getByRole('article', { name: 'Stage backend à Tokyo', exact: true }).click();
-      await expect(page.locator('li > article').first()).toBeHidden();
-    }
-    // Sur grand écran, la première offre est déjà ouverte à droite de la liste.
+    // La liste d'abord ; la fiche de l'offre remplace la liste, sur téléphone comme sur ordinateur.
+    await expect(detail).toHaveCount(0);
+    await page.getByRole('article', { name: 'Stage backend à Tokyo', exact: true }).click();
+    await expect(page.locator('li > article').first()).toBeHidden();
     await expect(detail).toBeVisible();
-    await expect(detail).toContainText('+30/30');
-    await expect(detail).toContainText('-10/10');
+    await expect(detail).toContainText('Pourquoi 92 sur 100');
+    await expect(detail).toContainText('Domaine30 / 30');
+    await expect(detail).toContainText('Langue-10 / 10');
     await expect(detail).toContainText('japonais exigé');
     await expect(detail).toContainText('Missions : API et tests.');
     await expect(detail).toContainText('Greenhouse');
@@ -162,18 +164,15 @@ test.describe('Lot 3 — fil des offres', () => {
     await expect(postuler).toHaveAttribute('rel', 'noopener noreferrer');
     await expect(postuler).toHaveAttribute('target', '_blank');
 
-    if (isMobile) {
-      await page.getByRole('link', { name: 'Retour aux offres' }).click();
-      await expect(page.locator('li > article')).toHaveCount(5);
-      await expect(detail).toHaveCount(0);
-    } else {
-      await page.getByRole('article', { name: 'Stage DevOps à Toronto', exact: true }).click();
-      await expect(
-        page.getByRole('article', { name: 'Détail : Stage DevOps à Toronto' }),
-      ).toBeVisible();
-      // La liste reste affichée à côté du détail.
-      await expect(page.locator('li > article')).toHaveCount(5);
-    }
+    // Une autre offre de la même entreprise s'ouvre depuis la fiche.
+    await detail.getByRole('link', { name: 'Stage DevOps à Toronto' }).click();
+    await expect(
+      page.getByRole('article', { name: 'Détail : Stage DevOps à Toronto' }),
+    ).toBeVisible();
+
+    await page.getByRole('link', { name: 'Retour aux offres' }).click();
+    await expect(page.locator('li > article')).toHaveCount(5);
+    await expect(detail).toHaveCount(0);
   });
 
   test('ne rend pas cliquable une adresse qui n’est pas un lien web', async ({ page }) => {
@@ -191,17 +190,20 @@ test.describe('Lot 3 — fil des offres', () => {
     await page.goto('/');
     await page.getByRole('tab', { name: /Alternance/ }).click();
 
-    const bloc = page.getByRole('region', { name: 'Recherches sur Welcome to the Jungle' });
-    await expect(bloc.getByRole('link')).toHaveCount(3);
-    const lien = bloc.getByRole('link', { name: 'Cybersécurité' });
+    const bloc = page.getByRole('region', { name: 'Chercher aussi sur' });
+    const liensWttj = bloc.getByRole('link', { name: /^Welcome to the Jungle/ });
+    await expect(liensWttj).toHaveCount(3);
+    const lien = bloc.getByRole('link', { name: 'Welcome to the Jungle : Cybersécurité' });
     const adresse = new URL((await lien.getAttribute('href'))!);
     expect(adresse.origin + adresse.pathname).toBe('https://www.welcometothejungle.com/fr/jobs');
     expect(adresse.searchParams.get('query')).toBe('cybersécurité');
     expect(adresse.searchParams.get('refinementList[contract_type][]')).toBe('apprenticeship');
     await expect(lien).toHaveAttribute('rel', 'noopener noreferrer');
 
+    // Hors alternance, la colonne propose les recherches de stage à l'étranger.
     await page.getByRole('tab', { name: /Stage été/ }).click();
-    await expect(bloc).toHaveCount(0);
+    await expect(liensWttj).toHaveCount(0);
+    await expect(bloc.getByRole('link', { name: 'LinkedIn : stages au Japon' })).toBeVisible();
   });
 
   test('dit clairement quand il n’y a encore aucune offre', async ({ page, backend }) => {

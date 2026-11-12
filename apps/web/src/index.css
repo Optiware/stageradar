@@ -1,8 +1,9 @@
 @import 'tailwindcss';
 
 /*
- * Style « Pulse », palette noir + cyan (maquette « design_handoff_stageradar » du 14 octobre 2026) :
- * très arrondi, police Plus Jakarta Sans.
+ * Style de la maquette « StageRadar » du 11 novembre 2026 (canevas Claude Design) : fond gris
+ * bleuté, cartes blanches, accent bleu #2F5BEA, pastilles orange, titres en Plus Jakarta Sans et
+ * texte en Inter.
  * Tailwind 4 se configure ici (plus de tailwind.config.ts) : ces lignes en sont l'équivalent.
  * Les classes communes (cartes, boutons, badges) sont dans lib/ui.ts.
  */
@@ -12,47 +13,72 @@
 
 @theme {
   /*
-   * Police servie par l'application elle-même (@fontsource-variable/plus-jakarta-sans), et non par
-   * Google Fonts : la politique de sécurité du site interdit tout chargement externe.
+   * Polices servies par l'application elle-même (@fontsource-variable), et non par Google Fonts :
+   * la politique de sécurité du site interdit tout chargement externe.
    */
-  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  /* Titres, marque et scores. */
+  --font-display: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, sans-serif;
 
-  /* Accent cyan. Clair : 600 pour l'accent, 700 pour le texte et les fonds pleins. Sombre : 400. */
-  --color-primary-50: #ecfeff;
-  --color-primary-100: #cffafe;
-  --color-primary-300: #67e8f9;
-  --color-primary-400: #22d3ee;
-  --color-primary-500: #06b6d4;
-  --color-primary-600: #0891b2;
-  --color-primary-700: #0e7490;
-  --color-primary-900: #164e63;
-  /* Texte posé sur le cyan vif du thème sombre. */
-  --color-primary-ink: #03222b;
+  /* Accent bleu. Clair : 600 pour l'accent et les boutons, 700 pour le texte sur fond 50. Sombre : 400. */
+  --color-primary-50: #eaf0ff;
+  --color-primary-100: #dde8ff;
+  --color-primary-200: #c9d6ff;
+  --color-primary-300: #9db4ff;
+  --color-primary-400: #7f9dff;
+  --color-primary-500: #4f74f0;
+  --color-primary-600: #2f5bea;
+  --color-primary-700: #1e3fb0;
+  --color-primary-800: #1a3591;
+  --color-primary-900: #172c6e;
+  /* Texte posé sur le bleu vif du thème sombre. */
+  --color-primary-ink: #0b1640;
 
-  /* Gris neutres (zinc) ; 800 à 950 reprennent les surfaces sombres de la maquette. */
-  --color-gray-50: #fafafa;
-  --color-gray-100: #f4f4f5;
-  --color-gray-200: #e4e4e7;
-  --color-gray-300: #d4d4d8;
-  --color-gray-400: #a1a1aa;
-  --color-gray-500: #71717a;
-  --color-gray-600: #52525b;
-  --color-gray-700: #3f3f46;
+  /* Pastilles : nombre d'actions, « Nouveau ». */
+  --color-orange-50: #ffede4;
+  --color-orange-100: #ffe3d6;
+  --color-orange-500: #ff7a45;
+  --color-orange-700: #a33a10;
+
+  /* Bon score, document prêt. */
+  --color-vert-50: #e2f6ea;
+  --color-vert-500: #1f9d57;
+  --color-vert-700: #11663a;
+
+  /* Score moyen, avertissement. */
+  --color-amber-50: #fff2d3;
+  --color-amber-700: #6b4700;
+
+  /* Gris bleutés de la maquette ; 800 à 950 servent aussi de surfaces au thème sombre. */
+  --color-gray-50: #f7f8fb;
+  /* Fond de la page en clair. */
+  --color-gray-100: #f4f5f9;
+  /* Bordures en clair. */
+  --color-gray-200: #e3e5ee;
+  /* Bordures des champs et des boutons secondaires en clair. */
+  --color-gray-300: #c9cddb;
+  --color-gray-400: #8a8fa8;
+  --color-gray-500: #646981;
+  /* Texte secondaire. */
+  --color-gray-600: #565b73;
+  --color-gray-700: #3b3f57;
   /* Bordures en sombre. */
-  --color-gray-800: #232327;
+  --color-gray-800: #2a2e45;
   /* Blocs gris et badges neutres en sombre. */
-  --color-gray-850: #1a1a1e;
-  /* Cartes et barre latérale en sombre. */
-  --color-gray-900: #0e0e10;
-  /* Texte principal en clair, bouton principal et pilule active. */
-  --color-gray-950: #09090b;
+  --color-gray-850: #1f2236;
+  /* Cartes et bandeau en sombre. */
+  --color-gray-900: #171a2c;
+  /* Texte principal en clair. */
+  --color-gray-950: #14162b;
+  /* Fond de la page en sombre. */
+  --color-nuit: #0d0f1d;
 
   /* Fonds des colonnes du suivi, en clair. */
-  --color-colonne-neutre: #e9e9ec;
-  --color-colonne-cyan: #e0f4f8;
-  --color-colonne-violet: #e8ebfc;
+  --color-colonne-neutre: #e9ebf2;
+  --color-colonne-cyan: #e3ebff;
+  --color-colonne-violet: #efe5ff;
 
-  --shadow-sm: 0 1px 2px rgb(9 9 11 / 0.04), 0 8px 24px rgb(9 9 11 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(20 22 43 / 0.04), 0 8px 24px rgb(20 22 43 / 0.06);
 }
 
 @layer base {
@@ -65,7 +91,7 @@
   }
 
   body {
-    @apply bg-gray-100 font-medium text-gray-950 antialiased dark:bg-black dark:text-gray-50;
+    @apply bg-gray-100 text-[0.9375rem] leading-normal text-gray-950 antialiased dark:bg-nuit dark:text-gray-50;
   }
 
   /* Classe posée par lib/theme.ts le temps d'un changement de thème. */
@@ -76,11 +102,11 @@
   h1,
   h2,
   h3 {
-    @apply text-gray-950 dark:text-gray-50;
+    @apply font-display text-gray-950 dark:text-gray-50;
   }
 
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary-600 dark:outline-primary-400;
+    @apply outline-3 outline-offset-2 outline-primary-300 dark:outline-primary-400;
   }
 }
 

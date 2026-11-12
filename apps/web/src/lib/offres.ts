@@ -93,18 +93,36 @@ export function lienSur(url: string): string | null {
   return debut.startsWith('https://') || debut.startsWith('http://') ? url : null;
 }
 
-/** Pastille pleine du score : cyan si l'offre colle au profil, ambre si moyenne, gris sinon. */
-export function couleurScore(score: number): string {
-  if (score >= 75) return 'bg-primary-600 text-white dark:bg-primary-400 dark:text-primary-ink';
-  if (score >= 50) return 'bg-amber-400 text-gray-950';
-  return 'bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+/** « Top », « Moyen », « Faible » : niveau du score écrit sous le nombre, sur les cartes. */
+export function libelleCourtScore(score: number): string {
+  if (score >= 75) return 'Top';
+  if (score >= 50) return 'Moyen';
+  return 'Faible';
 }
 
-/** Même code couleur, pour un score écrit sur fond blanc (carte non sélectionnée). */
-export function couleurTexteScore(score: number): string {
-  if (score >= 75) return 'text-primary-700 dark:text-primary-400';
-  if (score >= 50) return 'text-amber-700 dark:text-amber-400';
-  return 'text-gray-600 dark:text-gray-400';
+/** « juin 2027 » d'après une date ISO, ou rien si elle est inconnue. */
+export function moisAnnee(dateIso: string | null): string | null {
+  if (!dateIso) return null;
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+}
+
+/** Étiquettes grises d'une carte : début, durée, contrat, organisation, domaines, langue exigée. */
+export function etiquettesOffre(offre: FeedOffer): string[] {
+  const debut = moisAnnee(offre.date_debut);
+  return [
+    debut && `Dès ${debut}`,
+    offre.duree_semaines && `${offre.duree_semaines} semaines`,
+    LIBELLES_TYPE[offre.type],
+    offre.teletravail &&
+      offre.teletravail !== 'sur_site' &&
+      LIBELLES_TELETRAVAIL[offre.teletravail],
+    ...offre.domaines.map((domaine) => LIBELLES_DOMAINE[domaine]),
+    ...offre.langues_requises
+      .filter((langue) => LIBELLES_LANGUE[langue])
+      .map((langue) => `${LIBELLES_LANGUE[langue]} exigé`),
+  ].filter((etiquette): etiquette is string => Boolean(etiquette));
 }
 
 /** « Excellent match », « Très bon match »… d'après le score sur 100. */

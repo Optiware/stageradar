@@ -43,21 +43,24 @@ test.describe('Lot 0 — socle', () => {
   test('affiche le cadre de l’application au propriétaire et permet de naviguer', async ({
     page,
     backend,
+    isMobile,
   }) => {
     await backend.signInAs(OWNER_EMAIL);
     await page.goto('/');
 
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
     await expect(nav).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1, name: 'Fil' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /offres? pour toi/ })).toBeVisible();
     expect(backend.calls).toContain('POST /rest/v1/rpc/is_owner');
 
-    for (const [lien, titre] of [
+    // Sur téléphone, « Pays » est rangé dans « Plus » : la barre du bas n'a que cinq onglets.
+    const onglets = [
       ['Suivi', 'Suivi'],
       ['Important', 'Important'],
-      ['Pays', 'Fiches pays'],
+      ...(isMobile ? [] : [['Pays', 'Fiches pays']]),
       ['Plus', 'Plus'],
-    ] as const) {
+    ] as const;
+    for (const [lien, titre] of onglets) {
       await nav.getByRole('link', { name: lien }).click();
       await expect(page.getByRole('heading', { level: 1, name: titre })).toBeVisible();
     }

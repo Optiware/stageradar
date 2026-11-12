@@ -1,80 +1,121 @@
-import { Globe, Kanban, Layers, Menu, Moon, Radar, Sun, Zap } from 'lucide-react';
+import { jourIso, relanceDue } from '@stageradar/shared';
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  Globe,
+  SquareKanban,
+  Menu,
+  Moon,
+  Sun,
+  UserRound,
+  Users,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';
 import { useSyncExternalStore } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet } from 'react-router';
+import { entretienDe, useCandidatures } from '../lib/suivi';
 import { choisirTheme, useTheme } from '../lib/theme';
 
-/** Onglets dans l'ordre de la barre du bas du téléphone ; sur grand écran, rangés par groupe. */
-const NAV = [
-  { to: '/', label: 'Fil', Icone: Layers, groupe: 'Recherche' },
-  { to: '/suivi', label: 'Suivi', Icone: Kanban, groupe: 'Candidatures' },
-  { to: '/important', label: 'Important', Icone: Zap, groupe: 'Candidatures' },
-  { to: '/pays', label: 'Pays', Icone: Globe, groupe: 'Recherche' },
-  { to: '/plus', label: 'Plus', Icone: Menu, groupe: 'Autres' },
-] as const;
-
-const GROUPES = ['Recherche', 'Candidatures', 'Autres'] as const;
-
-function linkClass({ isActive }: { isActive: boolean }): string {
-  const base =
-    'flex flex-1 flex-col items-center gap-1 px-1 py-1 text-[0.625rem] font-bold whitespace-nowrap transition md:flex-none md:flex-row md:gap-3 md:rounded-2xl md:px-3.5 md:py-3 md:text-sm';
-  return isActive
-    ? `${base} text-primary-700 md:bg-gray-950 md:text-white dark:text-primary-400 md:dark:bg-gray-50 md:dark:text-gray-950`
-    : `${base} text-gray-600 hover:text-gray-950 md:hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-50 md:dark:hover:bg-gray-850`;
+interface Onglet {
+  to: string;
+  label: string;
+  /** Libellé plus court, sous l'icône de la barre du bas. */
+  court?: string;
+  Icone: LucideIcon;
+  /** Affiché dans la barre du bas du téléphone. */
+  mobile: boolean;
+  /** Affiché dans le bandeau du grand écran. */
+  bureau: boolean;
+  /** Reçoit la pastille orange du nombre d'actions du jour. */
+  compteur?: boolean;
 }
 
-function Lien({ to, label, Icone }: (typeof NAV)[number]) {
+const NAV: Onglet[] = [
+  { to: '/', label: 'Offres', Icone: BriefcaseBusiness, mobile: true, bureau: true },
+  { to: '/suivi', label: 'Suivi', Icone: SquareKanban, mobile: true, bureau: true },
+  {
+    to: '/important',
+    label: 'Important',
+    Icone: Zap,
+    mobile: true,
+    bureau: true,
+    compteur: true,
+  },
+  {
+    to: '/calendrier',
+    label: 'Calendrier',
+    court: 'Agenda',
+    Icone: CalendarDays,
+    mobile: true,
+    bureau: true,
+  },
+  { to: '/pays', label: 'Pays', Icone: Globe, mobile: false, bureau: true },
+  { to: '/demarchage', label: 'Contacts', Icone: Users, mobile: false, bureau: true },
+  { to: '/plus', label: 'Plus', Icone: Menu, mobile: true, bureau: true },
+];
+
+/** Relances à faire et entretiens du jour : le nombre posé sur l'onglet « Important ». */
+function useActionsDuJour(): number {
+  const candidatures = useCandidatures();
+  const toutes = candidatures.data ?? [];
+  const aujourdhui = jourIso(new Date(candidatures.dataUpdatedAt || 0));
+  const relances = toutes.filter((candidature) => relanceDue(candidature, aujourdhui)).length;
+  const entretiens = toutes.filter((candidature) =>
+    entretienDe(candidature)?.date.startsWith(aujourdhui),
+  ).length;
+  return relances + entretiens;
+}
+
+function Pastille({ nombre, className = '' }: { nombre: number; className?: string }) {
+  if (nombre === 0) return null;
   return (
-    <NavLink to={to} end={to === '/'} className={linkClass}>
-      {({ isActive }) => (
-        <>
-          {/* Sur téléphone, l'icône de l'onglet actif est posée dans une pastille cyan. */}
-          <span
-            className={`flex h-8 w-12 items-center justify-center rounded-xl md:h-auto md:w-auto ${
-              isActive
-                ? 'bg-primary-50 md:bg-transparent dark:bg-primary-400/15 md:dark:bg-transparent'
-                : ''
-            }`}
-          >
-            <Icone aria-hidden="true" className="size-[1.375rem] md:size-5" strokeWidth={1.75} />
-          </span>
-          {label}
-        </>
-      )}
-    </NavLink>
+    <span
+      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-xs font-bold text-gray-950 ${className}`}
+    >
+      {nombre}
+      <span className="sr-only"> à faire</span>
+    </span>
   );
 }
 
 function Marque() {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex size-[2.125rem] items-center justify-center rounded-xl bg-primary-600 text-white md:size-10 md:rounded-[0.875rem] dark:bg-primary-400 dark:text-primary-ink">
-        <Radar aria-hidden="true" className="size-5 md:size-[1.375rem]" strokeWidth={1.75} />
+    <Link to="/" className="flex items-center gap-2.5 text-gray-950 dark:text-gray-50">
+      <span className="flex size-8 items-center justify-center rounded-[0.5625rem] bg-primary-600 md:size-9 md:rounded-[0.625rem]">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
+          className="size-5 md:size-[1.375rem]"
+        >
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 12 L18 6" />
+        </svg>
       </span>
-      <span className="text-[1.0625rem] font-extrabold tracking-tight md:text-[1.1875rem]">
+      <span className="font-display text-lg font-extrabold tracking-[-0.01em] md:text-xl">
         StageRadar
       </span>
-    </div>
+    </Link>
   );
 }
 
 /** Bascule entre thème clair et thème sombre ; le choix est gardé sur l'appareil. */
-function BoutonTheme({ compact = false }: { compact?: boolean }) {
+function BoutonTheme() {
   const versSombre = useTheme() === 'clair';
   const Icone = versSombre ? Moon : Sun;
-  const libelle = versSombre ? 'Mode sombre' : 'Mode clair';
   return (
     <button
       type="button"
       onClick={() => choisirTheme(versSombre ? 'sombre' : 'clair')}
-      aria-label={compact ? libelle : undefined}
-      className={
-        compact
-          ? 'flex size-[2.625rem] items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300'
-          : 'mt-auto flex items-center gap-3 rounded-2xl border border-gray-200 px-3.5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-850 dark:hover:text-gray-50'
-      }
+      aria-label={versSombre ? 'Mode sombre' : 'Mode clair'}
+      className="flex size-11 items-center justify-center rounded-full bg-gray-100 text-gray-950 transition hover:bg-gray-200 dark:bg-gray-850 dark:text-gray-50 dark:hover:bg-gray-800"
     >
-      <Icone aria-hidden="true" className="size-5" strokeWidth={1.75} />
-      {!compact && libelle}
+      <Icone aria-hidden="true" className="size-5" strokeWidth={1.8} />
     </button>
   );
 }
@@ -89,54 +130,98 @@ function ecouterReseau(prevenir: () => void): () => void {
 }
 
 /**
- * Cadre de l'application. Sur téléphone : bandeau en haut, barre d'onglets en bas.
- * Sur grand écran : barre latérale de 256 px, onglets rangés par groupe.
+ * Cadre de l'application, d'après la maquette du 11 novembre 2026. Sur grand écran : bandeau blanc
+ * avec la navigation en pilules. Sur téléphone : bandeau réduit en haut, barre d'onglets en bas.
  */
 export function Shell() {
   const enLigne = useSyncExternalStore(ecouterReseau, () => navigator.onLine);
+  const actions = useActionsDuJour();
+
   return (
-    <div className="min-h-dvh md:flex md:items-start">
-      <header className="flex items-center justify-between px-[1.125rem] pt-3 pb-2 md:hidden">
-        <Marque />
-        <BoutonTheme compact />
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-20 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <div className="mx-auto flex min-h-16 max-w-[80rem] items-center gap-x-8 gap-y-3 px-4 py-2.5 md:min-h-[4.5rem] md:px-8">
+          <Marque />
+          <nav
+            aria-label="Navigation principale"
+            className="hidden min-w-0 flex-1 flex-wrap gap-1 md:flex"
+          >
+            {NAV.filter((onglet) => onglet.bureau).map(({ to, label, Icone, compteur }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center gap-2 rounded-full px-3.5 whitespace-nowrap transition ${
+                    isActive
+                      ? 'bg-primary-50 font-semibold text-primary-700 dark:bg-primary-400/15 dark:text-primary-300'
+                      : 'font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-950 dark:text-gray-400 dark:hover:bg-gray-850 dark:hover:text-gray-50'
+                  }`
+                }
+              >
+                <Icone aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
+                {label}
+                {compteur && <Pastille nombre={actions} />}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-2">
+            <BoutonTheme />
+            <Link
+              to="/reglages"
+              aria-label="Réglages et profil"
+              className="flex size-11 items-center justify-center rounded-full bg-gray-950 text-white transition hover:bg-gray-700 dark:bg-gray-50 dark:text-gray-950 dark:hover:bg-gray-200"
+            >
+              <UserRound aria-hidden="true" className="size-5" strokeWidth={1.8} />
+            </Link>
+          </div>
+        </div>
       </header>
 
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-10 flex justify-around rounded-t-[2rem] border-t border-gray-200 bg-white/[0.82] px-2 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-8px_32px_rgba(9,9,11,0.06)] backdrop-blur-[16px] md:hidden dark:border-gray-800 dark:bg-gray-900/[0.82] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)]"
+        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-gray-800 dark:bg-gray-900"
       >
-        {NAV.map((lien) => (
-          <Lien key={lien.to} {...lien} />
+        {NAV.filter((onglet) => onglet.mobile).map(({ to, label, court, Icone, compteur }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              `relative flex h-[4.5rem] flex-col items-center justify-center gap-0.5 text-[0.71875rem] ${
+                isActive
+                  ? 'font-bold text-primary-700 dark:text-primary-300'
+                  : 'font-medium text-gray-700 dark:text-gray-400'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`flex h-[1.875rem] w-[3.25rem] items-center justify-center rounded-full ${
+                    isActive ? 'bg-primary-50 dark:bg-primary-400/15' : ''
+                  }`}
+                >
+                  <Icone aria-hidden="true" className="size-5" strokeWidth={1.8} />
+                </span>
+                {court ?? label}
+                {compteur && (
+                  <Pastille
+                    nombre={actions}
+                    className="absolute top-2.5 left-[calc(50%+0.25rem)] h-[1.125rem] min-w-[1.125rem] text-[0.6875rem]"
+                  />
+                )}
+              </>
+            )}
+          </NavLink>
         ))}
       </nav>
 
-      <nav
-        aria-label="Navigation principale"
-        className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-[1.125rem] pt-7 pb-[1.375rem] md:flex dark:border-gray-800 dark:bg-gray-900"
-      >
-        <div className="mb-8 px-1.5">
-          <Marque />
-        </div>
-        {GROUPES.map((groupe) => (
-          <div key={groupe} className="mb-6">
-            <p className="mb-2 px-3.5 text-[0.6875rem] font-extrabold tracking-[0.08em] text-gray-400 uppercase dark:text-gray-500">
-              {groupe}
-            </p>
-            <div className="flex flex-col gap-1">
-              {NAV.filter((lien) => lien.groupe === groupe).map((lien) => (
-                <Lien key={lien.to} {...lien} />
-              ))}
-            </div>
-          </div>
-        ))}
-        <BoutonTheme />
-      </nav>
-
-      <main className="mx-auto w-full max-w-7xl min-w-0 px-[1.125rem] pt-2 pb-30 md:px-12 md:pt-10 md:pb-10">
+      <main className="mx-auto w-full max-w-[80rem] min-w-0 px-4 pt-5 pb-28 md:px-8 md:pt-10 md:pb-24">
         {!enLigne && (
           <p
             role="status"
-            className="mb-4 rounded-2xl bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+            className="mb-4 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-200"
           >
             Hors ligne : tu vois les dernières données gardées sur cet appareil. Les modifications
             attendront le retour du réseau.

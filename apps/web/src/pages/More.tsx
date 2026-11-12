@@ -8,6 +8,11 @@ import { BADGE, BOUTON_SECONDAIRE, CARTE, CARTE_SURVOL, pilule, SECONDAIRE } fro
 // Écrans ouverts depuis « Plus ». Ceux qui ne sont pas encore réalisés annoncent leur lot.
 const SECTIONS: { title: string; text: string; vers?: string; lot?: number }[] = [
   {
+    title: 'Pays',
+    vers: '/pays',
+    text: 'Visa, échéances et pistes de stage pour chaque pays visé.',
+  },
+  {
     title: 'Démarchage',
     vers: '/demarchage',
     text: 'Startups à contacter, personnes à joindre, messages prêts à envoyer.',

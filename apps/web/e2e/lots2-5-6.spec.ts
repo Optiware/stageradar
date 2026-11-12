@@ -102,9 +102,9 @@ const REGLAGES = {
   presentation: '',
 };
 
-async function ouvrirDetail(page: Page, isMobile: boolean, titre: string) {
+async function ouvrirDetail(page: Page, titre: string) {
   await page.goto('/');
-  if (isMobile) await page.getByRole('article', { name: titre, exact: true }).click();
+  await page.getByRole('article', { name: titre, exact: true }).click();
   return page.getByRole('article', { name: `Détail : ${titre}` });
 }
 
@@ -142,8 +142,8 @@ test.describe('Fil : filtres, notes, candidature', () => {
     await expect(page.getByText('Aucune offre ne correspond à ces filtres.')).toBeVisible();
   });
 
-  test('garde une note sur une offre', async ({ page, backend, isMobile }) => {
-    const detail = await ouvrirDetail(page, isMobile, 'Stage backend à Tokyo');
+  test('garde une note sur une offre', async ({ page, backend }) => {
+    const detail = await ouvrirDetail(page, 'Stage backend à Tokyo');
 
     await detail.getByLabel('Mes notes sur cette offre').fill('Demander la durée exacte.');
     await detail.getByRole('button', { name: 'Enregistrer la note' }).click();
@@ -153,12 +153,8 @@ test.describe('Fil : filtres, notes, candidature', () => {
     });
   });
 
-  test('demande « As-tu postulé ? » après un clic sur Postuler', async ({
-    page,
-    backend,
-    isMobile,
-  }) => {
-    const detail = await ouvrirDetail(page, isMobile, 'Stage backend à Tokyo');
+  test('demande « As-tu postulé ? » après un clic sur Postuler', async ({ page, backend }) => {
+    const detail = await ouvrirDetail(page, 'Stage backend à Tokyo');
 
     // L'annonce s'ouvre dans un autre onglet : on le referme pour revenir à l'application.
     const [onglet] = await Promise.all([
@@ -170,7 +166,7 @@ test.describe('Fil : filtres, notes, candidature', () => {
     const question = detail.getByRole('group', { name: 'As-tu postulé ?' });
     await question.getByRole('button', { name: "Oui, c'est envoyé" }).click();
     await expect(question).toHaveCount(0);
-    await expect(detail).toContainText('Statut dans ton suivi : Postulé');
+    await expect(detail.locator('[aria-current="step"]')).toContainText('Postulé');
     expect(backend.applications[0]).toMatchObject({
       offer_id: TOKYO,
       statut: 'postule',

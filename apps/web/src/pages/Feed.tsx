@@ -1,9 +1,11 @@
 import { normalizeText, PAYS_STAGE } from '@stageradar/shared';
-import { ChevronLeft, Search } from 'lucide-react';
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { ChevronLeft, Clock, MapPin, Search } from 'lucide-react';
+import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { AsideFil } from '../components/AsideFil';
 import {
   AUCUN_FILTRE,
+  BoutonFiltres,
   FeedFilters,
   nombreDeFiltres,
   passeLesFiltres,
@@ -12,33 +14,30 @@ import {
 import { Flag } from '../components/Flag';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetail } from '../components/OfferDetail';
-import { SITES_ALTERNANCE } from '../lib/liens-recherche';
 import { useMasquerOffre, useOffresDuFil } from '../lib/fil';
-import { nomPays, type FeedOffer } from '../lib/offres';
+import { estNouvelle, LIBELLES_TYPE, nomPays, type FeedOffer } from '../lib/offres';
 import { useCandidatures } from '../lib/suivi';
-import { CARTE, pilule, SECONDAIRE } from '../lib/ui';
+import { pilule, segment, SEGMENTS } from '../lib/ui';
 
 const ONGLETS = [
-  { id: 'alternance', libelle: 'Alternance' },
   { id: 'stage', libelle: 'Stage été' },
+  { id: 'alternance', libelle: 'Alternance' },
   { id: 'tout', libelle: 'Tout' },
 ] as const;
 type Onglet = (typeof ONGLETS)[number]['id'];
 
+const TRIS = [
+  { id: 'score', libelle: 'Score' },
+  { id: 'recentes', libelle: 'Plus récentes' },
+  { id: 'debut', libelle: 'Date de début' },
+] as const;
+type Tri = (typeof TRIS)[number]['id'];
+
 /** Pays toujours proposés dans le filtre, même sans offre : ceux du projet. */
 const PAYS_FILTRE: readonly string[] = [...PAYS_STAGE, 'FR'];
 
-/** À partir de cette largeur, la liste et le détail sont côte à côte (classe `lg` de Tailwind). */
-const DEUX_COLONNES = '(min-width: 64rem)';
-
-/** Texte posé directement sur le fond gris de la page : un ton plus foncé que dans une carte. */
+/** Texte posé directement sur le fond gris de la page. */
 const SUR_LA_PAGE = 'text-gray-600 dark:text-gray-400';
-
-function ecouterLargeur(prevenir: () => void) {
-  const media = window.matchMedia(DEUX_COLONNES);
-  media.addEventListener('change', prevenir);
-  return () => media.removeEventListener('change', prevenir);
-}
 
 function dansOnglet(offre: FeedOffer, onglet: Onglet): boolean {
   if (onglet === 'tout') return true;
@@ -46,10 +45,30 @@ function dansOnglet(offre: FeedOffer, onglet: Onglet): boolean {
   return offre.type === 'stage' && offre.periode_compatible !== false;
 }
 
-function correspond(offre: FeedOffer, mots: string[]): boolean {
+function correspond(texte: string, mots: string[]): boolean {
   if (mots.length === 0) return true;
-  const texte = normalizeText([offre.titre, offre.entreprise, offre.ville].join(' '));
-  return mots.every((mot) => texte.includes(mot));
+  const normalise = normalizeText(texte);
+  return mots.every((mot) => normalise.includes(mot));
+}
+
+function mots(recherche: string): string[] {
+  return normalizeText(recherche).split(' ').filter(Boolean);
+}
+
+function comparer(tri: Tri): (a: FeedOffer, b: FeedOffer) => number {
+  if (tri === 'recentes') {
+    return (a, b) =>
+      (b.date_publication ?? b.created_at).localeCompare(a.date_publication ?? a.created_at);
+  }
+  if (tri === 'debut') {
+    return (a, b) => (a.date_debut ?? '9999').localeCompare(b.date_debut ?? '9999');
+  }
+  return (a, b) => (b.score ?? 0) - (a.score ?? 0);
+}
+
+/** « Bonjour » jusqu'à 18 h, « Bonsoir » ensuite. */
+function salutation(heure: number): string {
+  return heure >= 18 || heure < 5 ? 'Bonsoir' : 'Bonjour';
 }
 
 export function Feed() {
@@ -57,18 +76,17 @@ export function Feed() {
   const idOuvert = params.get('offre');
   const [onglet, setOnglet] = useState<Onglet>('tout');
   const [paysChoisis, setPaysChoisis] = useState<string[]>([]);
-  const [recherche, setRecherche] = useState('');
+  const [quoi, setQuoi] = useState('');
+  const [ou, setOu] = useState('');
+  const [tri, setTri] = useState<Tri>('score');
   const [filtres, setFiltres] = useState<Filtres>(AUCUN_FILTRE);
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [avecHorsCible, setAvecHorsCible] = useState(false);
   const [avecMasquees, setAvecMasquees] = useState(false);
   const [derniereMasquee, setDerniereMasquee] = useState<FeedOffer | null>(null);
   const naviguer = useNavigate();
   const masquer = useMasquerOffre();
   const positionListe = useRef(0);
-  const deuxColonnes = useSyncExternalStore(
-    ecouterLargeur,
-    () => window.matchMedia(DEUX_COLONNES).matches,
-  );
 
   const offres = useOffresDuFil();
   const candidatures = useCandidatures();
@@ -76,10 +94,9 @@ export function Feed() {
     (candidatures.data ?? []).map((candidature) => [candidature.offer_id, candidature]),
   );
 
-  // Sur téléphone, la liste et le détail occupent l'écran à tour de rôle : le détail s'ouvre
-  // en haut de page, et le retour retrouve la liste là où elle avait été laissée.
+  // La fiche d'une offre remplace la liste : elle s'ouvre en haut de page, et le retour retrouve
+  // la liste là où elle avait été laissée.
   useLayoutEffect(() => {
-    if (window.matchMedia(DEUX_COLONNES).matches) return;
     window.scrollTo(0, idOuvert ? 0 : positionListe.current);
   }, [idOuvert]);
 
@@ -87,18 +104,21 @@ export function Feed() {
   const toutes = offres.data ?? [];
   const nbHorsCible = toutes.filter((offre) => offre.exclue_raison !== null).length;
   const nbMasquees = toutes.filter((offre) => offre.masquee).length;
-  const mots = normalizeText(recherche).split(' ').filter(Boolean);
+  const motsQuoi = mots(quoi);
+  const motsOu = mots(ou);
   const visibles = toutes.filter(
     (offre) =>
       (avecHorsCible || offre.exclue_raison === null) &&
       (avecMasquees || !offre.masquee) &&
       passeLesFiltres(offre, filtres, maintenant) &&
-      correspond(offre, mots),
+      correspond(`${offre.titre} ${offre.entreprise ?? ''} ${offre.ville ?? ''}`, motsQuoi) &&
+      correspond(`${offre.ville ?? ''} ${nomPays(offre.pays) ?? ''}`, motsOu),
   );
   const dansLOnglet = visibles.filter((offre) => dansOnglet(offre, onglet));
-  const affichees = dansLOnglet.filter(
-    (offre) => paysChoisis.length === 0 || paysChoisis.includes(offre.pays ?? ''),
-  );
+  const affichees = dansLOnglet
+    .filter((offre) => paysChoisis.length === 0 || paysChoisis.includes(offre.pays ?? ''))
+    .sort(comparer(tri));
+  const nouvelles = affichees.filter((offre) => estNouvelle(offre, maintenant)).length;
 
   const parPays = new Map<string, number>();
   for (const offre of dansLOnglet) {
@@ -109,14 +129,7 @@ export function Feed() {
     ...[...parPays.keys()].filter((code) => !PAYS_FILTRE.includes(code)).sort(),
   ];
 
-  // Sur grand écran, la première offre est ouverte d'office : le panneau de droite n'est jamais vide.
-  const ouverte = idOuvert
-    ? toutes.find((offre) => offre.id === idOuvert)
-    : deuxColonnes
-      ? affichees[0]
-      : undefined;
-
-  // Une offre masquée quitte l'écran : le détail se referme et un message permet d'annuler.
+  // Une offre masquée quitte l'écran : la fiche se referme et un message permet d'annuler.
   function apresMasquage(offre: FeedOffer) {
     setDerniereMasquee(offre);
     if (idOuvert === offre.id) void naviguer('/', { replace: true });
@@ -128,64 +141,177 @@ export function Feed() {
     );
   }
 
-  return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,27.5rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
-      <div className={idOuvert ? 'hidden lg:block' : ''}>
-        <h1 className="text-[1.75rem] font-extrabold tracking-[-0.03em]">Fil</h1>
-        {offres.isSuccess && (
-          <p className={`mt-1 text-sm ${SECONDAIRE}`}>
-            {affichees.length} offre{affichees.length > 1 ? 's' : ''} triée
-            {affichees.length > 1 ? 's' : ''} par score
+  function rechercher(evenement: FormEvent) {
+    // Le filtrage se fait à la frappe : le bouton sert surtout à fermer le clavier du téléphone.
+    evenement.preventDefault();
+    (document.activeElement as HTMLElement | null)?.blur();
+  }
+
+  if (idOuvert) {
+    const ouverte = toutes.find((offre) => offre.id === idOuvert);
+    return (
+      <div className="flex flex-col gap-6">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+        >
+          <Link
+            to="/"
+            aria-label="Retour aux offres"
+            className="inline-flex min-h-11 items-center gap-1.5 font-medium text-primary-600 dark:text-primary-300"
+          >
+            <ChevronLeft aria-hidden="true" className="size-4" strokeWidth={1.8} />
+            Offres
+          </Link>
+          {ouverte && (
+            <>
+              <span aria-hidden="true">/</span>
+              <span>{LIBELLES_TYPE[ouverte.type]}</span>
+              {ouverte.entreprise && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <span className="text-gray-950 dark:text-gray-50">{ouverte.entreprise}</span>
+                </>
+              )}
+            </>
+          )}
+        </nav>
+        {ouverte ? (
+          <OfferDetail
+            key={ouverte.id}
+            offre={ouverte}
+            candidature={suivies.get(ouverte.id)}
+            maintenant={maintenant}
+            onMasquee={apresMasquage}
+            memeEntreprise={toutes.filter(
+              (autre) =>
+                autre.id !== ouverte.id &&
+                autre.entreprise === ouverte.entreprise &&
+                autre.exclue_raison === null,
+            )}
+          />
+        ) : (
+          <p className={SUR_LA_PAGE}>
+            {offres.isSuccess ? "Cette offre n'est plus disponible." : 'Chargement…'}
           </p>
         )}
+      </div>
+    );
+  }
 
-        <div className="relative mt-4">
-          <label htmlFor="recherche" className="sr-only">
-            Rechercher une offre
-          </label>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-3.5 my-auto size-5 text-gray-400"
-          />
-          <input
-            id="recherche"
-            type="search"
-            value={recherche}
-            onChange={(event) => setRecherche(event.target.value)}
-            placeholder="Intitulé, entreprise, ville"
-            className="block w-full rounded-[1.25rem] border border-gray-200 bg-white py-3.5 pr-4 pl-11 text-base shadow-sm placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-900"
-          />
+  const date = maintenant ? new Date(maintenant) : new Date();
+  const jour = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const heure = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <>
+      <section className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <p className={`text-sm font-medium first-letter:uppercase ${SUR_LA_PAGE}`}>
+              {jour}
+              {offres.isSuccess && ` · mis à jour à ${heure}`}
+            </p>
+            <h1 className="text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em] md:text-[2.5rem]">
+              {salutation(date.getHours())} !{' '}
+              {offres.isSuccess &&
+                (nouvelles > 0
+                  ? `${nouvelles} nouvelle${nouvelles > 1 ? 's' : ''} offre${nouvelles > 1 ? 's' : ''} pour toi`
+                  : `${affichees.length} offre${affichees.length > 1 ? 's' : ''} pour toi`)}
+            </h1>
+          </div>
+          <p className="flex max-w-[26.25rem] items-start gap-2.5 rounded-xl bg-amber-50 px-3.5 py-3 text-sm text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
+            <Clock
+              aria-hidden="true"
+              className="mt-0.5 size-[1.125rem] shrink-0"
+              strokeWidth={1.8}
+            />
+            Les stages de l’été 2027 se recrutent dès maintenant : priorité au stage à l’étranger.
+          </p>
         </div>
 
-        <div
-          role="tablist"
-          aria-label="Type d'offre"
-          className="hide-scroll -mx-[1.125rem] mt-4 flex gap-2 overflow-x-auto px-[1.125rem] pb-1 md:mx-0 md:px-0"
+        <form
+          role="search"
+          aria-label="Rechercher des offres"
+          onSubmit={rechercher}
+          className="flex flex-wrap items-stretch gap-2 rounded-[1.125rem] border border-gray-200 bg-white p-2 shadow-sm dark:border-gray-800 dark:bg-gray-900"
         >
-          {ONGLETS.map(({ id, libelle }) => {
-            const actif = id === onglet;
-            return (
+          <label className="flex min-h-14 flex-[2_1_17.5rem] cursor-text items-center gap-3 rounded-xl px-4">
+            <Search
+              aria-hidden="true"
+              className="size-5 shrink-0 text-gray-600"
+              strokeWidth={1.8}
+            />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Quoi</span>
+              <input
+                type="search"
+                value={quoi}
+                onChange={(evenement) => setQuoi(evenement.target.value)}
+                placeholder="Intitulé, entreprise, ville"
+                className="border-0 bg-transparent p-0 text-base outline-none placeholder:text-gray-400"
+              />
+            </span>
+          </label>
+          <span
+            aria-hidden="true"
+            className="my-2.5 hidden w-px bg-gray-200 sm:block dark:bg-gray-800"
+          />
+          <label className="flex min-h-14 flex-[1_1_13.75rem] cursor-text items-center gap-3 rounded-xl px-4">
+            <MapPin
+              aria-hidden="true"
+              className="size-5 shrink-0 text-gray-600"
+              strokeWidth={1.8}
+            />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Où</span>
+              <input
+                type="text"
+                value={ou}
+                onChange={(evenement) => setOu(evenement.target.value)}
+                placeholder="Ville, pays"
+                className="border-0 bg-transparent p-0 text-base outline-none placeholder:text-gray-400"
+              />
+            </span>
+          </label>
+          <button
+            type="submit"
+            className="min-h-14 flex-[1_0_auto] rounded-xl bg-primary-600 px-7 text-base font-semibold text-white transition hover:bg-primary-700 sm:flex-none dark:bg-primary-400 dark:text-primary-ink dark:hover:bg-primary-300"
+          >
+            Rechercher
+          </button>
+        </form>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            role="tablist"
+            aria-label="Type d'offre"
+            className={`${SEGMENTS} hide-scroll max-w-full overflow-x-auto`}
+          >
+            {ONGLETS.map(({ id, libelle }) => (
               <button
                 key={id}
                 type="button"
                 role="tab"
-                aria-selected={actif}
+                aria-selected={id === onglet}
                 onClick={() => setOnglet(id)}
-                className={`shrink-0 ${pilule(actif)}`}
+                className={segment(id === onglet)}
               >
-                {libelle}{' '}
-                <span className={`font-medium ${actif ? 'opacity-70' : SECONDAIRE}`}>
-                  {visibles.filter((offre) => dansOnglet(offre, id)).length}
-                </span>
+                {libelle} · {visibles.filter((offre) => dansOnglet(offre, id)).length}
               </button>
-            );
-          })}
+            ))}
+          </div>
+          <BoutonFiltres
+            filtres={filtres}
+            ouvert={filtresOuverts}
+            onBasculer={() => setFiltresOuverts(!filtresOuverts)}
+          />
         </div>
 
         <div
           role="group"
           aria-label="Pays"
-          className="hide-scroll -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+          className="hide-scroll -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0"
         >
           {paysProposes.map((code) => (
             <button
@@ -197,147 +323,122 @@ export function Feed() {
             >
               <Flag code={code} />
               {nomPays(code)}
-              <span className={`font-medium ${SECONDAIRE}`}>{parPays.get(code) ?? 0}</span>
+              <span className="opacity-70">{parPays.get(code) ?? 0}</span>
             </button>
           ))}
         </div>
 
-        <FeedFilters filtres={filtres} onChange={setFiltres} />
+        {filtresOuverts && <FeedFilters filtres={filtres} onChange={setFiltres} />}
+      </section>
 
-        {nbHorsCible > 0 && (
-          <label className={`mt-3 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
-            <input
-              type="checkbox"
-              checked={avecHorsCible}
-              onChange={(event) => setAvecHorsCible(event.target.checked)}
-              className="size-4 accent-primary-600"
-            />
-            Afficher aussi les {nbHorsCible} offres hors cible
-          </label>
-        )}
-        {nbMasquees > 0 && (
-          <label className={`mt-2 flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
-            <input
-              type="checkbox"
-              checked={avecMasquees}
-              onChange={(event) => setAvecMasquees(event.target.checked)}
-              className="size-4 accent-primary-600"
-            />
-            Afficher aussi les {nbMasquees} offres que j'ai masquées
-          </label>
-        )}
-        {derniereMasquee &&
-          toutes.some((offre) => offre.id === derniereMasquee.id && offre.masquee) && (
-            <p
-              role="status"
-              className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900"
-            >
-              <span className="min-w-0 truncate">« {derniereMasquee.titre} » est masquée.</span>
-              <button
-                type="button"
-                onClick={() => masquer.mutate({ id: derniereMasquee.id, masquee: false })}
-                className="shrink-0 font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400"
+      <div className="mt-6 flex flex-wrap items-start gap-x-7 gap-y-8">
+        <div className="flex min-w-0 flex-[999_1_37.5rem] flex-col gap-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-sans text-[0.9375rem] font-medium text-gray-700 dark:text-gray-300">
+              <strong className="font-bold text-gray-950 dark:text-gray-50">
+                {affichees.length} offre{affichees.length > 1 ? 's' : ''}
+              </strong>{' '}
+              {affichees.length > 1 ? 'correspondent' : 'correspond'} · triées par{' '}
+              {TRIS.find(({ id }) => id === tri)!.libelle.toLowerCase()}
+            </h2>
+            <label className={`flex items-center gap-2 text-sm ${SUR_LA_PAGE}`}>
+              Trier par
+              <select
+                value={tri}
+                onChange={(evenement) => setTri(evenement.target.value as Tri)}
+                className="h-10 rounded-[0.625rem] border border-gray-300 bg-white px-3 text-sm text-gray-950 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-50"
               >
-                Annuler
-              </button>
-            </p>
-          )}
-
-        {onglet === 'alternance' &&
-          SITES_ALTERNANCE.map(({ site, raison, recherches }) => (
-            <section key={site} aria-label={`Recherches sur ${site}`} className={`mt-4 ${CARTE}`}>
-              <h2 className="font-bold">Chercher aussi sur {site}</h2>
-              <p className={`mt-1 text-sm ${SECONDAIRE}`}>{raison}</p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {recherches.map(({ libelle, url }) => (
-                  <li key={libelle}>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block rounded-full bg-primary-50 px-3.5 py-1.5 text-sm font-bold text-primary-700 transition hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50"
-                    >
-                      {libelle}
-                    </a>
-                  </li>
+                {TRIS.map(({ id, libelle }) => (
+                  <option key={id} value={id}>
+                    {libelle}
+                  </option>
                 ))}
-              </ul>
-            </section>
-          ))}
+              </select>
+            </label>
+          </div>
 
-        {offres.isPending && <p className={`mt-8 ${SUR_LA_PAGE}`}>Chargement des offres…</p>}
-        {offres.isError && (
-          <p role="alert" className="mt-8 font-bold text-red-700 dark:text-red-400">
-            Les offres n'ont pas pu être chargées. Vérifie ta connexion.
-          </p>
-        )}
-        {offres.isSuccess && affichees.length === 0 && (
-          <p className={`mt-8 ${SUR_LA_PAGE}`}>
-            {toutes.length === 0
-              ? 'Aucune offre pour le moment. La collecte tourne toutes les 6 heures.'
-              : onglet === 'alternance' &&
-                  dansLOnglet.length === 0 &&
-                  mots.length === 0 &&
-                  nombreDeFiltres(filtres) === 0
-                ? "Aucune offre d'alternance collectée pour le moment."
-                : 'Aucune offre ne correspond à ces filtres.'}
-          </p>
-        )}
-
-        <ul className="mt-2">
-          {affichees.map((offre) => (
-            <li key={offre.id}>
-              <OfferCard
-                offre={offre}
-                candidature={suivies.get(offre.id)}
-                selectionnee={offre.id === ouverte?.id}
-                maintenant={maintenant}
-                onOuvrir={() => {
-                  positionListe.current = window.scrollY;
-                }}
-                onMasquee={apresMasquage}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className={`lg:sticky lg:top-4 ${idOuvert ? '' : 'hidden lg:block'}`}>
-        {idOuvert && (
-          <Link
-            to="/"
-            className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-primary-700 lg:hidden dark:text-primary-400"
-          >
-            <ChevronLeft aria-hidden="true" className="size-4" />
-            Retour aux offres
-          </Link>
-        )}
-        <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:p-8 lg:mt-4 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:rounded-tl-[3rem] lg:px-14 lg:py-12 lg:shadow-[-16px_0_48px_rgba(9,9,11,0.07)] dark:border-gray-800 dark:bg-gray-900 lg:dark:shadow-[-16px_0_48px_rgba(0,0,0,0.5)]">
-          {ouverte ? (
-            <OfferDetail
-              key={ouverte.id}
-              offre={ouverte}
-              candidature={suivies.get(ouverte.id)}
-              maintenant={maintenant}
-              onMasquee={apresMasquage}
-              memeEntreprise={toutes.filter(
-                (autre) =>
-                  autre.id !== ouverte.id &&
-                  autre.entreprise === ouverte.entreprise &&
-                  autre.exclue_raison === null,
+          {(nbHorsCible > 0 || nbMasquees > 0) && (
+            <div className={`flex flex-wrap gap-x-5 gap-y-1 text-sm ${SUR_LA_PAGE}`}>
+              {nbHorsCible > 0 && (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={avecHorsCible}
+                    onChange={(event) => setAvecHorsCible(event.target.checked)}
+                    className="size-4 accent-primary-600"
+                  />
+                  Afficher aussi les {nbHorsCible} offres hors cible
+                </label>
               )}
-            />
-          ) : (
-            <p className={SECONDAIRE}>
-              {!offres.isSuccess
-                ? 'Chargement…'
-                : idOuvert
-                  ? "Cette offre n'est plus disponible."
-                  : 'Sélectionne une offre pour afficher son détail.'}
+              {nbMasquees > 0 && (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={avecMasquees}
+                    onChange={(event) => setAvecMasquees(event.target.checked)}
+                    className="size-4 accent-primary-600"
+                  />
+                  Afficher aussi les {nbMasquees} offres que j'ai masquées
+                </label>
+              )}
+            </div>
+          )}
+
+          {derniereMasquee &&
+            toutes.some((offre) => offre.id === derniereMasquee.id && offre.masquee) && (
+              <p
+                role="status"
+                className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm dark:border-gray-800 dark:bg-gray-900"
+              >
+                <span className="min-w-0 truncate">« {derniereMasquee.titre} » est masquée.</span>
+                <button
+                  type="button"
+                  onClick={() => masquer.mutate({ id: derniereMasquee.id, masquee: false })}
+                  className="shrink-0 font-semibold text-primary-600 underline underline-offset-2 dark:text-primary-300"
+                >
+                  Annuler
+                </button>
+              </p>
+            )}
+
+          {offres.isPending && <p className={`mt-4 ${SUR_LA_PAGE}`}>Chargement des offres…</p>}
+          {offres.isError && (
+            <p role="alert" className="mt-4 font-semibold text-red-700 dark:text-red-400">
+              Les offres n'ont pas pu être chargées. Vérifie ta connexion.
             </p>
           )}
+          {offres.isSuccess && affichees.length === 0 && (
+            <p className={`mt-4 ${SUR_LA_PAGE}`}>
+              {toutes.length === 0
+                ? 'Aucune offre pour le moment. La collecte tourne toutes les 6 heures.'
+                : onglet === 'alternance' &&
+                    dansLOnglet.length === 0 &&
+                    motsQuoi.length + motsOu.length === 0 &&
+                    nombreDeFiltres(filtres) === 0
+                  ? "Aucune offre d'alternance collectée pour le moment."
+                  : 'Aucune offre ne correspond à ces filtres.'}
+            </p>
+          )}
+
+          <ul className="flex flex-col gap-3.5">
+            {affichees.map((offre) => (
+              <li key={offre.id}>
+                <OfferCard
+                  offre={offre}
+                  candidature={suivies.get(offre.id)}
+                  maintenant={maintenant}
+                  onOuvrir={() => {
+                    positionListe.current = window.scrollY;
+                  }}
+                  onMasquee={apresMasquage}
+                />
+              </li>
+            ))}
+          </ul>
         </div>
+
+        <AsideFil alternance={onglet === 'alternance'} pays={paysChoisis} />
       </div>
-    </div>
+    </>
   );
 }
