@@ -20,6 +20,7 @@ import { Statistiques } from './pages/Statistiques';
 import { Important } from './pages/Important';
 import { Importer } from './pages/Importer';
 import { Pays } from './pages/Pays';
+import { Portfolio } from './pages/Portfolio';
 import { Reglages } from './pages/Reglages';
 import { Sources } from './pages/Sources';
 import { Startups } from './pages/Startups';
@@ -87,6 +88,7 @@ function OwnerGate({ session }: { session: Session }) {
         <Route path="statistiques" element={<Statistiques />} />
         <Route path="documents" element={<Documents />} />
         <Route path="cv" element={<Cv />} />
+        <Route path="portfolio" element={<Portfolio />} />
         <Route path="donnees" element={<Donnees />} />
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />

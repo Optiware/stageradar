@@ -53,6 +53,7 @@ const TABLES = [
   'budgets',
   'conversations',
   'messages',
+  'projects',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -87,6 +88,10 @@ export interface Backend {
   conversations: Ligne[];
   /** Messages des conversations (table `messages`). */
   messages: Ligne[];
+  /** Projets du portfolio (table `projects`). */
+  projects: Ligne[];
+  /** Réponse de `technologies_demandees` : offres qui citent chaque terme. */
+  technologies: { terme: string; nombre: number }[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Demandes reçues par le service de l'application (/api/…), avec leur corps. */
@@ -121,6 +126,8 @@ export const test = base.extend<{ backend: Backend }>({
         budgets: [],
         conversations: [],
         messages: [],
+        projects: [],
+        technologies: [],
         api: [],
         apiReponses: {},
         settings: { objectif_hebdo: 5, presentation: '' },
@@ -267,6 +274,21 @@ export const test = base.extend<{ backend: Backend }>({
                     }
                   : {}),
                 ...(nom === 'messages' ? { pieces: [], date: new Date().toISOString() } : {}),
+                ...(nom === 'projects'
+                  ? {
+                      description: '',
+                      technologies: [],
+                      statut: 'en_cours',
+                      url_code: null,
+                      url_demo: null,
+                      image: null,
+                      appris: '',
+                      a_readme: false,
+                      a_captures: false,
+                      a_tests: false,
+                      position: 0,
+                    }
+                  : {}),
                 ...(nom === 'events'
                   ? { details: {}, fait: false, date: new Date().toISOString() }
                   : {}),
@@ -303,6 +325,9 @@ export const test = base.extend<{ backend: Backend }>({
             return route.fulfill({ status: 401, json: { message: 'Réservé au propriétaire.' } });
           }
           if (prevue) return route.fulfill({ status: prevue.statut ?? 200, json: prevue.corps });
+        }
+        if (path === '/rest/v1/rpc/technologies_demandees') {
+          return route.fulfill({ json: backend.technologies });
         }
         if (path === '/rest/v1/rpc/is_owner') {
           return route.fulfill({ json: isOwner });

@@ -220,3 +220,51 @@ describe('contraintes', () => {
     });
   });
 });
+
+describe('portfolio', () => {
+  it('compte les offres visibles qui citent chaque technologie', async () => {
+    await asRole(db, 'authenticated', OWNER, async (query) => {
+      await query(`
+        insert into public.offers (source, source_id, url, titre, type, description, competences, masquee)
+        values
+          ('test', 'a', 'https://example.test/a', 'Backend Go', 'stage', 'API en Go, Docker et C++.', '{}', false),
+          ('test', 'b', 'https://example.test/b', 'Développeur', 'stage', 'Expérience Docker appréciée.', '{Go}', false),
+          ('test', 'c', 'https://example.test/c', 'Masquée', 'stage', 'Go Go Go', '{}', true)
+      `);
+      const { rows } = await query<{ terme: string; nombre: number }>(
+        "select * from public.technologies_demandees(array['go', 'docker', 'c++', 'rust'])",
+      );
+      expect(rows).toEqual([
+        { terme: 'docker', nombre: 2 },
+        { terme: 'go', nombre: 2 },
+        { terme: 'c++', nombre: 1 },
+      ]);
+    });
+  });
+
+  it('garde les projets au propriétaire', async () => {
+    await asRole(db, 'anon', null, async (query) => {
+      await expect(query('select * from public.projects')).rejects.toThrow(/permission denied/);
+    });
+    await asRole(db, 'anon', null, async (query) => {
+      await expect(
+        query("select * from public.technologies_demandees(array['go'])"),
+      ).rejects.toThrow(/permission denied/);
+    });
+    await asRole(db, 'authenticated', INTRUS, async (query) => {
+      await expect(query("insert into public.projects (titre) values ('x')")).rejects.toThrow(
+        /row-level security/,
+      );
+    });
+    await asRole(db, 'authenticated', OWNER, async (query) => {
+      await query(
+        "insert into public.projects (titre, technologies) values ('StageRadar', '{React}')",
+      );
+      const { rows } = await query<{ titre: string }>('select titre from public.projects');
+      expect(rows).toEqual([{ titre: 'StageRadar' }]);
+      await expect(
+        query("update public.projects set image = 'https://exemple.test/a.png'"),
+      ).rejects.toThrow(/check constraint/);
+    });
+  });
+});

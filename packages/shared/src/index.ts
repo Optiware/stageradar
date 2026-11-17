@@ -15,3 +15,4 @@ export * from './stats';
 export * from './jobposting';
 export * from './budget';
 export * from './cv';
+export * from './portfolio';
