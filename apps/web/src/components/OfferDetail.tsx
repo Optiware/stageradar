@@ -11,7 +11,6 @@ import {
   Bookmark,
   BookmarkCheck,
   Check,
-  FileText,
   IdCard,
   MessageSquare,
   PenLine,
@@ -46,6 +45,7 @@ import {
 import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
+import { OfferMatch } from './OfferMatch';
 import { cleTexteOffre, OfferDescription, type TexteOffre } from './OfferDescription';
 import { NotesOffre, QuestionPostule } from './OfferExtras';
 
@@ -60,6 +60,12 @@ const NOMS_CRITERE: Record<ScoreDetail['critere'], string> = {
 
 /** Étapes du suivi montrées dans « Où tu en es » ; « Refus / Abandon » est signalé à part. */
 const ETAPES: readonly StatutSuivi[] = STATUTS_SUIVI.filter((statut) => statut !== 'refus');
+
+/** Libellés de la maquette, plus parlants dans une frise que ceux du tableau de suivi. */
+const LIBELLES_ETAPE: Partial<Record<StatutSuivi, string>> = {
+  relance: 'Relance (J+7, J+14)',
+  offre: 'Offre ou refus',
+};
 
 function Bloc({
   titre,
@@ -159,7 +165,7 @@ function Etapes({ statut }: { statut: StatutSuivi | undefined }) {
             ) : (
               <span className="size-[1.375rem] shrink-0 rounded-full border-2 border-gray-300 dark:border-gray-700" />
             )}
-            {LIBELLES_STATUT[etape]}
+            {LIBELLES_ETAPE[etape] ?? LIBELLES_STATUT[etape]}
             {enCours && <span className="ml-auto text-xs font-semibold">Maintenant</span>}
           </li>
         );
@@ -554,15 +560,13 @@ export function OfferDetail({
                 onRepondu={() => setPartiPostuler(false)}
               />
             )}
-            <Link
-              to={`/cv?offre=${offre.id}`}
-              className={`${BOUTON_DOUX} flex min-h-12 items-center justify-center gap-2 text-[0.9375rem]`}
-            >
-              <FileText aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
-              Adapter mon CV à cette offre
-            </Link>
             <OfferActions offre={offre} candidature={candidature} onMasquee={onMasquee} />
           </section>
+
+          <OfferMatch
+            offre={offre}
+            description={description.isSuccess ? description.data.description : undefined}
+          />
 
           <section aria-labelledby="titre-statut" className={`flex flex-col gap-3 ${CARTE}`}>
             <h2 id="titre-statut" className="text-lg font-bold">

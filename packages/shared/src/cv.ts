@@ -633,7 +633,7 @@ const NOMS_LANGUE_PAR_CODE: Record<string, string[]> = {
   zh: ['chinois', 'chinese', 'chino'],
 };
 
-function texteProfil(profil: ProfilCv): string {
+export function texteProfil(profil: ProfilCv): string {
   const morceaux: string[] = [...profil.competences];
   for (const langue of LANGUES_CV) {
     morceaux.push(
@@ -656,7 +656,7 @@ function texteOffre(offre: OffreCiblee): string {
   );
 }
 
-function technologiesCitees(offre: OffreCiblee): string[] {
+export function technologiesCitees(offre: OffreCiblee): string[] {
   const texte = texteOffre(offre);
   return TECHNOLOGIES.filter((technologie) => containsWord(texte, technologie));
 }

@@ -80,6 +80,16 @@ const NOMS: Record<string, string> = {
   elasticsearch: 'Elasticsearch',
 };
 
+/** Forme principale d'un terme (« golang » → « go »). */
+export function formePrincipale(terme: string): string {
+  return ALIAS[terme] ?? terme;
+}
+
+/** Les formes d'écriture d'une technologie, principale en tête. */
+export function formesTechnologie(terme: string): string[] {
+  return [terme, ...Object.keys(ALIAS).filter((alias) => ALIAS[alias] === terme)];
+}
+
 export function nomTechnologie(terme: string): string {
   return NOMS[terme] ?? terme.charAt(0).toUpperCase() + terme.slice(1);
 }
@@ -157,14 +167,13 @@ export function projetsAFaire(
 ): ProjetAFaire[] {
   const parTerme = new Map<string, number>();
   for (const { terme, nombre } of demandes) {
-    const principal = ALIAS[terme] ?? terme;
+    const principal = formePrincipale(terme);
     parTerme.set(principal, Math.max(parTerme.get(principal) ?? 0, nombre));
   }
   const montre = technologiesDuPortfolio(projets);
   return [...parTerme]
     .filter(([terme]) => {
-      const formes = [terme, ...Object.keys(ALIAS).filter((alias) => ALIAS[alias] === terme)];
-      return !formes.some((forme) => dansLeTexte(montre, forme));
+      return !formesTechnologie(terme).some((forme) => dansLeTexte(montre, forme));
     })
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, limite)
