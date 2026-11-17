@@ -51,6 +51,8 @@ const TABLES = [
   'push_subscriptions',
   'housings',
   'budgets',
+  'conversations',
+  'messages',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -81,6 +83,10 @@ export interface Backend {
   housings: Ligne[];
   /** Budgets par pays (table `budgets`, identifiés par `pays`). */
   budgets: Ligne[];
+  /** Conversations de l’écran Messages (table `conversations`). */
+  conversations: Ligne[];
+  /** Messages des conversations (table `messages`). */
+  messages: Ligne[];
   /** Ligne unique des réglages. */
   settings: Ligne;
   /** Demandes reçues par le service de l'application (/api/…), avec leur corps. */
@@ -113,6 +119,8 @@ export const test = base.extend<{ backend: Backend }>({
         push_subscriptions: [],
         housings: [],
         budgets: [],
+        conversations: [],
+        messages: [],
         api: [],
         apiReponses: {},
         settings: { objectif_hebdo: 5, presentation: '' },
@@ -187,6 +195,17 @@ export const test = base.extend<{ backend: Backend }>({
               })),
           });
         }
+        if (path === '/rest/v1/conversations' && request.method() === 'GET') {
+          // Chaque conversation est renvoyée avec ses messages (`messages:messages(…)`).
+          return route.fulfill({
+            json: backend.conversations.map((conversation) => ({
+              ...conversation,
+              messages: backend.messages.filter(
+                (message) => message.conversation_id === conversation.id,
+              ),
+            })),
+          });
+        }
         if (path === '/rest/v1/settings' && request.method() === 'GET') {
           return route.fulfill({ json: [backend.settings] });
         }
@@ -237,6 +256,17 @@ export const test = base.extend<{ backend: Backend }>({
                       notes_entretien: null,
                     }
                   : {}),
+                ...(nom === 'conversations'
+                  ? {
+                      application_id: null,
+                      contact_role: null,
+                      contact_email: null,
+                      entreprise: null,
+                      pays: null,
+                      non_lu: false,
+                    }
+                  : {}),
+                ...(nom === 'messages' ? { pieces: [], date: new Date().toISOString() } : {}),
                 ...(nom === 'events'
                   ? { details: {}, fait: false, date: new Date().toISOString() }
                   : {}),
@@ -254,6 +284,11 @@ export const test = base.extend<{ backend: Backend }>({
           if (index >= 0 && request.method() === 'DELETE') {
             table.splice(index, 1);
             // Les événements d'une candidature partent avec elle (`on delete cascade`).
+            if (nom === 'conversations') {
+              backend.messages = backend.messages.filter(
+                (ligne) => ligne.conversation_id !== valeur,
+              );
+            }
             if (nom === 'applications') {
               backend.events = backend.events.filter((ligne) => ligne.application_id !== valeur);
             }

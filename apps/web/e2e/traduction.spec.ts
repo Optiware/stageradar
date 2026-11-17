@@ -90,7 +90,11 @@ test.describe('Traduction des annonces', () => {
     await expect(detail).not.toContainText('[fr]');
 
     // À la prochaine ouverture, sur cet appareil ou un autre, la traduction enregistrée
-    // s'affiche d'emblée.
+    // s'affiche d'emblée. Le cache local n'est écrit qu'une fois par seconde : on attend qu'il
+    // contienne la traduction avant de recharger.
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('stageradar-cache') ?? ''))
+      .toContain('[fr]');
     await page.reload();
     await expect(detail).toContainText('• [fr] サーバーサイドの開発とテストを担当します');
     await expect(bloc).toContainText('Traduite automatiquement en français');

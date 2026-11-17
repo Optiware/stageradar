@@ -6,9 +6,18 @@ import {
   type StatutSuivi,
 } from '@stageradar/shared';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, Check, FileText, IdCard, PenLine } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Bookmark,
+  BookmarkCheck,
+  Check,
+  FileText,
+  IdCard,
+  MessageSquare,
+  PenLine,
+} from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import {
   anciennete,
   dateLongue,
@@ -24,9 +33,16 @@ import {
   nomSource,
   type FeedOffer,
 } from '../lib/offres';
-import type { Candidature } from '../lib/suivi';
+import { usePreparerCandidature, useSuivreOffre, type Candidature } from '../lib/suivi';
 import { supabase } from '../lib/supabase';
-import { BADGE, BOUTON_DOUX, BOUTON_PRINCIPAL, CARTE, teinteScore } from '../lib/ui';
+import {
+  BADGE,
+  BOUTON_DOUX,
+  BOUTON_PRINCIPAL,
+  BOUTON_SECONDAIRE,
+  CARTE,
+  teinteScore,
+} from '../lib/ui';
 import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
@@ -221,6 +237,17 @@ export function OfferDetail({
 
   // Vrai entre le clic sur « Postuler » et la réponse à « As-tu postulé ? ».
   const [partiPostuler, setPartiPostuler] = useState(false);
+  const naviguer = useNavigate();
+  const preparer = usePreparerCandidature();
+  const suivre = useSuivreOffre();
+  const contact = candidature?.contact_nom?.trim().split(/\s+/)[0];
+
+  // « Écrire » passe par le suivi : la conversation est liée à la candidature de cette offre.
+  function ecrire() {
+    const ouvrir = () => void naviguer(`/messages?offre=${offre.id}`);
+    if (candidature) ouvrir();
+    else suivre.mutate(offre.id, { onSuccess: ouvrir });
+  }
   const score = offre.score ?? 0;
   const lien = lienSur(offre.url);
   const publiee = anciennete(offre.date_publication ?? offre.created_at, maintenant);
@@ -429,25 +456,97 @@ export function OfferDetail({
           className="flex min-w-0 flex-[1_1_21.25rem] flex-col gap-5 max-lg:order-first"
         >
           <section className={`flex flex-col gap-2.5 ${CARTE} shadow-sm`}>
-            {lien ? (
+            {candidature ? (
+              <Link
+                to={`/suivi?candidature=${candidature.id}`}
+                className={`${BOUTON_PRINCIPAL} min-h-[3.25rem] text-base`}
+              >
+                Préparer ma candidature
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled={preparer.isPending}
+                onClick={() =>
+                  preparer.mutate(offre.id, {
+                    onSuccess: (id) => void naviguer(`/suivi?candidature=${id}`),
+                  })
+                }
+                className={`${BOUTON_PRINCIPAL} min-h-[3.25rem] text-base`}
+              >
+                Préparer ma candidature
+              </button>
+            )}
+            <p className="mb-1 text-center text-sm text-gray-600 dark:text-gray-400">
+              StageRadar prépare, c’est toi qui envoies.
+            </p>
+            <button
+              type="button"
+              disabled={suivre.isPending}
+              onClick={ecrire}
+              className={`${BOUTON_DOUX} flex min-h-12 items-center justify-center gap-2 text-[0.9375rem]`}
+            >
+              <MessageSquare aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
+              {contact ? `Écrire à ${contact}` : 'Écrire au recruteur'}
+            </button>
+            <div className="flex gap-2">
+              {lien ? (
+                <a
+                  href={lien}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setPartiPostuler(true)}
+                  className="flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-950 transition hover:border-primary-600 dark:border-gray-800 dark:text-gray-50"
+                >
+                  Annonce d’origine
+                  <ArrowUpRight aria-hidden="true" className="size-3.5" strokeWidth={1.8} />
+                </a>
+              ) : (
+                <p className="flex-1 text-sm text-gray-600 dark:text-gray-400">
+                  Le lien de cette offre n'est pas une adresse web valide.
+                </p>
+              )}
+              {candidature ? (
+                <Link
+                  to={`/suivi?candidature=${candidature.id}`}
+                  aria-label="Dans le suivi"
+                  title="Dans le suivi"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-400/40 dark:bg-primary-400/15 dark:text-primary-300"
+                >
+                  <BookmarkCheck aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  aria-label="Garder pour plus tard"
+                  title="Garder pour plus tard"
+                  disabled={suivre.isPending}
+                  onClick={() => suivre.mutate(offre.id)}
+                  className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-950 transition hover:border-primary-600 disabled:opacity-60 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-50"
+                >
+                  <Bookmark aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
+                </button>
+              )}
+            </div>
+            {(preparer.isError || suivre.isError) && (
+              <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-400">
+                L'action n'a pas pu être enregistrée. Vérifie ta connexion.
+              </p>
+            )}
+
+            {/* Actions d'avant la maquette, gardées à la suite. */}
+            {lien && (
               <a
                 href={lien}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setPartiPostuler(true)}
-                className={`${BOUTON_PRINCIPAL} min-h-[3.25rem] text-base`}
+                className={`${BOUTON_SECONDAIRE} mt-2 flex min-h-11 items-center justify-center gap-2`}
               >
                 Postuler sur le site
                 <ArrowUpRight aria-hidden="true" className="size-4" strokeWidth={2} />
               </a>
-            ) : (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Le lien de cette offre n'est pas une adresse web valide.
-              </p>
             )}
-            <p className="mb-1 text-center text-sm text-gray-600 dark:text-gray-400">
-              StageRadar prépare, c’est toi qui envoies.
-            </p>
             {partiPostuler && (
               <QuestionPostule
                 offre={offre}
@@ -469,9 +568,9 @@ export function OfferDetail({
             <h2 id="titre-statut" className="text-lg font-bold">
               Où tu en es
             </h2>
+            <Etapes statut={candidature?.statut} />
             {candidature ? (
               <>
-                <Etapes statut={candidature.statut} />
                 {candidature.statut === 'refus' && (
                   <p className={BADGE.neutre + ' self-start'}>{LIBELLES_STATUT.refus}</p>
                 )}
@@ -485,7 +584,7 @@ export function OfferDetail({
             ) : (
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Cette offre n'est pas encore dans ton suivi : « Sauver » l'y range dans « À étudier
-                ».
+                », « Préparer ma candidature » dans « À postuler ».
               </p>
             )}
           </section>

@@ -9,6 +9,7 @@ export * from './score';
 export * from './suivi';
 export * from './traduction';
 export * from './messages';
+export * from './creneaux';
 export * from './agenda';
 export * from './stats';
 export * from './jobposting';

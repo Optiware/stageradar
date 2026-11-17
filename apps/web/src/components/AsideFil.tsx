@@ -3,12 +3,14 @@ import {
   ArrowUpRight,
   CalendarDays,
   ChevronRight,
+  MessageSquare,
   RotateCcw,
   Send,
   type LucideIcon,
 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useConversations } from '../lib/messages';
 import { RECHERCHES_STAGE, SITES_ALTERNANCE, type LienRecherche } from '../lib/liens-recherche';
 import { entretienDe, libelleEntretien, libelleRelance, useCandidatures } from '../lib/suivi';
 import { CARTE } from '../lib/ui';
@@ -27,11 +29,22 @@ interface Action {
 
 function AFaire() {
   const candidatures = useCandidatures();
+  const conversations = useConversations();
   const toutes = candidatures.data ?? [];
   const maintenant = new Date(candidatures.dataUpdatedAt || 0);
   const aujourdhui = jourIso(maintenant);
 
   const actions: Action[] = [
+    ...(conversations.data ?? [])
+      .filter((conversation) => conversation.non_lu)
+      .map((conversation) => ({
+        cle: `m-${conversation.id}`,
+        vers: `/messages?c=${conversation.id}`,
+        titre: `Répondre à ${conversation.contact_nom}`,
+        detail: [conversation.entreprise, 'réponse non lue'].filter(Boolean).join(' · '),
+        Icone: MessageSquare,
+        teinte: 'bg-orange-50 text-orange-700 dark:bg-orange-500/20 dark:text-orange-100',
+      })),
     ...toutes.flatMap((candidature) => {
       const entretien = entretienDe(candidature);
       if (!entretien || new Date(entretien.date) < maintenant) return [];
@@ -169,7 +182,7 @@ function ChercherAussi({ alternance, pays }: { alternance: boolean; pays: string
       <p className="text-sm text-gray-600 dark:text-gray-400">
         Recherches pré-remplies. Ces sites ne sont pas lus automatiquement.
       </p>
-      <ul className="flex flex-col gap-2">
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,8.5rem),1fr))] gap-2">
         {liens.map(({ libelle, url }) => (
           <li key={url}>
             <a

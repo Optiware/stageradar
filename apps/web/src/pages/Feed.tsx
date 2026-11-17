@@ -1,5 +1,5 @@
-import { normalizeText, PAYS_STAGE } from '@stageradar/shared';
-import { ChevronLeft, Clock, MapPin, Search } from 'lucide-react';
+import { DOMAINES, normalizeText, PAYS_STAGE } from '@stageradar/shared';
+import { ChevronDown, ChevronLeft, Clock, MapPin, Search } from 'lucide-react';
 import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { AsideFil } from '../components/AsideFil';
@@ -15,7 +15,13 @@ import { Flag } from '../components/Flag';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetail } from '../components/OfferDetail';
 import { useMasquerOffre, useOffresDuFil } from '../lib/fil';
-import { estNouvelle, LIBELLES_TYPE, nomPays, type FeedOffer } from '../lib/offres';
+import {
+  estNouvelle,
+  LIBELLES_DOMAINE,
+  LIBELLES_TYPE,
+  nomPays,
+  type FeedOffer,
+} from '../lib/offres';
 import { useCandidatures } from '../lib/suivi';
 import { pilule, segment, SEGMENTS } from '../lib/ui';
 
@@ -32,6 +38,10 @@ const TRIS = [
   { id: 'debut', libelle: 'Date de début' },
 ] as const;
 type Tri = (typeof TRIS)[number]['id'];
+
+/** Pilules de filtre de la maquette : chacune ouvre son choix sous la rangée. */
+type Panneau = 'pays' | 'domaines' | 'score';
+const SCORES_MIN = [0, 50, 75];
 
 /** Pays toujours proposés dans le filtre, même sans offre : ceux du projet. */
 const PAYS_FILTRE: readonly string[] = [...PAYS_STAGE, 'FR'];
@@ -81,6 +91,8 @@ export function Feed() {
   const [tri, setTri] = useState<Tri>('score');
   const [filtres, setFiltres] = useState<Filtres>(AUCUN_FILTRE);
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  // Les pays restent visibles à l'arrivée, comme avant la maquette.
+  const [panneau, setPanneau] = useState<Panneau | null>('pays');
   const [avecHorsCible, setAvecHorsCible] = useState(false);
   const [avecMasquees, setAvecMasquees] = useState(false);
   const [derniereMasquee, setDerniereMasquee] = useState<FeedOffer | null>(null);
@@ -298,35 +310,136 @@ export function Feed() {
                 className={segment(id === onglet)}
               >
                 {libelle} · {visibles.filter((offre) => dansOnglet(offre, id)).length}
+                {id === 'alternance' &&
+                  offres.isSuccess &&
+                  !toutes.some((offre) => offre.type === 'alternance') && (
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {' '}
+                      · clés API à créer
+                    </span>
+                  )}
               </button>
             ))}
           </div>
-          <BoutonFiltres
-            filtres={filtres}
-            ouvert={filtresOuverts}
-            onBasculer={() => setFiltresOuverts(!filtresOuverts)}
-          />
+          <div className="hide-scroll -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+            {(
+              [
+                [
+                  'pays',
+                  paysChoisis.length > 0 ? `${paysChoisis.length} pays` : 'Pays',
+                  paysChoisis.length > 0,
+                ],
+                [
+                  'domaines',
+                  filtres.domaines.length > 0
+                    ? filtres.domaines.map((domaine) => LIBELLES_DOMAINE[domaine]).join(', ')
+                    : 'Domaines',
+                  filtres.domaines.length > 0,
+                ],
+                [
+                  'score',
+                  filtres.scoreMin > 0 ? `Score ≥ ${filtres.scoreMin}` : 'Score',
+                  filtres.scoreMin > 0,
+                ],
+              ] as [Panneau, string, boolean][]
+            ).map(([id, libelle, actif]) => (
+              <button
+                key={id}
+                type="button"
+                aria-expanded={panneau === id}
+                onClick={() => setPanneau(panneau === id ? null : id)}
+                className={`flex shrink-0 items-center gap-1.5 ${pilule(actif)}`}
+              >
+                {libelle}
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`size-3.5 transition ${panneau === id ? 'rotate-180' : ''}`}
+                  strokeWidth={2}
+                />
+              </button>
+            ))}
+            {nbHorsCible > 0 && (
+              <button
+                type="button"
+                aria-pressed={!avecHorsCible}
+                title="Masque les offres hors cible : réservées aux Bac+5 ou aux profils expérimentés"
+                onClick={() => setAvecHorsCible(!avecHorsCible)}
+                className={`shrink-0 ${pilule(!avecHorsCible)}`}
+              >
+                Sans Bac+5
+              </button>
+            )}
+            <span className="shrink-0">
+              <BoutonFiltres
+                filtres={filtres}
+                ouvert={filtresOuverts}
+                onBasculer={() => setFiltresOuverts(!filtresOuverts)}
+              />
+            </span>
+          </div>
         </div>
 
-        <div
-          role="group"
-          aria-label="Pays"
-          className="hide-scroll -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0"
-        >
-          {paysProposes.map((code) => (
-            <button
-              key={code}
-              type="button"
-              aria-pressed={paysChoisis.includes(code)}
-              onClick={() => basculerPays(code)}
-              className={`flex shrink-0 items-center gap-1.5 ${pilule(paysChoisis.includes(code))}`}
-            >
-              <Flag code={code} />
-              {nomPays(code)}
-              <span className="opacity-70">{parPays.get(code) ?? 0}</span>
-            </button>
-          ))}
-        </div>
+        {panneau === 'pays' && (
+          <div
+            role="group"
+            aria-label="Pays"
+            className="hide-scroll -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0"
+          >
+            {paysProposes.map((code) => (
+              <button
+                key={code}
+                type="button"
+                aria-pressed={paysChoisis.includes(code)}
+                onClick={() => basculerPays(code)}
+                className={`flex shrink-0 items-center gap-1.5 ${pilule(paysChoisis.includes(code))}`}
+              >
+                <Flag code={code} />
+                {nomPays(code)}
+                <span className="opacity-70">{parPays.get(code) ?? 0}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {panneau === 'domaines' && (
+          <div role="group" aria-label="Domaines" className="flex flex-wrap gap-2">
+            {DOMAINES.map((domaine) => {
+              const choisi = filtres.domaines.includes(domaine);
+              return (
+                <button
+                  key={domaine}
+                  type="button"
+                  aria-pressed={choisi}
+                  onClick={() =>
+                    setFiltres({
+                      ...filtres,
+                      domaines: choisi
+                        ? filtres.domaines.filter((autre) => autre !== domaine)
+                        : [...filtres.domaines, domaine],
+                    })
+                  }
+                  className={pilule(choisi)}
+                >
+                  {LIBELLES_DOMAINE[domaine]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {panneau === 'score' && (
+          <div role="group" aria-label="Score minimum" className="flex flex-wrap gap-2">
+            {SCORES_MIN.map((score) => (
+              <button
+                key={score}
+                type="button"
+                aria-pressed={filtres.scoreMin === score}
+                onClick={() => setFiltres({ ...filtres, scoreMin: score })}
+                className={pilule(filtres.scoreMin === score)}
+              >
+                {score === 0 ? 'Tous les scores' : `${score} et plus`}
+              </button>
+            ))}
+          </div>
+        )}
 
         {filtresOuverts && <FeedFilters filtres={filtres} onChange={setFiltres} />}
       </section>

@@ -199,7 +199,8 @@ test.describe('Suivi des candidatures', () => {
       details: { lien: 'https://visio.example.test/salle' },
     });
 
-    await page.getByRole('navigation').getByRole('link', { name: 'Important' }).click();
+    // La cloche du bandeau mène à « Important », sur téléphone comme sur ordinateur.
+    await page.getByRole('link', { name: /Notifications/ }).click();
     const entretiens = page.getByRole('region', { name: 'Entretiens à venir' });
     await expect(entretiens).toContainText('Exemple');
     await expect(entretiens).toContainText('demain à 14:00');

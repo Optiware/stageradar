@@ -7,6 +7,7 @@ import { useAuth } from './lib/auth-context';
 import { BOUTON_PRINCIPAL } from './lib/ui';
 import { supabase } from './lib/supabase';
 import { Logement } from './pages/Logement';
+import { Messages } from './pages/Messages';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
 import { Feed } from './pages/Feed';
@@ -80,6 +81,7 @@ function OwnerGate({ session }: { session: Session }) {
       <Route element={<Shell />}>
         <Route index element={<Feed />} />
         <Route path="suivi" element={<Suivi />} />
+        <Route path="messages" element={<Messages />} />
         <Route path="important" element={<Important />} />
         <Route path="calendrier" element={<Calendrier />} />
         <Route path="statistiques" element={<Statistiques />} />

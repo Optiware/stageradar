@@ -128,6 +128,25 @@ export function useSuivreOffre() {
   });
 }
 
+/**
+ * « Préparer ma candidature » : range l'offre dans « À postuler » et renvoie l'identifiant de la
+ * candidature (choisi ici), pour ouvrir aussitôt sa fiche dans le suivi.
+ */
+export function usePreparerCandidature() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (offerId: string) => {
+      const id = crypto.randomUUID();
+      const { error } = await supabase!
+        .from('applications')
+        .insert({ id, offer_id: offerId, statut: 'a_postuler', position: Date.now() });
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: CLE }),
+  });
+}
+
 /** Range une offre dans « Postulé » : la candidature vient d'être envoyée sur le site d'origine. */
 export function usePostulerOffre() {
   const client = useQueryClient();

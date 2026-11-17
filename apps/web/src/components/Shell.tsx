@@ -1,19 +1,21 @@
 import { jourIso, relanceDue } from '@stageradar/shared';
 import {
+  Bell,
   BriefcaseBusiness,
   CalendarDays,
   Globe,
   SquareKanban,
   Menu,
+  MessageSquare,
   Moon,
   Sun,
   UserRound,
   Users,
-  Zap,
   type LucideIcon,
 } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
+import { useNonLus } from '../lib/messages';
 import { entretienDe, useCandidatures } from '../lib/suivi';
 import { choisirTheme, useTheme } from '../lib/theme';
 
@@ -27,7 +29,7 @@ interface Onglet {
   mobile: boolean;
   /** Affiché dans le bandeau du grand écran. */
   bureau: boolean;
-  /** Reçoit la pastille orange du nombre d'actions du jour. */
+  /** Reçoit la pastille orange du nombre de réponses non lues. */
   compteur?: boolean;
 }
 
@@ -35,9 +37,9 @@ const NAV: Onglet[] = [
   { to: '/', label: 'Offres', Icone: BriefcaseBusiness, mobile: true, bureau: true },
   { to: '/suivi', label: 'Suivi', Icone: SquareKanban, mobile: true, bureau: true },
   {
-    to: '/important',
-    label: 'Important',
-    Icone: Zap,
+    to: '/messages',
+    label: 'Messages',
+    Icone: MessageSquare,
     mobile: true,
     bureau: true,
     compteur: true,
@@ -52,10 +54,11 @@ const NAV: Onglet[] = [
   },
   { to: '/pays', label: 'Pays', Icone: Globe, mobile: false, bureau: true },
   { to: '/demarchage', label: 'Contacts', Icone: Users, mobile: false, bureau: true },
+  // « Important », d'avant la maquette, s'ouvre par la cloche du bandeau et depuis « Plus ».
   { to: '/plus', label: 'Plus', Icone: Menu, mobile: true, bureau: true },
 ];
 
-/** Relances à faire et entretiens du jour : le nombre posé sur l'onglet « Important ». */
+/** Relances à faire et entretiens du jour : allument le point orange de la cloche. */
 function useActionsDuJour(): number {
   const candidatures = useCandidatures();
   const toutes = candidatures.data ?? [];
@@ -74,7 +77,7 @@ function Pastille({ nombre, className = '' }: { nombre: number; className?: stri
       className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-xs font-bold text-gray-950 ${className}`}
     >
       {nombre}
-      <span className="sr-only"> à faire</span>
+      <span className="sr-only"> non lus</span>
     </span>
   );
 }
@@ -136,6 +139,7 @@ function ecouterReseau(prevenir: () => void): () => void {
 export function Shell() {
   const enLigne = useSyncExternalStore(ecouterReseau, () => navigator.onLine);
   const actions = useActionsDuJour();
+  const nonLus = useNonLus();
 
   return (
     <div className="min-h-dvh">
@@ -161,11 +165,21 @@ export function Shell() {
               >
                 <Icone aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.8} />
                 {label}
-                {compteur && <Pastille nombre={actions} />}
+                {compteur && <Pastille nombre={nonLus} />}
               </NavLink>
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <Link
+              to="/important"
+              aria-label={actions > 0 ? `Notifications : ${actions} à faire` : 'Notifications'}
+              className="relative flex size-11 items-center justify-center rounded-full bg-gray-100 text-gray-950 transition hover:bg-gray-200 dark:bg-gray-850 dark:text-gray-50 dark:hover:bg-gray-800"
+            >
+              <Bell aria-hidden="true" className="size-5" strokeWidth={1.8} />
+              {actions > 0 && (
+                <span className="absolute top-[0.5625rem] right-2.5 size-[0.5625rem] rounded-full border-2 border-gray-100 bg-orange-500 dark:border-gray-850" />
+              )}
+            </Link>
             <BoutonTheme />
             <Link
               to="/reglages"
@@ -207,7 +221,7 @@ export function Shell() {
                 {court ?? label}
                 {compteur && (
                   <Pastille
-                    nombre={actions}
+                    nombre={nonLus}
                     className="absolute top-2.5 left-[calc(50%+0.25rem)] h-[1.125rem] min-w-[1.125rem] text-[0.6875rem]"
                   />
                 )}

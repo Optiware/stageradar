@@ -56,8 +56,8 @@ test.describe('Lot 0 — socle', () => {
     // Sur téléphone, « Pays » est rangé dans « Plus » : la barre du bas n'a que cinq onglets.
     const onglets = [
       ['Suivi', 'Suivi'],
-      ['Important', 'Important'],
-      ...(isMobile ? [] : [['Pays', 'Fiches pays']]),
+      ['Messages', 'Messages'],
+      ...(isMobile ? [] : ([['Pays', 'Fiches pays']] as const)),
       ['Plus', 'Plus'],
     ] as const;
     for (const [lien, titre] of onglets) {
@@ -65,6 +65,9 @@ test.describe('Lot 0 — socle', () => {
       await expect(page.getByRole('heading', { level: 1, name: titre })).toBeVisible();
     }
     await expect(page.getByText(OWNER_EMAIL)).toBeVisible();
+    // « Important » s'ouvre par la cloche du bandeau.
+    await page.getByRole('link', { name: /^Notifications/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Important' })).toBeVisible();
   });
 
   test('revient à la connexion après une déconnexion', async ({ page, backend }) => {
