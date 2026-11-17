@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useNonLus } from '../lib/messages';
 import { entretienDe, useCandidatures } from '../lib/suivi';
 import { choisirTheme, useTheme } from '../lib/theme';
@@ -140,10 +140,17 @@ export function Shell() {
   const enLigne = useSyncExternalStore(ecouterReseau, () => navigator.onLine);
   const actions = useActionsDuJour();
   const nonLus = useNonLus();
+  // Sur téléphone, une conversation ouverte occupe tout l'écran, sans bandeau ni onglets.
+  const { pathname, search } = useLocation();
+  const pleinEcran = pathname === '/messages' && new URLSearchParams(search).has('c');
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-20 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      <header
+        className={`sticky top-0 z-20 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 ${
+          pleinEcran ? 'max-md:hidden' : ''
+        }`}
+      >
         <div className="mx-auto flex min-h-16 max-w-[80rem] items-center gap-x-8 gap-y-3 px-4 py-2.5 md:min-h-[4.5rem] md:px-8">
           <Marque />
           <nav
@@ -194,7 +201,9 @@ export function Shell() {
 
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-gray-800 dark:bg-gray-900"
+        className={`fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-gray-800 dark:bg-gray-900 ${
+          pleinEcran ? 'hidden' : ''
+        }`}
       >
         {NAV.filter((onglet) => onglet.mobile).map(({ to, label, court, Icone, compteur }) => (
           <NavLink
@@ -231,7 +240,11 @@ export function Shell() {
         ))}
       </nav>
 
-      <main className="mx-auto w-full max-w-[80rem] min-w-0 px-4 pt-5 pb-28 md:px-8 md:pt-10 md:pb-24">
+      <main
+        className={`mx-auto w-full max-w-[80rem] min-w-0 px-4 pt-5 md:px-8 md:pt-10 md:pb-24 ${
+          pleinEcran ? 'pb-0' : 'pb-28'
+        }`}
+      >
         {!enLigne && (
           <p
             role="status"

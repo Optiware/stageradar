@@ -20,7 +20,7 @@ export interface Evenement {
 
 export type OffreSuivie = Pick<
   StoredOffer,
-  'id' | 'titre' | 'entreprise' | 'pays' | 'ville' | 'url' | 'type' | 'actif'
+  'id' | 'titre' | 'entreprise' | 'pays' | 'ville' | 'url' | 'type' | 'actif' | 'score'
 >;
 
 /** Entreprise d'une candidature spontanée (table `companies`). */
@@ -63,7 +63,7 @@ export interface Candidature extends EtatSuivi {
 const SELECTION =
   'id,offer_id,company_id,statut,position,date_candidature,prochaine_relance,notes,created_at,' +
   'cv_document_id,lettre_document_id,contact_nom,contact_email,notes_entretien,' +
-  'offre:offers!applications_offer_id_fkey(id,titre,entreprise,pays,ville,url,type,actif),' +
+  'offre:offers!applications_offer_id_fkey(id,titre,entreprise,pays,ville,url,type,actif,score),' +
   'societe:companies!applications_company_id_fkey(id,nom,pays,ville),' +
   'evenements:events!events_application_id_fkey(id,type,titre,date,details,fait)';
 

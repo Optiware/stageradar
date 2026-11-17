@@ -114,6 +114,7 @@ test.describe('Lot 3 — fil des offres', () => {
 
   test('cherche dans l’intitulé, l’entreprise et la ville, sans tenir compte des accents', async ({
     page,
+    isMobile,
   }) => {
     await page.goto('/');
     const cartes = page.locator('li > article');
@@ -122,9 +123,14 @@ test.describe('Lot 3 — fil des offres', () => {
     await expect(cartes).toHaveCount(1);
     await expect(cartes).toContainText('Stage hiver à Séoul');
 
-    // Le champ « Où » ne regarde que la ville et le pays.
-    await page.getByLabel('Quoi').fill('');
-    await page.getByLabel('Où').fill('japon');
+    if (isMobile) {
+      // Sur téléphone, la recherche unique de la maquette trouve aussi le pays.
+      await page.getByLabel('Quoi').fill('japon');
+    } else {
+      // Le champ « Où » ne regarde que la ville et le pays.
+      await page.getByLabel('Quoi').fill('');
+      await page.getByLabel('Où').fill('japon');
+    }
     await expect(cartes).toHaveCount(2);
 
     await page.getByLabel('Quoi').fill('rien de tel');

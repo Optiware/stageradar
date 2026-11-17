@@ -18,6 +18,7 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  EllipsisVertical,
   Mail,
   Paperclip,
   PenLine,
@@ -50,7 +51,14 @@ import {
   valeursDe,
   type Candidature,
 } from '../lib/suivi';
-import { BADGE, BOUTON_DOUX, BOUTON_PRINCIPAL, BOUTON_SECONDAIRE, CHAMP } from '../lib/ui';
+import {
+  BADGE,
+  BOUTON_DOUX,
+  BOUTON_PRINCIPAL,
+  BOUTON_SECONDAIRE,
+  CHAMP,
+  teinteScore,
+} from '../lib/ui';
 
 const PARIS = 'Europe/Paris';
 const DISCRET = 'text-gray-600 dark:text-gray-400';
@@ -476,7 +484,7 @@ function Composer({
     <form
       aria-label={`Répondre à ${conversation.contact_nom}`}
       onSubmit={envoyer}
-      className="mx-4 mb-4 flex flex-col gap-2 rounded-[1.125rem] border border-gray-300 bg-white p-3 md:mx-6 md:mb-6 dark:border-gray-800 dark:bg-gray-900"
+      className="flex flex-col gap-2 border-gray-300 bg-white p-3 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:border-t max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))] md:mx-6 md:mb-6 md:rounded-[1.125rem] md:border dark:border-gray-800 dark:bg-gray-900"
     >
       {mode === 'envoye' && (
         <div className="hide-scroll flex gap-1.5 overflow-x-auto md:flex-wrap">
@@ -501,7 +509,8 @@ function Composer({
             onClick={() => setTexte(reponseRapide('autre_horaire', langue, contact, null))}
             className={`shrink-0 ${PUCE}`}
           >
-            Proposer un autre horaire
+            <span className="max-md:hidden">Proposer un autre horaire</span>
+            <span className="md:hidden">Autre horaire</span>
           </button>
         </div>
       )}
@@ -518,7 +527,7 @@ function Composer({
             ? `Écris à ${contact}…`
             : `Colle ici la réponse de ${contact}, reçue dans ta messagerie.`
         }
-        className="w-full resize-none border-0 bg-transparent px-1.5 py-2 leading-[1.55] outline-none placeholder:text-gray-400"
+        className="w-full resize-none border-0 bg-transparent px-1.5 py-2 leading-[1.55] outline-none placeholder:text-gray-400 max-md:h-14 max-md:rounded-2xl max-md:bg-gray-100 max-md:px-3.5 max-md:dark:bg-gray-850"
       />
       {pieces.length > 0 && (
         <ul className="flex flex-wrap gap-1.5">
@@ -585,7 +594,11 @@ function Composer({
             </button>
           </>
         )}
-        <span className={`flex-[1_1_10rem] text-[0.8125rem] md:text-right ${DISCRET}`}>
+        <span
+          className={`flex-[1_1_10rem] text-[0.8125rem] max-md:order-last max-md:basis-full max-md:text-xs md:text-right ${
+            mode === 'envoye' && lien ? 'max-md:hidden' : ''
+          } ${DISCRET}`}
+        >
           {mode === 'recu'
             ? 'La réponse est ajoutée au fil et annule la relance prévue.'
             : lien
@@ -595,9 +608,13 @@ function Composer({
         <button
           type="submit"
           disabled={ajouter.isPending || !texte.trim()}
-          className={BOUTON_PRINCIPAL}
+          className={`${BOUTON_PRINCIPAL} max-md:ml-auto ${
+            mode === 'envoye' ? 'max-md:size-11 max-md:rounded-full max-md:px-0' : ''
+          }`}
         >
-          {mode === 'envoye' ? 'Envoyer' : 'Ajouter la réponse'}
+          <span className={mode === 'envoye' ? 'max-md:sr-only' : ''}>
+            {mode === 'envoye' ? 'Envoyer' : 'Ajouter la réponse'}
+          </span>
           <Send aria-hidden="true" className="size-4" strokeWidth={1.8} />
         </button>
       </div>
@@ -626,12 +643,16 @@ function Lateral({
   candidatures,
   aujourdhui,
   onSupprimee,
+  ouverteSurTelephone,
+  onFermer,
 }: {
   conversation: Conversation;
   candidature: Candidature | undefined;
   candidatures: Candidature[];
   aujourdhui: string;
   onSupprimee: () => void;
+  ouverteSurTelephone: boolean;
+  onFermer: () => void;
 }) {
   const enregistrer = useEnregistrerCandidature();
   const modifier = useModifierConversation();
@@ -664,8 +685,18 @@ function Lateral({
   return (
     <aside
       aria-label="Candidature liée"
-      className="flex min-w-0 flex-[1_1_17.5rem] flex-col gap-5 border-gray-200 p-5 max-lg:border-t lg:border-l dark:border-gray-800"
+      className={`flex min-w-0 flex-[1_1_17.5rem] flex-col gap-5 border-gray-200 p-5 max-lg:border-t lg:border-l dark:border-gray-800 ${
+        ouverteSurTelephone ? 'max-md:min-h-dvh max-md:border-t-0' : 'max-md:hidden'
+      }`}
     >
+      <button
+        type="button"
+        onClick={onFermer}
+        className="-mt-2 -ml-2 flex min-h-11 items-center gap-1 self-start font-semibold md:hidden"
+      >
+        <ChevronLeft aria-hidden="true" className="size-[1.375rem]" strokeWidth={1.8} />
+        Retour au fil
+      </button>
       {candidature ? (
         <Link
           to={
@@ -874,12 +905,16 @@ function Fil({
   candidatures,
   etiquette,
   maintenant,
+  cacheSurTelephone,
+  onDetails,
 }: {
   conversation: Conversation;
   candidature: Candidature | undefined;
   candidatures: Candidature[];
   etiquette: Etiquette | null;
   maintenant: Date;
+  cacheSurTelephone: boolean;
+  onDetails: () => void;
 }) {
   const creneaux = creneauxDe(conversation);
   // Par défaut, le premier créneau qui ne tombe pas en pleine nuit.
@@ -903,9 +938,11 @@ function Fil({
   return (
     <section
       aria-labelledby="titre-fil"
-      className="flex min-w-0 flex-[999_1_32.5rem] flex-col bg-gray-50 dark:bg-gray-950"
+      className={`flex min-w-0 flex-[999_1_32.5rem] flex-col bg-gray-50 max-md:min-h-dvh dark:bg-gray-950 ${
+        cacheSurTelephone ? 'max-md:hidden' : ''
+      }`}
     >
-      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-3 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-3 border-b border-gray-200 bg-white px-4 py-3 max-md:sticky max-md:top-0 max-md:z-10 md:px-6 md:py-4 dark:border-gray-800 dark:bg-gray-900">
         <Link
           to="/messages"
           aria-label="Retour aux messages"
@@ -918,13 +955,51 @@ function Fil({
           <h2 id="titre-fil" className="text-base font-bold md:text-lg">
             {conversation.contact_nom}
           </h2>
-          {sousTitre && <p className={`text-sm ${DISCRET}`}>{sousTitre}</p>}
+          {sousTitre && <p className={`text-sm max-md:hidden ${DISCRET}`}>{sousTitre}</p>}
+          <p className={`truncate text-[0.8125rem] md:hidden ${DISCRET}`}>
+            {[conversation.entreprise, 'via ton e-mail'].filter(Boolean).join(' · ')}
+          </p>
         </div>
-        <span className={`flex items-center gap-1.5 ${BADGE.neutre}`}>
+        <span className={`flex items-center gap-1.5 max-md:hidden ${BADGE.neutre}`}>
           <Mail aria-hidden="true" className="size-[0.9375rem]" strokeWidth={1.8} />
           Via ton e-mail
         </span>
-        {etiquette && <span className={etiquette.style}>{etiquette.texte}</span>}
+        {etiquette && <span className={`max-md:hidden ${etiquette.style}`}>{etiquette.texte}</span>}
+        <button
+          type="button"
+          aria-label="Candidature, relances et notes"
+          onClick={onDetails}
+          className="-mr-2 ml-auto flex size-11 items-center justify-center md:hidden"
+        >
+          <EllipsisVertical aria-hidden="true" className="size-5" strokeWidth={1.8} />
+        </button>
+        {candidature && (
+          <Link
+            to={
+              candidature.offre
+                ? `/?offre=${candidature.offre.id}`
+                : `/suivi?candidature=${candidature.id}`
+            }
+            className="flex basis-full items-center gap-3 rounded-[0.875rem] bg-gray-100 px-3 py-2.5 md:hidden dark:bg-gray-850"
+          >
+            {typeof candidature.offre?.score === 'number' && (
+              <span
+                className={`flex h-8 min-w-9 items-center justify-center rounded-lg px-1.5 text-sm font-extrabold ${teinteScore(candidature.offre.score).fond} ${teinteScore(candidature.offre.score).texte}`}
+              >
+                {candidature.offre.score}
+              </span>
+            )}
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm font-bold">{candidature.resume.titre}</span>
+              <span className={`text-xs ${DISCRET}`}>
+                {LIBELLES_STATUT[candidature.statut]}
+                {candidature.date_candidature &&
+                  ` le ${new Date(candidature.date_candidature).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`}
+              </span>
+            </span>
+            <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-gray-600" />
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -972,6 +1047,8 @@ export function Messages() {
   const [params, setParams] = useSearchParams();
   const [onglet, setOnglet] = useState<Onglet>('tous');
   const [recherche, setRecherche] = useState('');
+  // Sur téléphone, « ⋮ » remplace le fil par la candidature liée.
+  const [details, setDetails] = useState(false);
   const conversations = useConversations();
   const candidatures = useCandidatures();
   const modifier = useModifierConversation();
@@ -1026,7 +1103,7 @@ export function Messages() {
   const detail = ouverte !== undefined || nouvelle;
 
   return (
-    <div className="-mx-4 flex flex-wrap overflow-hidden border-gray-200 bg-white max-md:-mt-5 max-md:border-b md:mx-0 md:rounded-[1.25rem] md:border md:shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div className="-mx-4 flex flex-wrap border-gray-200 md:overflow-hidden bg-white max-md:-mt-5 max-md:border-b md:mx-0 md:rounded-[1.25rem] md:border md:shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <section
         aria-labelledby="titre-conversations"
         className={`flex min-w-0 flex-[1_1_18.75rem] flex-col border-gray-200 md:border-r dark:border-gray-800 ${
@@ -1111,6 +1188,7 @@ export function Messages() {
               <li key={conversation.id}>
                 <Link
                   to={`/messages?c=${conversation.id}`}
+                  onClick={() => setDetails(false)}
                   aria-current={conversation.id === ouverte?.id ? 'true' : undefined}
                   className={`flex gap-3 rounded-[0.875rem] p-3 transition ${
                     conversation.id === ouverte?.id
@@ -1174,6 +1252,8 @@ export function Messages() {
             candidatures={suivies}
             etiquette={etiquetteDe(ouverte, candidatureDe(ouverte), aujourdhui)}
             maintenant={maintenant}
+            cacheSurTelephone={details}
+            onDetails={() => setDetails(true)}
           />
           <Lateral
             key={`lateral-${ouverte.id}-${ouverte.application_id}`}
@@ -1182,6 +1262,8 @@ export function Messages() {
             candidatures={suivies}
             aujourdhui={aujourdhui}
             onSupprimee={() => setParams({}, { replace: true })}
+            ouverteSurTelephone={details}
+            onFermer={() => setDetails(false)}
           />
         </>
       ) : nouvelle ? (

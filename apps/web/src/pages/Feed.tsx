@@ -123,7 +123,10 @@ export function Feed() {
       (avecHorsCible || offre.exclue_raison === null) &&
       (avecMasquees || !offre.masquee) &&
       passeLesFiltres(offre, filtres, maintenant) &&
-      correspond(`${offre.titre} ${offre.entreprise ?? ''} ${offre.ville ?? ''}`, motsQuoi) &&
+      correspond(
+        `${offre.titre} ${offre.entreprise ?? ''} ${offre.ville ?? ''} ${nomPays(offre.pays) ?? ''}`,
+        motsQuoi,
+      ) &&
       correspond(`${offre.ville ?? ''} ${nomPays(offre.pays) ?? ''}`, motsOu),
   );
   const dansLOnglet = visibles.filter((offre) => dansOnglet(offre, onglet));
@@ -218,21 +221,24 @@ export function Feed() {
   return (
     <>
       <section className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+        {/* Sur téléphone (maquette « Mobile-Fil »), le titre passe sous la recherche et les onglets. */}
+        <div className="flex flex-wrap items-end justify-between gap-4 max-md:order-last">
           <div className="flex flex-col gap-1.5">
-            <p className={`text-sm font-medium first-letter:uppercase ${SUR_LA_PAGE}`}>
+            <p
+              className={`text-sm font-medium first-letter:uppercase max-md:hidden ${SUR_LA_PAGE}`}
+            >
               {jour}
               {offres.isSuccess && ` · mis à jour à ${heure}`}
             </p>
-            <h1 className="text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em] md:text-[2.5rem]">
-              {salutation(date.getHours())} !{' '}
+            <h1 className="text-[1.375rem] leading-[1.1] font-extrabold tracking-[-0.02em] md:text-[2.5rem]">
+              <span className="max-md:hidden">{salutation(date.getHours())} ! </span>
               {offres.isSuccess &&
                 (nouvelles > 0
                   ? `${nouvelles} nouvelle${nouvelles > 1 ? 's' : ''} offre${nouvelles > 1 ? 's' : ''} pour toi`
                   : `${affichees.length} offre${affichees.length > 1 ? 's' : ''} pour toi`)}
             </h1>
           </div>
-          <p className="flex max-w-[26.25rem] items-start gap-2.5 rounded-xl bg-amber-50 px-3.5 py-3 text-sm text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
+          <p className="hidden max-w-[26.25rem] items-start md:flex gap-2.5 rounded-xl bg-amber-50 px-3.5 py-3 text-sm text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
             <Clock
               aria-hidden="true"
               className="mt-0.5 size-[1.125rem] shrink-0"
@@ -246,7 +252,7 @@ export function Feed() {
           role="search"
           aria-label="Rechercher des offres"
           onSubmit={rechercher}
-          className="flex flex-wrap items-stretch gap-2 rounded-[1.125rem] border border-gray-200 bg-white p-2 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+          className="flex flex-wrap items-stretch gap-2 rounded-[1.125rem] bg-gray-100 md:border md:border-gray-200 md:bg-white md:p-2 md:shadow-sm dark:bg-gray-850 md:dark:border-gray-800 md:dark:bg-gray-900"
         >
           <label className="flex min-h-14 flex-[2_1_17.5rem] cursor-text items-center gap-3 rounded-xl px-4">
             <Search
@@ -255,12 +261,15 @@ export function Feed() {
               strokeWidth={1.8}
             />
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Quoi</span>
+              <span className="text-xs font-semibold text-gray-600 max-md:sr-only dark:text-gray-400">
+                Quoi
+              </span>
               <input
                 type="search"
                 value={quoi}
                 onChange={(evenement) => setQuoi(evenement.target.value)}
-                placeholder="Intitulé, entreprise, ville"
+                placeholder="Poste, entreprise, pays"
+                enterKeyHint="search"
                 className="border-0 bg-transparent p-0 text-base outline-none placeholder:text-gray-400"
               />
             </span>
@@ -269,7 +278,7 @@ export function Feed() {
             aria-hidden="true"
             className="my-2.5 hidden w-px bg-gray-200 sm:block dark:bg-gray-800"
           />
-          <label className="flex min-h-14 flex-[1_1_13.75rem] cursor-text items-center gap-3 rounded-xl px-4">
+          <label className="hidden min-h-14 flex-[1_1_13.75rem] cursor-text items-center md:flex gap-3 rounded-xl px-4">
             <MapPin
               aria-hidden="true"
               className="size-5 shrink-0 text-gray-600"
@@ -288,7 +297,7 @@ export function Feed() {
           </label>
           <button
             type="submit"
-            className="min-h-14 flex-[1_0_auto] rounded-xl bg-primary-600 px-7 text-base font-semibold text-white transition hover:bg-primary-700 sm:flex-none dark:bg-primary-400 dark:text-primary-ink dark:hover:bg-primary-300"
+            className="hidden min-h-14 flex-none rounded-xl bg-primary-600 md:block px-7 text-base font-semibold text-white transition hover:bg-primary-700 sm:flex-none dark:bg-primary-400 dark:text-primary-ink dark:hover:bg-primary-300"
           >
             Rechercher
           </button>
@@ -298,7 +307,7 @@ export function Feed() {
           <div
             role="tablist"
             aria-label="Type d'offre"
-            className={`${SEGMENTS} hide-scroll max-w-full overflow-x-auto`}
+            className={`${SEGMENTS} hide-scroll max-w-full overflow-x-auto max-md:flex max-md:w-full`}
           >
             {ONGLETS.map(({ id, libelle }) => (
               <button
@@ -307,13 +316,17 @@ export function Feed() {
                 role="tab"
                 aria-selected={id === onglet}
                 onClick={() => setOnglet(id)}
-                className={segment(id === onglet)}
+                className={`${segment(id === onglet)} max-md:flex-1`}
               >
-                {libelle} · {visibles.filter((offre) => dansOnglet(offre, id)).length}
+                {libelle}
+                <span className="max-md:hidden">
+                  {' '}
+                  · {visibles.filter((offre) => dansOnglet(offre, id)).length}
+                </span>
                 {id === 'alternance' &&
                   offres.isSuccess &&
                   !toutes.some((offre) => offre.type === 'alternance') && (
-                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                    <span className="text-xs text-gray-600 max-md:hidden dark:text-gray-400">
                       {' '}
                       · clés API à créer
                     </span>
@@ -447,7 +460,7 @@ export function Feed() {
       <div className="mt-6 flex flex-wrap items-start gap-x-7 gap-y-8">
         <div className="flex min-w-0 flex-[999_1_37.5rem] flex-col gap-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-sans text-[0.9375rem] font-medium text-gray-700 dark:text-gray-300">
+            <h2 className="font-sans text-[0.9375rem] font-medium text-gray-700 max-md:sr-only dark:text-gray-300">
               <strong className="font-bold text-gray-950 dark:text-gray-50">
                 {affichees.length} offre{affichees.length > 1 ? 's' : ''}
               </strong>{' '}
