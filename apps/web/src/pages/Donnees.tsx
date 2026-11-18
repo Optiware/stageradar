@@ -2,6 +2,7 @@ import { jourIso } from '@stageradar/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Download, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { SauvegardeChiffree } from '../components/SauvegardeChiffree';
 import { candidaturesEnCsv, estSauvegarde, exporter, importer } from '../lib/donnees';
 import { useCandidatures } from '../lib/suivi';
 import { telecharger } from '../lib/telechargement';
@@ -50,8 +51,12 @@ export function Donnees() {
     <div className="max-w-3xl">
       <h1 className="text-2xl font-extrabold tracking-tight">Mes données</h1>
 
+      <div className="mt-6">
+        <SauvegardeChiffree />
+      </div>
+
       <section aria-label="Sauvegarde" className={`mt-6 ${CARTE}`}>
-        <h2 className="font-bold">Sauvegarde complète</h2>
+        <h2 className="font-bold">Sauvegarde dans un fichier</h2>
         <p className={`mt-1 text-sm ${SECONDAIRE}`}>
           Un fichier avec tes candidatures, tes entreprises, tes notes, tes fiches pays et tes
           réglages. Il contient des données personnelles : garde-le dans un endroit sûr.

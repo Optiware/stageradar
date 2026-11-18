@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { jourDe, trierEcheances, versIcs, type Echeance } from './agenda';
+import { echeancesVisa, jourDe, trierEcheances, versIcs, type Echeance } from './agenda';
 
 const MAINTENANT = new Date('2026-10-13T08:00:00Z');
 
@@ -62,5 +62,34 @@ describe('agenda', () => {
     }
     const deplie = ics.replace(/\r\n /g, '');
     expect(deplie).toContain(`SUMMARY:${'Échéance très éloignée '.repeat(6)}`);
+  });
+});
+
+describe('echeancesVisa', () => {
+  it('retire le délai de chaque étape à la date de début du stage', () => {
+    const delai = {
+      etape: 'Déposer la demande',
+      jours_avant: 90,
+      source: 'Ambassade',
+      url: 'https://example.test',
+      verifiee: '2026-11-18',
+    };
+    const resultat = echeancesVisa(
+      [
+        {
+          pays: 'JP',
+          nom: 'Japon',
+          delais_visa: [delai, { ...delai, etape: 'Rendez-vous', jours_avant: null }],
+        },
+      ],
+      '2027-06-01',
+    );
+    expect(resultat.map((item) => [item.etape, item.date])).toEqual([
+      ['Déposer la demande', '2027-03-03'],
+      ['Rendez-vous', null],
+    ]);
+    expect(
+      echeancesVisa([{ pays: 'JP', nom: 'Japon', delais_visa: [delai] }], null)[0]?.date,
+    ).toBeNull();
   });
 });

@@ -268,3 +268,24 @@ describe('portfolio', () => {
     });
   });
 });
+
+describe('contacts des entreprises', () => {
+  it('n’accepte qu’un contact principal par entreprise', async () => {
+    await asRole(db, 'authenticated', OWNER, async (query) => {
+      const { rows } = await query<{ id: string }>(
+        "insert into public.companies (nom) values ('Hoshi Labs') returning id",
+      );
+      const id = rows[0]?.id;
+      await query(
+        "insert into public.company_contacts (company_id, nom, principal) values ($1, 'Aiko T.', true), ($1, 'Ken S.', false)",
+        [id],
+      );
+      await expect(
+        query(
+          "insert into public.company_contacts (company_id, nom, principal) values ($1, 'X', true)",
+          [id],
+        ),
+      ).rejects.toThrow(/duplicate key/);
+    });
+  });
+});

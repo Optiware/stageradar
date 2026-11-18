@@ -1,7 +1,7 @@
 // Agenda : rassemble les dates à ne pas manquer (entretiens, relances, échéances par pays) et les
 // exporte au format iCalendar, lisible par Google Agenda, Outlook et l'agenda du téléphone.
 
-export type TypeEcheance = 'entretien' | 'relance' | 'echeance' | 'stage';
+export type TypeEcheance = 'entretien' | 'relance' | 'echeance' | 'stage' | 'visa';
 
 export interface Echeance {
   /** Identifiant stable : sert de clé d'affichage et d'UID dans le fichier .ics. */
@@ -128,4 +128,50 @@ export function versIcs(echeances: Echeance[], maintenant: Date): string {
   }
   lignes.push('END:VCALENDAR');
   return lignes.map(plier).join('\r\n') + '\r\n';
+}
+
+/** Délai d'une étape de visa, noté dans la fiche d'un pays avec sa source. */
+export interface DelaiVisa {
+  etape: string;
+  /** Jours avant le début du stage ; `null` si la source ne donne pas de délai. */
+  jours_avant: number | null;
+  source: string;
+  url: string;
+  /** AAAA-MM-JJ. */
+  verifiee: string;
+}
+
+export interface EcheanceVisa extends DelaiVisa {
+  pays: string;
+  nom: string;
+  /** Date limite (AAAA-MM-JJ), ou `null` sans délai ou sans date de début de stage. */
+  date: string | null;
+}
+
+/** Retire des jours à une date AAAA-MM-JJ. */
+function joursAvant(jour: string, nombre: number): string {
+  const date = new Date(`${jour}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - nombre);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Échéances visa : la date de début du stage moins le délai de chaque étape. Une étape sans délai
+ * est gardée, sans date, pour qu'elle reste visible « à vérifier ».
+ */
+export function echeancesVisa(
+  fiches: { pays: string; nom: string; delais_visa?: DelaiVisa[] }[],
+  debutStage: string | null,
+): EcheanceVisa[] {
+  return fiches.flatMap((fiche) =>
+    (fiche.delais_visa ?? []).map((delai) => ({
+      ...delai,
+      pays: fiche.pays,
+      nom: fiche.nom,
+      date:
+        debutStage && delai.jours_avant !== null && delai.jours_avant >= 0
+          ? joursAvant(debutStage, delai.jours_avant)
+          : null,
+    })),
+  );
 }

@@ -13,9 +13,10 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useNonLus } from '../lib/messages';
+import { sauvegardeAutoSiDue } from '../lib/sauvegardes';
 import { entretienDe, useCandidatures } from '../lib/suivi';
 import { choisirTheme, useTheme } from '../lib/theme';
 
@@ -138,6 +139,10 @@ function ecouterReseau(prevenir: () => void): () => void {
  */
 export function Shell() {
   const enLigne = useSyncExternalStore(ecouterReseau, () => navigator.onLine);
+  // Sauvegarde chiffrée automatique, si elle est activée sur cet appareil et qu'elle est due.
+  useEffect(() => {
+    if (navigator.onLine) void sauvegardeAutoSiDue();
+  }, []);
   const actions = useActionsDuJour();
   const nonLus = useNonLus();
   // Sur téléphone, une conversation ouverte occupe tout l'écran, sans bandeau ni onglets.

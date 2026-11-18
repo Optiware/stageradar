@@ -48,6 +48,9 @@ export function parStatut(
   }));
 }
 
+/** En dessous de ce nombre d'envois, un taux de réponse ne dit encore rien. */
+export const ENVOIS_MINIMUM = 5;
+
 /** Taux par groupe (pays, type de candidature…), les groupes les plus fournis d'abord. */
 export function tauxPar<T extends Pick<CandidatureComptee, 'statut'>>(
   candidatures: T[],

@@ -80,7 +80,8 @@ createRoot(document.getElementById('root')!).render(
           shouldDehydrateQuery: (requete) =>
             requete.state.status === 'success' &&
             requete.queryKey[0] !== 'traduction' &&
-            requete.queryKey[0] !== 'notifications',
+            requete.queryKey[0] !== 'notifications' &&
+            requete.queryKey[0] !== 'sauvegarde-cle',
         },
       }}
     >

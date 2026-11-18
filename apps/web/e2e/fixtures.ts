@@ -55,6 +55,8 @@ const TABLES = [
   'messages',
   'projects',
   'interview_preps',
+  'company_contacts',
+  'backups',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -93,6 +95,10 @@ export interface Backend {
   projects: Ligne[];
   /** Préparations d'entretien (table `interview_preps`, identifiées par `application_id`). */
   interview_preps: Ligne[];
+  /** Contacts des entreprises (table `company_contacts`). */
+  company_contacts: Ligne[];
+  /** Sauvegardes chiffrées (table `backups`). */
+  backups: Ligne[];
   /** Réponse de `technologies_demandees` : offres qui citent chaque terme. */
   technologies: { terme: string; nombre: number }[];
   /** Ligne unique des réglages. */
@@ -131,6 +137,8 @@ export const test = base.extend<{ backend: Backend }>({
         messages: [],
         projects: [],
         interview_preps: [],
+        company_contacts: [],
+        backups: [],
         technologies: [],
         api: [],
         apiReponses: {},
@@ -239,6 +247,13 @@ export const test = base.extend<{ backend: Backend }>({
           const table = backend[nom];
           const valeur = new URL(request.url()).searchParams.get(cle)?.replace(/^eq\./, '');
           if (request.method() === 'GET') {
+            // Lecture d'une seule ligne (`.single()`) : filtre sur la clé, réponse en objet.
+            if (valeur && request.headers().accept?.includes('vnd.pgrst.object')) {
+              const ligne = table.find((autre) => autre[cle] === valeur);
+              return ligne
+                ? route.fulfill({ json: ligne })
+                : route.fulfill({ status: 406, json: { message: 'Aucune ligne' } });
+            }
             return route.fulfill({ json: table });
           }
           if (request.method() === 'POST') {

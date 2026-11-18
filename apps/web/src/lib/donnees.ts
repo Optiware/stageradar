@@ -21,6 +21,12 @@ export interface Sauvegarde {
   /** Absents des sauvegardes faites avant le lot 8. */
   housings?: Ligne[];
   budgets?: Ligne[];
+  /** Absents des sauvegardes faites avant novembre 2026. */
+  conversations?: Ligne[];
+  messages?: Ligne[];
+  projects?: Ligne[];
+  interview_preps?: Ligne[];
+  company_contacts?: Ligne[];
 }
 
 async function lire(table: string): Promise<Ligne[]> {
@@ -38,17 +44,35 @@ function sans(ligne: Ligne, ...colonnes: string[]): Ligne {
 }
 
 export async function exporter(): Promise<Sauvegarde> {
-  const [settings, country_sheets, companies, documents, applications, events, housings, budgets] =
-    await Promise.all([
-      lire('settings'),
-      lire('country_sheets'),
-      lire('companies'),
-      lire('documents'),
-      lire('applications'),
-      lire('events'),
-      lire('housings'),
-      lire('budgets'),
-    ]);
+  const [
+    settings,
+    country_sheets,
+    companies,
+    documents,
+    applications,
+    events,
+    housings,
+    budgets,
+    conversations,
+    messages,
+    projects,
+    interview_preps,
+    company_contacts,
+  ] = await Promise.all([
+    lire('settings'),
+    lire('country_sheets'),
+    lire('companies'),
+    lire('documents'),
+    lire('applications'),
+    lire('events'),
+    lire('housings'),
+    lire('budgets'),
+    lire('conversations'),
+    lire('messages'),
+    lire('projects'),
+    lire('interview_preps'),
+    lire('company_contacts'),
+  ]);
   const suivies = applications.map((candidature) => candidature.offer_id).filter(Boolean);
   // Offres du suivi, plus celles que l'utilisateur a masquées, annotées ou fait traduire.
   const { data: offers, error } = await supabase!
@@ -80,6 +104,11 @@ export async function exporter(): Promise<Sauvegarde> {
     events,
     housings,
     budgets,
+    conversations,
+    messages,
+    projects,
+    interview_preps,
+    company_contacts,
   };
 }
 
@@ -107,10 +136,15 @@ async function ecrire(table: string, lignes: Ligne[], cle = 'id'): Promise<void>
  */
 export async function importer(sauvegarde: Sauvegarde): Promise<void> {
   await ecrire('companies', sauvegarde.companies);
+  await ecrire('company_contacts', sauvegarde.company_contacts ?? []);
   await ecrire('documents', sauvegarde.documents);
   await ecrire('offers', sauvegarde.offers);
   await ecrire('applications', sauvegarde.applications);
   await ecrire('events', sauvegarde.events);
+  await ecrire('conversations', sauvegarde.conversations ?? []);
+  await ecrire('messages', sauvegarde.messages ?? []);
+  await ecrire('interview_preps', sauvegarde.interview_preps ?? [], 'application_id');
+  await ecrire('projects', sauvegarde.projects ?? []);
   await ecrire('housings', sauvegarde.housings ?? []);
   await ecrire('budgets', sauvegarde.budgets ?? [], 'pays');
   await ecrire('country_sheets', sauvegarde.country_sheets, 'pays');

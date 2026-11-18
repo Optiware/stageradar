@@ -388,7 +388,14 @@ function CarteEntreprise({
       <article aria-label={entreprise.nom} className={CARTE}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="font-bold break-words">{entreprise.nom}</h3>
+            <h3 className="font-bold break-words">
+              <Link
+                to={`/entreprise?id=${entreprise.id}`}
+                className="underline-offset-2 hover:underline"
+              >
+                {entreprise.nom}
+              </Link>
+            </h3>
             {lieu(entreprise) && (
               <p className={`mt-1 flex items-center gap-1.5 text-sm ${SECONDAIRE}`}>
                 <Flag code={entreprise.pays} />

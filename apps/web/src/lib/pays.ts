@@ -1,3 +1,4 @@
+import type { DelaiVisa } from '@stageradar/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
@@ -21,6 +22,8 @@ export interface FichePays {
   contenu_md: string;
   liens: LienFiche[];
   echeances: EcheanceFiche[];
+  /** Délais des étapes du visa, comptés depuis le début du stage. */
+  delais_visa: DelaiVisa[];
   statut: 'verifie' | 'a_verifier';
   derniere_verification: string | null;
 }
@@ -33,11 +36,13 @@ export function useFichesPays() {
     queryFn: async () => {
       const { data, error } = await supabase!
         .from('country_sheets')
-        .select('pays,nom,contenu_md,liens,echeances,statut,derniere_verification')
+        .select('pays,nom,contenu_md,liens,echeances,delais_visa,statut,derniere_verification')
         .overrideTypes<FichePays[], { merge: false }>();
       if (error) throw error;
       return data;
     },
+    // Une fiche gardée hors ligne avant l'ajout des délais visa n'a pas ce champ.
+    select: (fiches) => fiches.map((fiche) => ({ ...fiche, delais_visa: fiche.delais_visa ?? [] })),
   });
 }
 

@@ -1,4 +1,5 @@
 import {
+  ENVOIS_MINIMUM,
   jourIso,
   LIBELLES_STATUT,
   parSemaine,
@@ -10,6 +11,8 @@ import {
 } from '@stageradar/shared';
 import type { ReactNode } from 'react';
 import { Flag } from '../components/Flag';
+import { Link } from 'react-router';
+import { nomDocument, useDocuments } from '../lib/documents';
 import { nomPays } from '../lib/offres';
 import { useCandidatures } from '../lib/suivi';
 import { CARTE, SECONDAIRE } from '../lib/ui';
@@ -54,9 +57,16 @@ function LigneTaux({ nom, valeurs }: { nom: ReactNode; valeurs: Taux }) {
   );
 }
 
+const BARRES = [
+  ['Envois', 'bg-primary-600 dark:bg-primary-400'],
+  ['Réponses', 'bg-amber-500'],
+  ['Entretiens', 'bg-vert-500'],
+] as const;
+
 /** Ce que donnent les candidatures : envois, réponses, et ce qui marche le mieux. */
 export function Statistiques() {
   const candidatures = useCandidatures();
+  const documents = useDocuments();
   const comptees: CandidatureComptee[] = (candidatures.data ?? []).map((candidature) => ({
     statut: candidature.statut,
     date_candidature: candidature.date_candidature,
@@ -69,6 +79,12 @@ export function Statistiques() {
   const semaines = parSemaine(comptees, jourIso(new Date(candidatures.dataUpdatedAt)), SEMAINES);
   const maxSemaine = Math.max(1, ...semaines.map((semaine) => semaine.envoyees));
   const pays = tauxPar(comptees, (candidature) => candidature.pays ?? '');
+  // Chaque candidature est comptée pour le CV qui lui est associé.
+  const versions = tauxPar(
+    (candidatures.data ?? []).filter((candidature) => candidature.cv_document_id),
+    (candidature) => candidature.cv_document_id!,
+  );
+  const maxEnvois = Math.max(1, ...versions.map((ligne) => ligne.taux.envoyees));
   const types = tauxPar(comptees, (candidature) =>
     candidature.spontanee ? 'Candidatures spontanées' : 'Réponses à une offre',
   );
@@ -133,6 +149,98 @@ export function Statistiques() {
               ))}
             </ol>
             <p className={`mt-2 text-xs ${SECONDAIRE}`}>Chaque barre commence un lundi.</p>
+          </section>
+
+          <section aria-labelledby="titre-versions-cv" className={`mt-4 ${CARTE}`}>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="titre-versions-cv" className="font-bold">
+                Par version de CV
+              </h2>
+              <p className={`flex flex-wrap gap-3 text-xs ${SECONDAIRE}`}>
+                {BARRES.map(([libelle, couleur]) => (
+                  <span key={libelle} className="flex items-center gap-1.5">
+                    <span aria-hidden="true" className={`size-2.5 rounded-sm ${couleur}`} />
+                    {libelle}
+                  </span>
+                ))}
+              </p>
+            </div>
+            {versions.length === 0 ? (
+              <p className={`mt-2 text-sm ${SECONDAIRE}`}>
+                Aucune candidature envoyée avec un CV associé.{' '}
+                <Link to="/cv" className="font-semibold text-primary-600 dark:text-primary-300">
+                  Créer une version de CV
+                </Link>
+              </p>
+            ) : (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className={`text-xs ${SECONDAIRE}`}>
+                      <th scope="col" className="pb-1 text-left font-bold">
+                        Version
+                      </th>
+                      <th scope="col" className="pr-3 pb-1 text-right font-bold">
+                        Envois
+                      </th>
+                      <th scope="col" className="pr-3 pb-1 text-right font-bold">
+                        Réponses
+                      </th>
+                      <th scope="col" className="pr-3 pb-1 text-right font-bold">
+                        Entretiens
+                      </th>
+                      <th scope="col" className="pr-3 pb-1 text-right font-bold">
+                        Taux de réponse
+                      </th>
+                      <th scope="col" className="pb-1 text-left font-bold">
+                        En barres
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {versions.map(({ groupe, taux: valeurs }) => {
+                      const document = documents.data?.find((autre) => autre.id === groupe);
+                      return (
+                        <tr key={groupe} className="border-t border-gray-200 dark:border-gray-800">
+                          <th scope="row" className="py-2 pr-3 text-left font-bold">
+                            {document ? nomDocument(document) : 'CV supprimé'}
+                          </th>
+                          <td className="py-2 pr-3 text-right tabular-nums">{valeurs.envoyees}</td>
+                          <td className="py-2 pr-3 text-right tabular-nums">{valeurs.reponses}</td>
+                          <td className="py-2 pr-3 text-right tabular-nums">
+                            {valeurs.entretiens}
+                          </td>
+                          <td className="py-2 pr-3 text-right">
+                            {valeurs.envoyees < ENVOIS_MINIMUM ? (
+                              <span className={`text-xs ${SECONDAIRE}`}>
+                                Moins de {ENVOIS_MINIMUM} envois : pas assez pour conclure
+                              </span>
+                            ) : (
+                              <strong className="tabular-nums">
+                                {pourcent(valeurs.taux_reponse)}
+                              </strong>
+                            )}
+                          </td>
+                          <td className="py-2">
+                            <span aria-hidden="true" className="flex w-28 flex-col gap-0.5">
+                              {(
+                                [valeurs.envoyees, valeurs.reponses, valeurs.entretiens] as const
+                              ).map((valeur, rang) => (
+                                <span
+                                  key={rang}
+                                  className={`h-1.5 rounded-full ${BARRES[rang]![1]}`}
+                                  style={{ width: `${(valeur / maxEnvois) * 100}%` }}
+                                />
+                              ))}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           {(pays.length > 0 || types.length > 0) && (

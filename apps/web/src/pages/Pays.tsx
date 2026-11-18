@@ -1,4 +1,4 @@
-import { jourIso, PAYS_STAGE } from '@stageradar/shared';
+import { jourIso, PAYS_STAGE, type DelaiVisa } from '@stageradar/shared';
 import { ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -37,12 +37,22 @@ function Edition({ fiche, onFermer }: { fiche: FichePays; onFermer: () => void }
         echeances: brouillon.echeances.filter(
           (echeance) => echeance.libelle.trim() && echeance.date,
         ),
+        delais_visa: brouillon.delais_visa.filter((delai) => delai.etape.trim()),
         ...(verifiee
           ? { statut: 'verifie' as const, derniere_verification: jourIso(new Date()) }
           : {}),
       },
       { onSuccess: onFermer },
     );
+  }
+
+  function changerDelai(rang: number, champs: Partial<DelaiVisa>) {
+    setBrouillon({
+      ...brouillon,
+      delais_visa: brouillon.delais_visa.map((autre, i) =>
+        i === rang ? { ...autre, ...champs } : autre,
+      ),
+    });
   }
 
   return (
@@ -173,6 +183,108 @@ function Edition({ fiche, onFermer }: { fiche: FichePays; onFermer: () => void }
           className={`mt-2 flex items-center gap-1.5 text-sm ${LIEN}`}
         >
           <Plus aria-hidden="true" className="size-4" /> Ajouter une échéance
+        </button>
+      </fieldset>
+
+      <fieldset>
+        <legend className={LIBELLE}>Délais visa</legend>
+        <p className={`mt-1 text-sm ${SECONDAIRE}`}>
+          Pour chaque étape, le nombre de jours avant le début du stage donné par une source
+          officielle. Le calendrier en déduit la date limite.
+        </p>
+        {brouillon.delais_visa.map((delai, rang) => (
+          <div
+            key={rang}
+            className="mt-3 grid gap-2 rounded-xl border border-gray-200 p-3 sm:grid-cols-2 dark:border-gray-800"
+          >
+            <label className="text-sm">
+              Étape
+              <input
+                placeholder="Déposer la demande de visa"
+                value={delai.etape}
+                onChange={(evenement) => changerDelai(rang, { etape: evenement.target.value })}
+                className={`${CHAMP} mt-1`}
+              />
+            </label>
+            <label className="text-sm">
+              Jours avant le début du stage
+              <input
+                type="number"
+                min={0}
+                placeholder="Vide si la source ne le dit pas"
+                value={delai.jours_avant ?? ''}
+                onChange={(evenement) =>
+                  changerDelai(rang, {
+                    jours_avant:
+                      evenement.target.value === '' ? null : Number(evenement.target.value),
+                  })
+                }
+                className={`${CHAMP} mt-1`}
+              />
+            </label>
+            <label className="text-sm">
+              Source
+              <input
+                placeholder="Ambassade du Japon en France"
+                value={delai.source}
+                onChange={(evenement) => changerDelai(rang, { source: evenement.target.value })}
+                className={`${CHAMP} mt-1`}
+              />
+            </label>
+            <label className="text-sm">
+              Adresse de la source
+              <input
+                type="url"
+                placeholder="https://…"
+                value={delai.url}
+                onChange={(evenement) => changerDelai(rang, { url: evenement.target.value })}
+                className={`${CHAMP} mt-1`}
+              />
+            </label>
+            <label className="text-sm">
+              Vérifiée le
+              <input
+                type="date"
+                value={delai.verifiee}
+                onChange={(evenement) => changerDelai(rang, { verifiee: evenement.target.value })}
+                className={`${CHAMP} mt-1`}
+              />
+            </label>
+            <button
+              type="button"
+              aria-label={`Supprimer l'étape ${rang + 1}`}
+              onClick={() =>
+                setBrouillon({
+                  ...brouillon,
+                  delais_visa: brouillon.delais_visa.filter((_, i) => i !== rang),
+                })
+              }
+              className={`self-end justify-self-start ${SUPPRIMER}`}
+            >
+              <Trash2 aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() =>
+            setBrouillon({
+              ...brouillon,
+              delais_visa: [
+                ...brouillon.delais_visa,
+                {
+                  etape: '',
+                  jours_avant: null,
+                  source: '',
+                  url: '',
+                  verifiee: jourIso(new Date()),
+                },
+              ],
+            })
+          }
+          className={`mt-2 flex items-center gap-1.5 text-sm ${LIEN}`}
+        >
+          <Plus aria-hidden="true" className="size-4" /> Ajouter une étape du visa
         </button>
       </fieldset>
 
@@ -316,6 +428,36 @@ export function Pays() {
                     </li>
                   ))}
               </ul>
+
+              <h3 className="mt-6 font-bold">Délais visa</h3>
+              {fiche.delais_visa.length === 0 ? (
+                <p className={`mt-1 text-sm ${SECONDAIRE}`}>
+                  Aucun délai noté : le calendrier ne peut pas calculer les échéances visa de ce
+                  pays.
+                </p>
+              ) : (
+                <ul className="mt-2 space-y-1.5 text-sm">
+                  {fiche.delais_visa.map((delai) => (
+                    <li key={delai.etape}>
+                      <strong>{delai.etape}</strong> :{' '}
+                      {delai.jours_avant === null
+                        ? 'délai non indiqué par la source'
+                        : `${delai.jours_avant} jours avant le début du stage`}{' '}
+                      <span className={SECONDAIRE}>
+                        · source :{' '}
+                        {lienSur(delai.url) ? (
+                          <a href={delai.url} target="_blank" rel="noreferrer" className={LIEN}>
+                            {delai.source || delai.url}
+                          </a>
+                        ) : (
+                          delai.source || 'non indiquée'
+                        )}
+                        {delai.verifiee && `, vérifiée le ${dateLongue(delai.verifiee)}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <button
                 type="button"

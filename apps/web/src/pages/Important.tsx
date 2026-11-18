@@ -1,10 +1,12 @@
-import { envoyeesCetteSemaine, jourIso, relanceDue } from '@stageradar/shared';
+import { echeancesVisa, envoyeesCetteSemaine, jourIso, relanceDue } from '@stageradar/shared';
 import { ArrowRight, Bell, CalendarDays, Minus, Plus, Sparkles, Target } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Flag } from '../components/Flag';
 import { useOffresDuFil } from '../lib/fil';
-import { estNouvelle, lienSur, lieu } from '../lib/offres';
+import { dateLongue, estNouvelle, lienSur, lieu } from '../lib/offres';
+import { useFichesPays } from '../lib/pays';
+import { useReglages } from '../lib/reglages';
 import {
   entretienDe,
   libelleEntretien,
@@ -55,6 +57,12 @@ export function Important() {
   const objectif = useObjectifHebdo();
   const changerObjectif = useChangerObjectifHebdo();
   const offres = useOffresDuFil();
+  const fiches = useFichesPays();
+  const reglages = useReglages();
+  const visasDepasses = echeancesVisa(
+    fiches.data ?? [],
+    reglages.data?.profil.stage.debut ?? null,
+  ).filter((visa) => visa.date !== null && visa.date < jourIso(new Date()));
 
   const toutes = candidatures.data ?? [];
   // Heure du dernier chargement, pour ne pas dépendre de l'instant du rendu.
@@ -104,6 +112,23 @@ export function Important() {
         <p role="alert" className="mt-4 font-bold text-red-700 dark:text-red-400">
           Certaines données n'ont pas pu être chargées. Vérifie ta connexion.
         </p>
+      )}
+      {visasDepasses.length > 0 && (
+        <ul aria-label="Échéances visa dépassées" className="mt-4 flex flex-col gap-2">
+          {visasDepasses.map((visa) => (
+            <li key={`${visa.pays}-${visa.etape}`}>
+              <Link
+                to={`/pays?pays=${visa.pays}`}
+                className="flex flex-col rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/15 dark:text-red-200"
+              >
+                <strong>
+                  Visa · {visa.nom} : {visa.etape} · dépassée
+                </strong>
+                <span>Échéance du {dateLongue(visa.date)} · voir la fiche pays</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
       {candidatures.isPending && (
         <p className="mt-8 text-gray-600 dark:text-gray-400">Chargement…</p>
