@@ -1,6 +1,7 @@
 import {
   ChartColumn,
   ChevronRight,
+  Contact,
   Download,
   FileText,
   Files,
@@ -81,11 +82,19 @@ const SECTIONS: { titre: string; texte: string; tuiles: Tuile[] }[] = [
         teinte: 'corail',
       },
       {
+        titre: 'Communautés',
+        texte: 'Rencontres et startups, sourcées',
+        vers: '/communautes',
+        Icone: Users,
+        teinte: 'vert',
+        nouveau: true,
+      },
+      {
         titre: 'Contacts',
         texte: 'Entreprises à démarcher',
         vers: '/demarchage',
-        Icone: Users,
-        teinte: 'vert',
+        Icone: Contact,
+        teinte: 'gris',
       },
       {
         titre: 'Sources',

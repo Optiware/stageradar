@@ -27,6 +27,7 @@ export interface Sauvegarde {
   projects?: Ligne[];
   interview_preps?: Ligne[];
   company_contacts?: Ligne[];
+  network_contacts?: Ligne[];
 }
 
 async function lire(table: string): Promise<Ligne[]> {
@@ -58,6 +59,7 @@ export async function exporter(): Promise<Sauvegarde> {
     projects,
     interview_preps,
     company_contacts,
+    network_contacts,
   ] = await Promise.all([
     lire('settings'),
     lire('country_sheets'),
@@ -72,6 +74,7 @@ export async function exporter(): Promise<Sauvegarde> {
     lire('projects'),
     lire('interview_preps'),
     lire('company_contacts'),
+    lire('network_contacts'),
   ]);
   const suivies = applications.map((candidature) => candidature.offer_id).filter(Boolean);
   // Offres du suivi, plus celles que l'utilisateur a masquées, annotées ou fait traduire.
@@ -109,6 +112,7 @@ export async function exporter(): Promise<Sauvegarde> {
     projects,
     interview_preps,
     company_contacts,
+    network_contacts,
   };
 }
 
@@ -145,6 +149,7 @@ export async function importer(sauvegarde: Sauvegarde): Promise<void> {
   await ecrire('messages', sauvegarde.messages ?? []);
   await ecrire('interview_preps', sauvegarde.interview_preps ?? [], 'application_id');
   await ecrire('projects', sauvegarde.projects ?? []);
+  await ecrire('network_contacts', sauvegarde.network_contacts ?? []);
   await ecrire('housings', sauvegarde.housings ?? []);
   await ecrire('budgets', sauvegarde.budgets ?? [], 'pays');
   await ecrire('country_sheets', sauvegarde.country_sheets, 'pays');

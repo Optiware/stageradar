@@ -57,6 +57,7 @@ const TABLES = [
   'interview_preps',
   'company_contacts',
   'backups',
+  'network_contacts',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -99,6 +100,8 @@ export interface Backend {
   company_contacts: Ligne[];
   /** Sauvegardes chiffrées (table `backups`). */
   backups: Ligne[];
+  /** Personnes rencontrées dans les communautés (table `network_contacts`). */
+  network_contacts: Ligne[];
   /** Réponse de `technologies_demandees` : offres qui citent chaque terme. */
   technologies: { terme: string; nombre: number }[];
   /** Ligne unique des réglages. */
@@ -139,6 +142,7 @@ export const test = base.extend<{ backend: Backend }>({
         interview_preps: [],
         company_contacts: [],
         backups: [],
+        network_contacts: [],
         technologies: [],
         api: [],
         apiReponses: {},
