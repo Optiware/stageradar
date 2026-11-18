@@ -28,7 +28,7 @@ import {
   lienSur,
   lieu,
   nomPays,
-  nomSource,
+  nomOrigine,
   type FeedOffer,
 } from '../lib/offres';
 import { usePreparerCandidature, useSuivreOffre, type Candidature } from '../lib/suivi';
@@ -290,7 +290,7 @@ export function OfferDetail({
                 {offre.teletravail && ` · ${LIBELLES_TELETRAVAIL[offre.teletravail].toLowerCase()}`}
               </span>
             )}
-            <span>Trouvée sur {nomSource(offre.source)}</span>
+            <span>Trouvée sur {nomOrigine(offre)}</span>
           </p>
         </div>
         <AnneauScore score={score} />

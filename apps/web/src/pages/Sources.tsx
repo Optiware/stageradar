@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router';
 import { Flag } from '../components/Flag';
+import { LinkedinIndeed } from '../components/LinkedinIndeed';
 import { appelerApi, type BilanCollecte } from '../lib/api';
 import { RECHERCHES_STAGE, SITES_ALTERNANCE } from '../lib/liens-recherche';
 import { nomPays, nomSource } from '../lib/offres';
@@ -154,6 +155,10 @@ export function Sources() {
           </>
         )}
       </section>
+
+      <div className="mt-4">
+        <LinkedinIndeed />
+      </div>
 
       <section aria-label="Sites à consulter à la main" className={`mt-4 ${CARTE}`}>
         <h2 className="font-bold">Sites à consulter à la main</h2>

@@ -8,7 +8,7 @@ import {
   etiquettesOffre,
   libelleCourtScore,
   lieu,
-  nomSource,
+  nomOrigine,
   type FeedOffer,
 } from '../lib/offres';
 import { useSuivreOffre, type Candidature } from '../lib/suivi';
@@ -164,7 +164,7 @@ export function OfferCard({
           </Link>
         )}
         <p className="mt-1 text-[0.8125rem] text-gray-600 dark:text-gray-400">
-          {[nomSource(offre.source), publiee, offre.remuneration_texte].filter(Boolean).join(' · ')}
+          {[nomOrigine(offre), publiee, offre.remuneration_texte].filter(Boolean).join(' · ')}
         </p>
       </div>
 

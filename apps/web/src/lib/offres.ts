@@ -139,6 +139,18 @@ const NOMS_SOURCE: Record<string, string> = {
 };
 
 /** Nom lisible de la source : « greenhouse:moloco » → « Greenhouse ». */
+/**
+ * Où l'offre a été trouvée : pour une offre importée à la main depuis LinkedIn ou Indeed (alerte
+ * e-mail, partage), le nom du site plutôt que « Import ».
+ */
+export function nomOrigine(offre: Pick<FeedOffer, 'source' | 'url'>): string {
+  if (offre.source === 'manuel') {
+    if (/^https:\/\/([a-z0-9-]+\.)*linkedin\.com\//i.test(offre.url)) return 'LinkedIn';
+    if (/^https:\/\/([a-z0-9-]+\.)*indeed\.[a-z.]+\//i.test(offre.url)) return 'Indeed';
+  }
+  return nomSource(offre.source);
+}
+
 export function nomSource(source: string): string {
   const nom = source.split(':')[0] ?? source;
   return NOMS_SOURCE[nom] ?? nom.charAt(0).toUpperCase() + nom.slice(1);
