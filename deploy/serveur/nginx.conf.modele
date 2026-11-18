@@ -59,8 +59,10 @@ server {
         return 404;
     }
 
-    # Données (PostgREST). L'accès est décidé par le jeton et par la RLS.
+    # Données (PostgREST). L'accès est décidé par le jeton et par la RLS. Une sauvegarde chiffrée
+    # (table backups, 20 Mo au plus) passe par ici : la limite est relevée pour elle.
     location /rest/v1/ {
+        client_max_body_size 25m;
         proxy_pass http://127.0.0.1:__PORT_REST__/;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $remote_addr;
@@ -80,6 +82,14 @@ server {
 
     # Fichiers au nom unique (empreinte dans le nom) : cache long.
     location /assets/ {
+        expires 1y;
+        try_files $uri =404;
+    }
+    # nginx 1.24 ne connaît pas l'extension .mjs (lecteur PDF, pdf.js) : sans type JavaScript, le
+    # navigateur refuse de lancer ce module (X-Content-Type-Options: nosniff).
+    location ~ ^/assets/.+\.mjs$ {
+        types { }
+        default_type text/javascript;
         expires 1y;
         try_files $uri =404;
     }
