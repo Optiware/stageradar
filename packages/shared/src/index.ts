@@ -22,3 +22,4 @@ export * from './entretien';
 export * from './cv-mise-en-page';
 export * from './docx';
 export * from './alertes';
+export * from './cv-pdf';

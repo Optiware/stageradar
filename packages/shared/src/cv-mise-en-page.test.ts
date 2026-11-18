@@ -7,6 +7,7 @@ import {
   ordonner,
   resserrer,
   texteRobot,
+  type MiseEnPageCv,
 } from './cv-mise-en-page';
 
 const PROFIL: ProfilCv = {
@@ -63,7 +64,7 @@ describe('ordonner et deplacer', () => {
 
 describe('resserrer', () => {
   it('réduit l’interligne, puis la taille, puis les marges, puis s’arrête', () => {
-    let miseEnPage = {
+    let miseEnPage: MiseEnPageCv = {
       ...MISE_EN_PAGE_DEFAUT,
       interligne: 1.3,
       taille: 9.5,

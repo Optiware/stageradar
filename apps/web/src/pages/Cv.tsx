@@ -37,6 +37,7 @@ import {
 import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router';
 import { EditeurCv } from '../components/EditeurCv';
+import { ImportCvPdf } from '../components/ImportCvPdf';
 import { Flag } from '../components/Flag';
 import { PageCv, type Glisser, type ModeCv } from '../components/PageCv';
 import {
@@ -1107,9 +1108,9 @@ export function Cv() {
       ) : (
         <>
           {vide && (
-            <p className={`print:hidden ${CARTE}`}>
-              Ton profil est vide. Remplis-le dans « Mon profil », ou importe un fichier JSON.
-            </p>
+            <div className="print:hidden">
+              <ImportCvPdf profil={profil.data} />
+            </div>
           )}
           <Editeur
             key={cle}

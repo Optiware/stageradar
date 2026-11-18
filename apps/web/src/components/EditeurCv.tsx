@@ -11,6 +11,7 @@ import {
 } from '@stageradar/shared';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { ImportCvPdf } from './ImportCvPdf';
 import { useEnregistrerProfilCv } from '../lib/cv';
 import { telecharger } from '../lib/telechargement';
 import {
@@ -226,7 +227,8 @@ export function EditeurCv({ profil }: { profil: ProfilCv }) {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
+      <ImportCvPdf profil={brouillon} onApplique={setBrouillon} />
       <div className={`flex flex-wrap items-center gap-2 ${CARTE}`}>
         <span className="mr-1 text-sm font-bold">Langue de saisie</span>
         {LANGUES_CV.map((code) => (
