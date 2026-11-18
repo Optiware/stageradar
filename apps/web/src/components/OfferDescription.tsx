@@ -23,6 +23,29 @@ export function cleTexteOffre(id: string) {
   return ['offers', 'description', id] as const;
 }
 
+/** Description, traduction et notes d'une offre : longues, elles ne sont lues qu'à la demande. */
+export function useTexteOffre(id: string | null) {
+  return useQuery({
+    queryKey: cleTexteOffre(id ?? ''),
+    enabled: id !== null,
+    queryFn: async (): Promise<TexteOffre> => {
+      const { data, error } = await supabase!
+        .from('offers')
+        .select('description,traduction,notes')
+        .eq('id', id!)
+        .maybeSingle()
+        .overrideTypes<TexteOffre, { merge: false }>();
+      if (error) throw error;
+      return {
+        description: data?.description ?? null,
+        traduction: data?.traduction ?? null,
+        notes: data?.notes ?? null,
+      };
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
 const LIEN = 'font-bold text-primary-700 underline underline-offset-2 dark:text-primary-400';
 const TEXTE = 'mt-3 text-sm leading-relaxed break-words whitespace-pre-line';
 

@@ -60,6 +60,15 @@ export function changerStatut(avant: EtatSuivi, vers: StatutSuivi, aujourdhui: s
   }
 }
 
+/**
+ * Après une relance envoyée : la première (J+7) fait passer en « Relance » et propose la suivante
+ * sept jours plus tard ; la seconde (J+14) ne propose plus rien.
+ */
+export function apresRelance(avant: EtatSuivi, aujourdhui: string): EtatSuivi {
+  if (avant.statut === 'relance') return { ...avant, prochaine_relance: null };
+  return changerStatut(avant, 'relance', aujourdhui);
+}
+
 /** Vrai si une relance est à faire aujourd'hui ou en retard. */
 export function relanceDue(candidature: EtatSuivi, aujourdhui: string): boolean {
   return (

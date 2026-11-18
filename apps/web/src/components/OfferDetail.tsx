@@ -5,7 +5,6 @@ import {
   type ScoreDetail,
   type StatutSuivi,
 } from '@stageradar/shared';
-import { useQuery } from '@tanstack/react-query';
 import {
   ArrowUpRight,
   Bookmark,
@@ -33,7 +32,6 @@ import {
   type FeedOffer,
 } from '../lib/offres';
 import { usePreparerCandidature, useSuivreOffre, type Candidature } from '../lib/suivi';
-import { supabase } from '../lib/supabase';
 import {
   BADGE,
   BOUTON_DOUX,
@@ -46,7 +44,7 @@ import { Flag } from './Flag';
 import { OfferActions } from './OfferActions';
 import { CompanyAvatar } from './OfferCard';
 import { OfferMatch } from './OfferMatch';
-import { cleTexteOffre, OfferDescription, type TexteOffre } from './OfferDescription';
+import { OfferDescription, useTexteOffre } from './OfferDescription';
 import { NotesOffre, QuestionPostule } from './OfferExtras';
 
 const NOMS_CRITERE: Record<ScoreDetail['critere'], string> = {
@@ -222,24 +220,7 @@ export function OfferDetail({
   onMasquee: (offre: FeedOffer) => void;
 }) {
   // La description est longue : elle n'est lue, avec sa traduction, qu'à l'ouverture de l'offre.
-  const description = useQuery({
-    queryKey: cleTexteOffre(offre.id),
-    queryFn: async (): Promise<TexteOffre> => {
-      const { data, error } = await supabase!
-        .from('offers')
-        .select('description,traduction,notes')
-        .eq('id', offre.id)
-        .maybeSingle()
-        .overrideTypes<TexteOffre, { merge: false }>();
-      if (error) throw error;
-      return {
-        description: data?.description ?? null,
-        traduction: data?.traduction ?? null,
-        notes: data?.notes ?? null,
-      };
-    },
-    staleTime: 5 * 60_000,
-  });
+  const description = useTexteOffre(offre.id);
 
   // Vrai entre le clic sur « Postuler » et la réponse à « As-tu postulé ? ».
   const [partiPostuler, setPartiPostuler] = useState(false);
@@ -464,7 +445,7 @@ export function OfferDetail({
           <section className={`flex flex-col gap-2.5 ${CARTE} shadow-sm`}>
             {candidature ? (
               <Link
-                to={`/suivi?candidature=${candidature.id}`}
+                to={`/lettre?offre=${offre.id}`}
                 className={`${BOUTON_PRINCIPAL} min-h-[3.25rem] text-base`}
               >
                 Préparer ma candidature
@@ -475,7 +456,7 @@ export function OfferDetail({
                 disabled={preparer.isPending}
                 onClick={() =>
                   preparer.mutate(offre.id, {
-                    onSuccess: (id) => void naviguer(`/suivi?candidature=${id}`),
+                    onSuccess: () => void naviguer(`/lettre?offre=${offre.id}`),
                   })
                 }
                 className={`${BOUTON_PRINCIPAL} min-h-[3.25rem] text-base`}

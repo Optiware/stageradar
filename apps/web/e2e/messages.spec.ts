@@ -152,3 +152,29 @@ test('« Écrire au recruteur » depuis une offre prépare une conversation', as
   await expect(page.getByRole('heading', { name: 'Aiko T.' })).toBeVisible();
   expect(backend.conversations[0]).toMatchObject({ contact_nom: 'Aiko T.', pays: 'JP' });
 });
+
+test('une relance due se prépare dans la langue du contact et planifie la suivante', async ({
+  page,
+  backend,
+}) => {
+  // Pas encore de réponse : la relance J+7 est due.
+  backend.messages = backend.messages.filter((message) => message.sens === 'envoye');
+  backend.applications = [{ ...CANDIDATURE, prochaine_relance: '2026-11-01' }];
+  backend.settings.cv = { prenom: 'Camille', nom: 'Martin' };
+  await page.goto('/messages?c=conv-1');
+
+  const bandeau = page.getByRole('status').filter({ hasText: 'Relance J+7 prévue aujourd’hui.' });
+  await expect(bandeau).toContainText('Candidature envoyée le 9 nov., pas de réponse.');
+  await bandeau.getByRole('button', { name: 'Préparer la relance' }).click();
+
+  const champ = page.getByLabel('Ta réponse');
+  await expect(champ).toHaveValue(/^Hi Aiko,/);
+  await expect(champ).toHaveValue(
+    /application for the Stage développeur backend \(Go\) position, sent on 9 November/,
+  );
+  await expect(champ).toHaveValue(/Best regards,\nCamille Martin$/);
+
+  await page.getByRole('button', { name: 'Envoyer' }).click();
+  await expect.poll(() => backend.applications[0]?.statut).toBe('relance');
+  expect(backend.applications[0]?.prochaine_relance).not.toBe('2026-11-01');
+});

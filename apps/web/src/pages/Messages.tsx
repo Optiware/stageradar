@@ -1,5 +1,6 @@
 import {
   ajouterJours,
+  apresRelance,
   changerStatut,
   enPleineNuit,
   FUSEAUX_PAYS,
@@ -11,6 +12,7 @@ import {
   relanceDue,
   repererCreneaux,
   STATUTS_SUIVI,
+  texteRelance,
   type Creneau,
   type StatutSuivi,
 } from '@stageradar/shared';
@@ -28,6 +30,7 @@ import {
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { CompanyAvatar } from '../components/OfferCard';
+import { useProfilCv } from '../lib/cv';
 import { nomDocument, useDocuments } from '../lib/documents';
 import {
   dernierMessage,
@@ -443,12 +446,16 @@ function Composer({
   conversation,
   candidature,
   creneau,
+  relance = null,
 }: {
   conversation: Conversation;
   candidature: Candidature | undefined;
   creneau: Creneau | undefined;
+  /** Relance préparée : son texte de départ ; l'envoyer la marque faite dans le suivi. */
+  relance?: string | null;
 }) {
-  const [texte, setTexte] = useState('');
+  const [texte, setTexte] = useState(relance ?? '');
+  const enregistrerCandidature = useEnregistrerCandidature();
   const [langue, setLangue] = useState<LangueReponse>('en');
   const [pieces, setPieces] = useState<string[]>([]);
   // « recu » : le champ sert à coller une réponse arrivée dans la messagerie.
@@ -476,6 +483,13 @@ function Composer({
         },
       },
     );
+    // Lancé tout de suite : le fil se recharge après l'envoi et ce champ disparaît avec lui.
+    if (relance !== null && mode === 'envoye' && candidature) {
+      enregistrerCandidature.mutate({
+        candidature,
+        valeurs: { ...valeursDe(candidature), ...apresRelance(candidature, jourIso(new Date())) },
+      });
+    }
     // Le message part de la messagerie de l'appareil : l'application ne fait que l'ouvrir.
     if (mode === 'envoye' && lien) window.location.href = lien;
   }
@@ -899,6 +913,44 @@ function Lateral({
   );
 }
 
+/** « Relance J+7 prévue aujourd'hui » : la candidature envoyée attend toujours une réponse. */
+function BandeauRelance({
+  candidature,
+  prete,
+  onPreparer,
+}: {
+  candidature: Candidature;
+  prete: boolean;
+  onPreparer: () => void;
+}) {
+  const rang = candidature.statut === 'relance' ? 'J+14' : 'J+7';
+  const envoi = candidature.date_candidature
+    ? new Date(`${candidature.date_candidature}T12:00:00Z`).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      })
+    : null;
+  return (
+    <div
+      role="status"
+      className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 md:px-6 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-100"
+    >
+      <span className="flex-[1_1_16rem]">
+        <strong>Relance {rang} prévue aujourd’hui.</strong>{' '}
+        {envoi ? `Candidature envoyée le ${envoi}, pas de réponse.` : 'Pas de réponse.'}
+      </span>
+      {prete ? (
+        <span className="font-semibold">Relance prête dans la zone d’écriture.</span>
+      ) : (
+        <button type="button" onClick={onPreparer} className={BOUTON_DOUX}>
+          Préparer la relance
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Fil({
   conversation,
   candidature,
@@ -924,6 +976,10 @@ function Fil({
       creneaux.findIndex((creneau) => !enPleineNuit(new Date(creneau.debut))),
     ),
   );
+  const [relance, setRelance] = useState<string | null>(null);
+  const profil = useProfilCv();
+  const nomProfil =
+    [profil.data?.prenom, profil.data?.nom].filter(Boolean).join(' ').trim() || null;
   const fuseau = FUSEAUX_PAYS[conversation.pays ?? ''];
   const sousTitre = [
     conversation.contact_role,
@@ -1002,6 +1058,27 @@ function Fil({
         )}
       </div>
 
+      {candidature && relanceDue(candidature, jourIso(maintenant)) && (
+        <BandeauRelance
+          candidature={candidature}
+          prete={relance !== null}
+          onPreparer={() =>
+            setRelance(
+              texteRelance({
+                langue:
+                  conversation.pays === 'FR' ? 'fr' : conversation.pays === 'CO' ? 'es' : 'en',
+                contact: conversation.contact_nom,
+                poste: candidature.offre?.titre ?? null,
+                entreprise: candidature.resume.entreprise ?? conversation.entreprise ?? '',
+                envoi: candidature.date_candidature,
+                rang: candidature.statut === 'relance' ? 2 : 1,
+                nom: nomProfil,
+              }),
+            )
+          }
+        />
+      )}
+
       <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         {conversation.messages.length === 0 && (
           <p className={`self-center text-center text-sm ${DISCRET}`}>
@@ -1034,7 +1111,13 @@ function Fil({
         )}
       </div>
 
-      <Composer conversation={conversation} candidature={candidature} creneau={creneaux[choisi]} />
+      <Composer
+        key={relance ?? 'libre'}
+        conversation={conversation}
+        candidature={candidature}
+        creneau={creneaux[choisi]}
+        relance={relance}
+      />
     </section>
   );
 }

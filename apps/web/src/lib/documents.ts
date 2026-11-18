@@ -61,9 +61,12 @@ export function useDocuments() {
 export function useAjouterDocument() {
   const client = useQueryClient();
   return useMutation({
+    // L'identifiant est choisi ici pour pouvoir lier aussitôt le document à une candidature.
     mutationFn: async (champs: ChampsDocument) => {
-      const { error } = await supabase!.from('documents').insert(champs);
+      const id = crypto.randomUUID();
+      const { error } = await supabase!.from('documents').insert({ id, ...champs });
       if (error) throw error;
+      return id;
     },
     onSuccess: () => client.invalidateQueries({ queryKey: CLE }),
   });
