@@ -1,5 +1,9 @@
 /** Fait enregistrer un fichier produit par l'application (export, agenda). */
-export function telecharger(nom: string, contenu: string, type: string): void {
+export function telecharger(
+  nom: string,
+  contenu: string | Uint8Array<ArrayBuffer>,
+  type: string,
+): void {
   const adresse = URL.createObjectURL(new Blob([contenu], { type }));
   const lien = document.createElement('a');
   lien.href = adresse;

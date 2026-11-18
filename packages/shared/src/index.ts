@@ -19,3 +19,5 @@ export * from './portfolio';
 export * from './correspondance';
 export * from './lettres';
 export * from './entretien';
+export * from './cv-mise-en-page';
+export * from './docx';

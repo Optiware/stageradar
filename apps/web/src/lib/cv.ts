@@ -1,4 +1,10 @@
-import { profilCvComplet, type OffreCiblee, type ProfilCv } from '@stageradar/shared';
+import {
+  MISE_EN_PAGE_DEFAUT,
+  profilCvComplet,
+  type MiseEnPageCv,
+  type OffreCiblee,
+  type ProfilCv,
+} from '@stageradar/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
@@ -52,5 +58,56 @@ export function useOffreCv(id: string | null) {
       return data;
     },
     staleTime: 5 * 60_000,
+  });
+}
+
+const CLE_MISES_EN_PAGE = ['settings', 'cv_mises_en_page'] as const;
+
+/** Clé d'une mise en page enregistrée : « JP:general », « JP:<id de l'offre> ». */
+export function cleMiseEnPage(pays: string, offreId: string | null): string {
+  return `${pays}:${offreId ?? 'general'}`;
+}
+
+/** Mises en page enregistrées de l'éditeur de CV (colonne `settings.cv_mises_en_page`). */
+export function useMisesEnPage() {
+  return useQuery({
+    queryKey: CLE_MISES_EN_PAGE,
+    queryFn: async (): Promise<Record<string, MiseEnPageCv>> => {
+      const { data, error } = await supabase!
+        .from('settings')
+        .select('cv_mises_en_page')
+        .maybeSingle()
+        .overrideTypes<
+          { cv_mises_en_page: Record<string, Partial<MiseEnPageCv>> | null },
+          { merge: false }
+        >();
+      if (error) throw error;
+      // Complète une mise en page enregistrée avant l'ajout d'un réglage.
+      return Object.fromEntries(
+        Object.entries(data?.cv_mises_en_page ?? {}).map(([cle, valeur]) => [
+          cle,
+          { ...MISE_EN_PAGE_DEFAUT, ...valeur },
+        ]),
+      );
+    },
+  });
+}
+
+export function useEnregistrerMiseEnPage() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ cle, miseEnPage }: { cle: string; miseEnPage: MiseEnPageCv }) => {
+      const toutes = {
+        ...(client.getQueryData<Record<string, MiseEnPageCv>>(CLE_MISES_EN_PAGE) ?? {}),
+        [cle]: miseEnPage,
+      };
+      const { error } = await supabase!
+        .from('settings')
+        .update({ cv_mises_en_page: toutes })
+        .eq('id', true);
+      if (error) throw error;
+      return toutes;
+    },
+    onSuccess: (toutes) => client.setQueryData(CLE_MISES_EN_PAGE, toutes),
   });
 }
