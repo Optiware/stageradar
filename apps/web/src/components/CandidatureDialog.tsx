@@ -249,6 +249,14 @@ export function CandidatureDialog({
               className={CHAMP}
             />
           </label>
+          {(valeurs.entretien || !avantEntretien) && (
+            <Link
+              to={`/entretien?candidature=${candidature.id}`}
+              className="self-start text-sm font-semibold text-primary-600 underline underline-offset-2 sm:col-span-2 dark:text-primary-300"
+            >
+              Préparer l’entretien : horaires, check-list, questions fréquentes
+            </Link>
+          )}
           {(valeurs.entretien || valeurs.notes_entretien || !avantEntretien) && (
             <label className={`${LIBELLE} sm:col-span-2`}>
               Préparation et compte rendu d'entretien

@@ -54,6 +54,7 @@ const TABLES = [
   'conversations',
   'messages',
   'projects',
+  'interview_preps',
 ] as const;
 type NomTable = (typeof TABLES)[number];
 
@@ -90,6 +91,8 @@ export interface Backend {
   messages: Ligne[];
   /** Projets du portfolio (table `projects`). */
   projects: Ligne[];
+  /** Préparations d'entretien (table `interview_preps`, identifiées par `application_id`). */
+  interview_preps: Ligne[];
   /** Réponse de `technologies_demandees` : offres qui citent chaque terme. */
   technologies: { terme: string; nombre: number }[];
   /** Ligne unique des réglages. */
@@ -127,6 +130,7 @@ export const test = base.extend<{ backend: Backend }>({
         conversations: [],
         messages: [],
         projects: [],
+        interview_preps: [],
         technologies: [],
         api: [],
         apiReponses: {},
@@ -227,7 +231,9 @@ export const test = base.extend<{ backend: Backend }>({
             ? 'pays'
             : nom === 'push_subscriptions'
               ? 'endpoint'
-              : 'id';
+              : nom === 'interview_preps'
+                ? 'application_id'
+                : 'id';
 
         if ((TABLES as readonly string[]).includes(nom)) {
           const table = backend[nom];

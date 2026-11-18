@@ -18,3 +18,4 @@ export * from './cv';
 export * from './portfolio';
 export * from './correspondance';
 export * from './lettres';
+export * from './entretien';

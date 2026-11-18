@@ -846,6 +846,14 @@ function Lateral({
           <label htmlFor="notes-conv" className={TITRE_LATERAL}>
             Notes d’entretien
           </label>
+          {(candidature.statut === 'entretien' || entretienDe(candidature)) && (
+            <Link
+              to={`/entretien?candidature=${candidature.id}`}
+              className="text-sm font-semibold text-primary-600 dark:text-primary-300"
+            >
+              Préparer l’entretien
+            </Link>
+          )}
           <textarea
             id="notes-conv"
             rows={4}

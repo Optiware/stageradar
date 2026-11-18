@@ -177,7 +177,7 @@ export function Important() {
               const visio = entretien.details.lien ? lienSur(entretien.details.lien) : null;
               return (
                 <div key={entretien.id} className={LIGNE}>
-                  <Link to={`/suivi?candidature=${candidature.id}`} className="min-w-0 flex-1">
+                  <Link to={`/entretien?candidature=${candidature.id}`} className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">
                       {candidature.resume.entreprise ?? candidature.resume.titre}
                     </span>

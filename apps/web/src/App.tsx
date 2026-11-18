@@ -11,6 +11,7 @@ import { Logement } from './pages/Logement';
 import { Messages } from './pages/Messages';
 import { Login } from './pages/Login';
 import { More } from './pages/More';
+import { Entretien } from './pages/Entretien';
 import { Feed } from './pages/Feed';
 import { Calendrier } from './pages/Calendrier';
 import { Cv } from './pages/Cv';
@@ -91,6 +92,7 @@ function OwnerGate({ session }: { session: Session }) {
         <Route path="cv" element={<Cv />} />
         <Route path="portfolio" element={<Portfolio />} />
         <Route path="lettre" element={<Lettre />} />
+        <Route path="entretien" element={<Entretien />} />
         <Route path="donnees" element={<Donnees />} />
         <Route path="pays" element={<Pays />} />
         <Route path="demarchage" element={<Demarchage />} />
